@@ -23,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @param country 
  * @param college 
  * @param avatarId 
+ * @param recaptchaCode 
  */
 data class RegisterUserRequestDto(
 
@@ -54,7 +55,10 @@ data class RegisterUserRequestDto(
     @field:JsonProperty("college", required = true) val college: kotlin.String,
 
     @Schema(example = "1", required = true, description = "")
-    @field:JsonProperty("avatarId", required = true) val avatarId: kotlin.Int
+    @field:JsonProperty("avatarId", required = true) val avatarId: kotlin.Int,
+
+    @Schema(example = "03AD1IbLAGl_UdwYP3-AeibnfJgXy_g3cNr_rhkBBh4zalD9GEXAR2xCcUGi7WlxFgOjYlpbRpZFTJJDVugJF-H4pBl32DU619cYHplp_ReGiOokgvz8DwiRLIZBvg1eu2e77jihWQPndoWU_WOTKrYVq1mzBcdPUfJ3PEMCo-eGvoyRaNvRWE0JYBSBgDfwFBaw8RmxaqiS84or-_G7-TDiifFYpcNFiIolIjGi9DkbMXivkjiIoEomAz6NUHg0alrk0C5_p1maoErBmpwLGwlAgKL_sa-ZAzHb89OprdVI8BXtN0CATBgwYO6u_zqrK5N9wDQyh-OmtFh5RXkEzmkASls33UYcJrtMfeFU-b9N-u-Je6NXVfkX49gAGan3k-GqkgcFKHowc5Cwym9tlGLrfiBtqKLIADw1UX4BCbIx9BbHlesoKEubr7MoVZCDv3VfctSTMXG-oH5IbDRQhez4E6JHR4Uv0lWyHKROv7wdxqXauz5PBlUlE11BdffXU5NEssJkM4Tk3zg5k6ddkju8DU2keqXodnzXVTBIXC6zxriA8IHaS_KFBtazAYZ6oac3-5Y2VMwli3XaADBCCVJzXC0GTa1jeuZQ", required = true, description = "")
+    @field:JsonProperty("recaptchaCode", required = true) val recaptchaCode: kotlin.String
 ) {
 
 }

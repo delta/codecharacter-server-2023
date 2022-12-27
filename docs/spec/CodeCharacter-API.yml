@@ -1090,6 +1090,7 @@ paths:
                   country: IN
                   college: NITT
                   avatarId: 0
+                  recaptchaCode: 03AD1IbLAGl_UdwYP3-AeibnfJgXy_g3cNr_rhkBBh4zalD9GEXAR2xCcUGi7WlxFgOjYlpbRpZFTJJDVugJF-H4pBl32DU619cYHplp_ReGiOokgvz8DwiRLIZBvg1eu2e77jihWQPndoWU_WOTKrYVq1mzBcdPUfJ3PEMCo-eGvoyRaNvRWE0JYBSBgDfwFBaw8RmxaqiS84or-_G7-TDiifFYpcNFiIolIjGi9DkbMXivkjiIoEomAz6NUHg0alrk0C5_p1maoErBmpwLGwlAgKL_sa-ZAzHb89OprdVI8BXtN0CATBgwYO6u_zqrK5N9wDQyh-OmtFh5RXkEzmkASls33UYcJrtMfeFU-b9N-u-Je6NXVfkX49gAGan3k-GqkgcFKHowc5Cwym9tlGLrfiBtqKLIADw1UX4BCbIx9BbHlesoKEubr7MoVZCDv3VfctSTMXG-oH5IbDRQhez4E6JHR4Uv0lWyHKROv7wdxqXauz5PBlUlE11BdffXU5NEssJkM4Tk3zg5k6ddkju8DU2keqXodnzXVTBIXC6zxriA8IHaS_KFBtazAYZ6oac3-5Y2VMwli3XaADBCCVJzXC0GTa1jeuZQ
         description: ''
       security: []
   '/users/{userId}/activate':
@@ -1686,6 +1687,9 @@ components:
         avatarId:
           type: integer
           example: 1
+        recaptchaCode:
+          type: string
+          example: 03AD1IbLAGl_UdwYP3-AeibnfJgXy_g3cNr_rhkBBh4zalD9GEXAR2xCcUGi7WlxFgOjYlpbRpZFTJJDVugJF-H4pBl32DU619cYHplp_ReGiOokgvz8DwiRLIZBvg1eu2e77jihWQPndoWU_WOTKrYVq1mzBcdPUfJ3PEMCo-eGvoyRaNvRWE0JYBSBgDfwFBaw8RmxaqiS84or-_G7-TDiifFYpcNFiIolIjGi9DkbMXivkjiIoEomAz6NUHg0alrk0C5_p1maoErBmpwLGwlAgKL_sa-ZAzHb89OprdVI8BXtN0CATBgwYO6u_zqrK5N9wDQyh-OmtFh5RXkEzmkASls33UYcJrtMfeFU-b9N-u-Je6NXVfkX49gAGan3k-GqkgcFKHowc5Cwym9tlGLrfiBtqKLIADw1UX4BCbIx9BbHlesoKEubr7MoVZCDv3VfctSTMXG-oH5IbDRQhez4E6JHR4Uv0lWyHKROv7wdxqXauz5PBlUlE11BdffXU5NEssJkM4Tk3zg5k6ddkju8DU2keqXodnzXVTBIXC6zxriA8IHaS_KFBtazAYZ6oac3-5Y2VMwli3XaADBCCVJzXC0GTa1jeuZQ
       required:
         - username
         - name
@@ -1695,6 +1699,7 @@ components:
         - country
         - college
         - avatarId
+        - recaptchaCode
     Match:
       description: Match model
       type: object
