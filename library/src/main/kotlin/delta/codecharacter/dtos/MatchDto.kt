@@ -6,26 +6,26 @@ import delta.codecharacter.dtos.GameDto
 import delta.codecharacter.dtos.MatchModeDto
 import delta.codecharacter.dtos.PublicUserDto
 import delta.codecharacter.dtos.VerdictDto
-import javax.validation.constraints.DecimalMax
-import javax.validation.constraints.DecimalMin
-import javax.validation.constraints.Email
-import javax.validation.constraints.Max
-import javax.validation.constraints.Min
-import javax.validation.constraints.NotNull
-import javax.validation.constraints.Pattern
-import javax.validation.constraints.Size
-import javax.validation.Valid
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
+import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Pattern
+import jakarta.validation.constraints.Size
+import jakarta.validation.Valid
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
  * Match model
- * @param id 
- * @param games 
- * @param matchMode 
- * @param matchVerdict 
- * @param createdAt 
- * @param user1 
- * @param user2 
+ * @param id
+ * @param games
+ * @param matchMode
+ * @param matchVerdict
+ * @param createdAt
+ * @param user1
+ * @param user2
  */
 data class MatchDto(
 

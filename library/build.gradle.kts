@@ -15,7 +15,7 @@ tasks.withType<KotlinCompile> {
 }
 
 plugins {
-    id("org.springframework.boot") version "2.6.2" apply false
+    id("org.springframework.boot") version "3.0.0" apply false
     id("io.spring.dependency-management") version "1.0.11.RELEASE"
     kotlin("jvm")
     kotlin("plugin.jpa")
@@ -34,7 +34,6 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation:3.0.0")
     implementation("org.springframework.boot:spring-boot-starter-web:3.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-//    implementation("io.swagger:swagger-annotations:1.6.8")
     implementation("jakarta.annotation:jakarta.annotation-api:2.1.1")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.14.0")
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.14.0")
