@@ -60,6 +60,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 stats =
                 UserStatsDto(
                     rating = BigDecimal(it.rating),
+                    tier = it.tier,
                     wins = it.wins,
                     losses = it.losses,
                     ties = it.ties,
