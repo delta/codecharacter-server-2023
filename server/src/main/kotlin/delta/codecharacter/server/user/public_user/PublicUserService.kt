@@ -39,8 +39,11 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 wins = 0,
                 losses = 0,
                 ties = 0,
+<<<<<<< HEAD
                 score = 0.0,
                 challengesCompleted = null,
+=======
+>>>>>>> 5fcd9ea (fix: tier categories)
             )
         publicUserRepository.save(publicUser)
     }
@@ -60,10 +63,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 stats =
                 UserStatsDto(
                     rating = BigDecimal(it.rating),
-                    tier = it.tier,
                     wins = it.wins,
                     losses = it.losses,
-                    ties = it.ties,
+                    ties = it.ties
                 )
             )
         }
@@ -79,6 +81,12 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 userName = it.username, score = BigDecimal(it.score), avatarId = it.avatarId
             )
         }
+    }
+
+    fun getUserTierByRating(rating: Double): Int {
+        return if (rating >= getMinRatingForTier(4)) 4
+        else if (rating < getMinRatingForTier(4) && rating >= getMinRatingForTier(3)) 3
+        else if (rating < getMinRatingForTier(3) && rating >= getMinRatingForTier(2)) 2 else 1
     }
 
     fun getUserProfile(userId: UUID, email: String): CurrentUserProfileDto {
