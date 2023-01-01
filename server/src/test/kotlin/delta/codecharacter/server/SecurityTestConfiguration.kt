@@ -27,6 +27,7 @@ class TestAttributes {
                 isAccountNonLocked = true,
                 loginType = LoginType.PASSWORD,
                 isProfileComplete = true,
+                tutorialLevel = 1
             )
         val publicUser =
             PublicUserEntity(
