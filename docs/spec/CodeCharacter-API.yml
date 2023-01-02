@@ -1198,6 +1198,18 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+      parameters:
+        - schema:
+            type: integer
+          in: query
+          name: page
+          description: Index of the page
+        - schema:
+            type: integer
+          in: query
+          name: size
+          description: Size of the page
+    parameters: []
 components:
   schemas:
     PasswordLoginRequest:
