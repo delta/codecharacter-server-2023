@@ -8,9 +8,13 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class DailyChallengeLeaderboardController(@Autowired private val publicUserService: PublicUserService) :
-    DailyChallengesApi {
-    override fun getDailyChallengeLeaderBoard(page :Int?, size : Int?): ResponseEntity<List<DailyChallengeLeaderBoardResponseDto>> {
+class DailyChallengeLeaderboardController(
+    @Autowired private val publicUserService: PublicUserService
+) : DailyChallengesApi {
+    override fun getDailyChallengeLeaderBoard(
+        page: Int?,
+        size: Int?
+    ): ResponseEntity<List<DailyChallengeLeaderBoardResponseDto>> {
         return ResponseEntity.ok(publicUserService.getDailyChallengeLeaderboard(page, size))
     }
 }
