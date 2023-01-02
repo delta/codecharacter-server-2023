@@ -24,7 +24,7 @@ data class DailyChallengeLeaderBoardResponseDto(
     @field:JsonProperty("userName") val userName: kotlin.String? = null,
 
     @Schema(example = "1500.0", description = "")
-    @field:JsonProperty("score") val score: kotlin.String? = null
+    @field:JsonProperty("score") val score: java.math.BigDecimal? = null
 ) {
 
 }

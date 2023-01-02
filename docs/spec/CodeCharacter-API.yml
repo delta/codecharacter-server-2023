@@ -1845,8 +1845,8 @@ components:
           type: string
           example: TestUser
         score:
-          type: string
-          example: 1500.0
+          type: number
+          example: 1500.00
     TutorialLevelResponse:
       title: TutorialLevelResponse
       description: Get the tutorial level of the current user
