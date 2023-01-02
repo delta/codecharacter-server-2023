@@ -3,7 +3,7 @@ package delta.codecharacter.server.daily_challenges
 import delta.codecharacter.dtos.ChallengeTypeDto
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import java.util.*
+import java.util.UUID
 
 @Document(collection = "daily_challenges") // change it later
 data class DailyChallengeEntity(
@@ -11,4 +11,4 @@ data class DailyChallengeEntity(
     val challName: String,
     val challType: ChallengeTypeDto,
     val chall: String,
-    )
+)

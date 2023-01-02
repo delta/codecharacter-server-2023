@@ -40,7 +40,7 @@ class TestAttributes {
                 wins = 4,
                 losses = 2,
                 ties = 1,
-                score = 0,
+                score = 0.0,
                 challengesCompleted = null
             )
     }

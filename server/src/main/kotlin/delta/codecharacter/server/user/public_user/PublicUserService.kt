@@ -1,6 +1,11 @@
 package delta.codecharacter.server.user.public_user
 
-import delta.codecharacter.dtos.*
+import delta.codecharacter.dtos.CurrentUserProfileDto
+import delta.codecharacter.dtos.DailyChallengeLeaderBoardResponseDto
+import delta.codecharacter.dtos.LeaderboardEntryDto
+import delta.codecharacter.dtos.PublicUserDto
+import delta.codecharacter.dtos.UpdateCurrentUserProfileDto
+import delta.codecharacter.dtos.UserStatsDto
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.match.MatchVerdictEnum
 import org.springframework.beans.factory.annotation.Autowired
@@ -63,13 +68,13 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         }
     }
 
-    fun getDailyChallengeLeaderboard(page : Int?, size: Int?): List<DailyChallengeLeaderBoardResponseDto> {
+    fun getDailyChallengeLeaderboard(
+        page: Int?,
+        size: Int?
+    ): List<DailyChallengeLeaderBoardResponseDto> {
         val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Direction.DESC, "score"))
         return publicUserRepository.findAll(pageRequest).content.map {
-            DailyChallengeLeaderBoardResponseDto(
-                userName = it.username,
-                score = BigDecimal(it.score)
-            )
+            DailyChallengeLeaderBoardResponseDto(userName = it.username, score = BigDecimal(it.score))
         }
     }
 
