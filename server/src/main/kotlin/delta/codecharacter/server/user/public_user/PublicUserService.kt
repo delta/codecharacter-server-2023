@@ -34,7 +34,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 wins = 0,
                 losses = 0,
                 ties = 0,
-                score = 0,
+                score = 0.0,
                 challengesCompleted = null,
             )
         publicUserRepository.save(publicUser)
@@ -63,12 +63,12 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         }
     }
 
-    fun getDailyChallengeLeaderboard(): List<DailyChallengeLeaderBoardResponseDto> {
-        val pageRequest = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "score"))
+    fun getDailyChallengeLeaderboard(page : Int?, size: Int?): List<DailyChallengeLeaderBoardResponseDto> {
+        val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Direction.DESC, "score"))
         return publicUserRepository.findAll(pageRequest).content.map {
             DailyChallengeLeaderBoardResponseDto(
                 userName = it.username,
-                score = it.score
+                score = BigDecimal(it.score)
             )
         }
     }
