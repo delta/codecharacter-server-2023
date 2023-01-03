@@ -52,11 +52,8 @@ class CurrentUserController(
     }
 
     @Secured(value = ["ROLE_USER"])
-    override fun getTutorialLevel(
-        tutorialLevelResponseDto: TutorialLevelResponseDto
-    ): ResponseEntity<Unit> {
+    override fun getTutorialLevel(): ResponseEntity<TutorialLevelResponseDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as UserEntity
-        userService.updateTutorialLevel(user.id, tutorialLevelResponseDto)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.ok(userService.getTutorialLevel(user.id))
     }
 }

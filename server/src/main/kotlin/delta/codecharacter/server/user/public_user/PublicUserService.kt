@@ -7,6 +7,7 @@ import delta.codecharacter.dtos.PublicUserDto
 import delta.codecharacter.dtos.UpdateCurrentUserProfileDto
 import delta.codecharacter.dtos.UserStatsDto
 import delta.codecharacter.server.exception.CustomException
+import delta.codecharacter.server.leaderboard.LeaderboardTierEnum
 import delta.codecharacter.server.match.MatchVerdictEnum
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.PageRequest
@@ -82,11 +83,68 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
             )
         }
     }
+    fun getSortedLeaderBoard(): List<LeaderboardEntryDto> {
+        val leaderboard =
+            publicUserRepository.findAll().map {
+                LeaderboardEntryDto(
+                    user =
+                    PublicUserDto(
+                        username = it.username,
+                        name = it.name,
+                        country = it.country,
+                        college = it.college,
+                        avatarId = it.avatarId,
+                    ),
+                    stats =
+                    UserStatsDto(
+                        rating = BigDecimal(it.rating),
+                        wins = it.wins,
+                        losses = it.losses,
+                        ties = it.ties,
+                    )
+                )
+            }
+        return leaderboard.sortedBy { it.stats.rating }.reversed()
+    }
 
-    fun getUserTierByRating(rating: Double): Int {
-        return if (rating >= getMinRatingForTier(4)) 4
-        else if (rating < getMinRatingForTier(4) && rating >= getMinRatingForTier(3)) 3
-        else if (rating < getMinRatingForTier(3) && rating >= getMinRatingForTier(2)) 2 else 1
+    fun getLeaderboardByTier(tier: LeaderboardTierEnum): List<LeaderboardEntryDto> {
+        var leaderboardEntry = getSortedLeaderBoard()
+        var leaderboardSize = leaderboardEntry.size
+        if (tier == LeaderboardTierEnum.TIER1)
+            return leaderboardEntry.subList(0, (0.1 * leaderboardSize).toInt() + 1)
+        else {
+            leaderboardEntry =
+                leaderboardEntry.subList((0.1 * leaderboardSize).toInt() + 1, leaderboardSize)
+            leaderboardSize = leaderboardEntry.size
+            return if (tier == LeaderboardTierEnum.TIER2)
+                leaderboardEntry.subList(0, (0.15 * leaderboardSize).toInt() + 1)
+            else {
+                leaderboardEntry =
+                    leaderboardEntry.subList((0.15 * leaderboardSize).toInt() + 1, leaderboardSize)
+                leaderboardSize = leaderboardEntry.size
+                if (tier == LeaderboardTierEnum.TIER3)
+                    leaderboardEntry.subList(0, (0.25 * leaderboardSize).toInt() + 1)
+                else leaderboardEntry.subList((0.25 * leaderboardSize).toInt() + 1, leaderboardSize)
+            }
+        }
+    }
+
+    fun getMinRatingForTier(tier: LeaderboardTierEnum): Double {
+        val leaderboardEntry = getLeaderboardByTier(tier)
+        return leaderboardEntry[leaderboardEntry.size - 1].stats.rating.toDouble()
+    }
+
+    fun getUserTierByRating(rating: Double): LeaderboardTierEnum {
+        return if (rating >= getMinRatingForTier(LeaderboardTierEnum.TIER1)) LeaderboardTierEnum.TIER1
+        else if (rating < getMinRatingForTier(LeaderboardTierEnum.TIER1) &&
+            rating >= getMinRatingForTier(LeaderboardTierEnum.TIER2)
+        )
+            LeaderboardTierEnum.TIER2
+        else if (rating < getMinRatingForTier(LeaderboardTierEnum.TIER2) &&
+            rating >= getMinRatingForTier(LeaderboardTierEnum.TIER3)
+        )
+            LeaderboardTierEnum.TIER3
+        else LeaderboardTierEnum.TIER4
     }
 
     fun getUserProfile(userId: UUID, email: String): CurrentUserProfileDto {

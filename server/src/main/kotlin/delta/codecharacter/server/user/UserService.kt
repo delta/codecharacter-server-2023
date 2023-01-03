@@ -10,6 +10,7 @@ import delta.codecharacter.server.user.public_user.PublicUserService
 import delta.codecharacter.server.user.rating_history.RatingHistoryService
 import org.bson.json.JsonObject
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Lazy
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
@@ -33,6 +34,7 @@ class UserService(
 ) : UserDetailsService {
 
     @Lazy @Autowired private lateinit var passwordEncoder: BCryptPasswordEncoder
+    @Value("\${user.reCaptcha-key}") private lateinit var secretKey: String
 
     override fun loadUserByUsername(email: String?): UserEntity {
         if (email == null) {
@@ -154,7 +156,6 @@ class UserService(
     }
 
     fun verifyReCaptcha(reCaptchaResponse: String): Boolean {
-        val secretKey = "6LdaMMEjAAAAAMKn5h1gPoQSNrhXutr5Gk8LhBye"
         val url =
             "https://www.google.com/recaptcha/api/siteverifysecret=$secretKey&response=$reCaptchaResponse"
         try {
@@ -202,6 +203,11 @@ class UserService(
     fun updateTutorialLevel(userId: UUID, tutorialLevelResponseDto: TutorialLevelResponseDto) {
         val (level) = tutorialLevelResponseDto
         val user = userRepository.findById(userId).get()
-        userRepository.save(user.copy(tutorialLevel = level))
+        userRepository.save(user.copy(tutorialLevel = level?.plus(1)))
+    }
+
+    fun getTutorialLevel(userId: UUID): TutorialLevelResponseDto {
+        val user = userRepository.findById(userId).get()
+        return TutorialLevelResponseDto(level = user.tutorialLevel)
     }
 }

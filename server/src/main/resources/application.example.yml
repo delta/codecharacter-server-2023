@@ -42,5 +42,8 @@ cors:
 jwt:
   secret: 'example'
 
+user:
+  reCaptcha-key: your-reCaptcha-key
+
 base-url: your-base-url
 frontend-domain: localhost
