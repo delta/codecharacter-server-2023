@@ -1847,6 +1847,13 @@ components:
         score:
           type: number
           example: 1500.00
+        avatarId:
+          type: integer
+          example: 1
+      required:
+        - userName
+        - score
+        - avatarId
     TutorialLevelResponse:
       title: TutorialLevelResponse
       description: Get the tutorial level of the current user
