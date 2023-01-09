@@ -1,5 +1,6 @@
 package delta.codecharacter.server.user
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import delta.codecharacter.dtos.CompleteProfileRequestDto
 import delta.codecharacter.dtos.RegisterUserRequestDto
 import delta.codecharacter.dtos.TutorialLevelResponseDto
@@ -11,6 +12,7 @@ import delta.codecharacter.server.user.rating_history.RatingHistoryService
 import org.bson.json.JsonObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.configurationprocessor.json.JSONTokener
 import org.springframework.context.annotation.Lazy
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
@@ -20,8 +22,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
 import java.io.OutputStream
+import java.lang.System.out
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.util.Optional
 import java.util.UUID
 
@@ -157,24 +164,14 @@ class UserService(
 
     fun verifyReCaptcha(reCaptchaResponse: String): Boolean {
         val url =
-            "https://www.google.com/recaptcha/api/siteverifysecret=$secretKey&response=$reCaptchaResponse"
+            "https://www.google.com/recaptcha/api/siteverify"
         try {
-            val con: HttpURLConnection = URL(url).openConnection() as HttpURLConnection
-            con.requestMethod = "POST"
-            val dataOutputStream: OutputStream? = con.outputStream
-            dataOutputStream?.flush()
-            dataOutputStream?.close()
-            val bufferedReader = con.inputStream.bufferedReader()
-            val response = StringBuffer()
-            var inputLine = bufferedReader.readLine()
-            while ((inputLine) != null) {
-                response.append(inputLine)
-                inputLine = bufferedReader.readLine()
-            }
-            bufferedReader.close()
-            val jsonObject = JsonObject(response.toString())
-            val result = jsonObject.toBsonDocument().getBoolean("success")
-            return result.value
+            val requestBody = ObjectMapper().writeValueAsString(mapOf("secret" to secretKey,"response" to reCaptchaResponse))
+            val client=HttpClient.newBuilder().build()
+            val request=HttpRequest.newBuilder().uri(URI.create(url)).POST(HttpRequest.BodyPublishers.ofString(requestBody)).build()
+            val response=client.send(request,HttpResponse.BodyHandlers.ofString())
+            val json= JsonObject(response.body())
+            return json.toBsonDocument().getBoolean("success").value
         } catch (e: Exception) {
             e.printStackTrace()
             return false
