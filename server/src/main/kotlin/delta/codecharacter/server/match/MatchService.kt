@@ -107,10 +107,6 @@ class MatchService(
         val userTier = publicUserService.getUserTierByRating(publicUser.rating)
         val opponentTier = publicUserService.getUserTierByRating(publicOpponent.rating)
 
-        if (userTier != opponentTier) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Both players should belong to the same tier")
-        }
-
         val (userLanguage, userCode) = lockedCodeService.getLockedCode(userId)
         val userMap = lockedMapService.getLockedMap(userId)
 

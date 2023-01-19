@@ -28,6 +28,7 @@ spring:
             scope: user:email
 environment:
   event-start-date: YYYY-MM-DDTHH:MM:SSZ
+  reCaptcha-key: your-recaptcha-key
 
 de:
   flapdoodle:

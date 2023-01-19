@@ -26,6 +26,7 @@ spring:
             scope: user:email
 environment:
   event-start-date: YYYY-MM-DDTHH:MM:SSZ
+  reCaptcha-key: your-recaptcha-key
 
 de:
   flapdoodle:
@@ -41,9 +42,6 @@ cors:
 
 jwt:
   secret: 'example'
-
-user:
-  reCaptcha-key: your-reCaptcha-key
 
 base-url: your-base-url
 frontend-domain: localhost

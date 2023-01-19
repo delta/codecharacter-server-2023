@@ -31,9 +31,9 @@
       "description": "Sendgrid Template ID"
     },
     {
-      "name": "user.reCaptcha-key",
+      "name": "environment.reCaptcha-key",
       "type": "java.lang.String",
-      "description": "User reCaptcha-secret-key."
+      "description": "User reCaptcha key."
     }
   ]
 }

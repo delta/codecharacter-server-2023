@@ -40,11 +40,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 wins = 0,
                 losses = 0,
                 ties = 0,
-<<<<<<< HEAD
                 score = 0.0,
                 challengesCompleted = null,
-=======
->>>>>>> 5fcd9ea (fix: tier categories)
+                tutorialLevel = 1,
             )
         publicUserRepository.save(publicUser)
     }
@@ -167,7 +165,8 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 name = updateCurrentUserProfileDto.name ?: user.name,
                 country = updateCurrentUserProfileDto.country ?: user.country,
                 college = updateCurrentUserProfileDto.college ?: user.college,
-                avatarId = updateCurrentUserProfileDto.avatarId ?: user.avatarId
+                tutorialLevel = updateCurrentUserProfileDto.tutorialLevel?.plus(1)
+                    ?: user.tutorialLevel
             )
         publicUserRepository.save(updatedUser)
     }

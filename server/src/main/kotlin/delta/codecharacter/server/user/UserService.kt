@@ -1,6 +1,5 @@
 package delta.codecharacter.server.user
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import delta.codecharacter.dtos.CompleteProfileRequestDto
 import delta.codecharacter.dtos.RegisterUserRequestDto
 import delta.codecharacter.dtos.TutorialLevelResponseDto
@@ -12,7 +11,6 @@ import delta.codecharacter.server.user.rating_history.RatingHistoryService
 import org.bson.json.JsonObject
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.configurationprocessor.json.JSONTokener
 import org.springframework.context.annotation.Lazy
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.HttpStatus
@@ -21,11 +19,7 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Service
-import java.io.OutputStream
-import java.lang.System.out
-import java.net.HttpURLConnection
 import java.net.URI
-import java.net.URL
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
@@ -41,7 +35,7 @@ class UserService(
 ) : UserDetailsService {
 
     @Lazy @Autowired private lateinit var passwordEncoder: BCryptPasswordEncoder
-    @Value("\${user.reCaptcha-key}") private lateinit var secretKey: String
+    @Value("\${environment.reCaptcha-key}") private lateinit var secretKey: String
 
     override fun loadUserByUsername(email: String?): UserEntity {
         if (email == null) {
@@ -164,13 +158,16 @@ class UserService(
 
     fun verifyReCaptcha(reCaptchaResponse: String): Boolean {
         val url =
-            "https://www.google.com/recaptcha/api/siteverify"
+            "https://www.google.com/recaptcha/api/siteverify?secret=$secretKey&response=$reCaptchaResponse"
         try {
-            val requestBody = ObjectMapper().writeValueAsString(mapOf("secret" to secretKey,"response" to reCaptchaResponse))
-            val client=HttpClient.newBuilder().build()
-            val request=HttpRequest.newBuilder().uri(URI.create(url)).POST(HttpRequest.BodyPublishers.ofString(requestBody)).build()
-            val response=client.send(request,HttpResponse.BodyHandlers.ofString())
-            val json= JsonObject(response.body())
+            val client = HttpClient.newBuilder().build()
+            val request =
+                HttpRequest.newBuilder()
+                    .uri(URI.create(url))
+                    .POST(HttpRequest.BodyPublishers.noBody())
+                    .build()
+            val response = client.send(request, HttpResponse.BodyHandlers.ofString())
+            val json = JsonObject(response.body())
             return json.toBsonDocument().getBoolean("success").value
         } catch (e: Exception) {
             e.printStackTrace()
@@ -195,12 +192,6 @@ class UserService(
                 userAuthorities = mutableListOf(SimpleGrantedAuthority("ROLE_USER"))
             )
         )
-    }
-
-    fun updateTutorialLevel(userId: UUID, tutorialLevelResponseDto: TutorialLevelResponseDto) {
-        val (level) = tutorialLevelResponseDto
-        val user = userRepository.findById(userId).get()
-        userRepository.save(user.copy(tutorialLevel = level?.plus(1)))
     }
 
     fun getTutorialLevel(userId: UUID): TutorialLevelResponseDto {

@@ -42,7 +42,8 @@ class TestAttributes {
                 losses = 2,
                 ties = 1,
                 score = 0.0,
-                challengesCompleted = null
+                challengesCompleted = null,
+                tutorialLevel = 1
             )
     }
 }
