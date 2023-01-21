@@ -1898,6 +1898,7 @@ components:
       enum:
         - NEXT
         - PREVIOUS
+        - SKIP
   securitySchemes:
     oauth2-google:
       type: oauth2

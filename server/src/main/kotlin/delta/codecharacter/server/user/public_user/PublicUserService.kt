@@ -129,6 +129,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 }
                 updatedTutorialLevel -= 1
             }
+            TutorialUpdateTypeDto.SKIP -> {
+                updatedTutorialLevel = totalTutorialLevels.toInt()
+            }
             else -> {
                 return tutorialLevel
             }

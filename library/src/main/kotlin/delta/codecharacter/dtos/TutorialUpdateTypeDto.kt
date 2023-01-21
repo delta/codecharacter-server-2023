@@ -16,11 +16,12 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 /**
 *
-* Values: NEXT,PREVIOUS
+* Values: NEXT,PREVIOUS,SKIP
 */
 enum class TutorialUpdateTypeDto(val value: kotlin.String) {
 
     @JsonProperty("NEXT") NEXT("NEXT"),
-    @JsonProperty("PREVIOUS") PREVIOUS("PREVIOUS")
+    @JsonProperty("PREVIOUS") PREVIOUS("PREVIOUS"),
+    @JsonProperty("SKIP") SKIP("SKIP")
 }
 
