@@ -2,7 +2,6 @@ package delta.codecharacter.server.user
 
 import delta.codecharacter.dtos.CompleteProfileRequestDto
 import delta.codecharacter.dtos.RegisterUserRequestDto
-import delta.codecharacter.dtos.TutorialLevelResponseDto
 import delta.codecharacter.dtos.UpdatePasswordRequestDto
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.user.activate_user.ActivateUserService
@@ -61,7 +60,6 @@ class UserService(
                 email = email,
                 loginType = LoginType.PASSWORD,
                 isProfileComplete = true,
-                tutorialLevel = 0,
                 isEnabled = false,
                 isAccountNonExpired = true,
                 isAccountNonLocked = true,
@@ -80,7 +78,6 @@ class UserService(
                 email = email,
                 loginType = oauthProvider,
                 isProfileComplete = false,
-                tutorialLevel = 0,
                 isEnabled = true,
                 isAccountNonExpired = true,
                 isAccountNonLocked = true,
@@ -192,10 +189,5 @@ class UserService(
                 userAuthorities = mutableListOf(SimpleGrantedAuthority("ROLE_USER"))
             )
         )
-    }
-
-    fun getTutorialLevel(userId: UUID): TutorialLevelResponseDto {
-        val user = userRepository.findById(userId).get()
-        return TutorialLevelResponseDto(level = user.tutorialLevel)
     }
 }

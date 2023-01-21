@@ -4,12 +4,13 @@ import delta.codecharacter.dtos.CurrentUserProfileDto
 import delta.codecharacter.dtos.DailyChallengeLeaderBoardResponseDto
 import delta.codecharacter.dtos.LeaderboardEntryDto
 import delta.codecharacter.dtos.PublicUserDto
+import delta.codecharacter.dtos.TutorialUpdateTypeDto
 import delta.codecharacter.dtos.UpdateCurrentUserProfileDto
 import delta.codecharacter.dtos.UserStatsDto
 import delta.codecharacter.server.exception.CustomException
-import delta.codecharacter.server.leaderboard.LeaderboardTierEnum
 import delta.codecharacter.server.match.MatchVerdictEnum
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
@@ -20,6 +21,7 @@ import java.util.UUID
 @Service
 class PublicUserService(@Autowired private val publicUserRepository: PublicUserRepository) {
 
+    @Value("\${environment.no-of-tutorial-level}") private lateinit var totalTutorialLevels: Number
     fun create(
         userId: UUID,
         username: String,
@@ -81,69 +83,6 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
             )
         }
     }
-    fun getSortedLeaderBoard(): List<LeaderboardEntryDto> {
-        val leaderboard =
-            publicUserRepository.findAll().map {
-                LeaderboardEntryDto(
-                    user =
-                    PublicUserDto(
-                        username = it.username,
-                        name = it.name,
-                        country = it.country,
-                        college = it.college,
-                        avatarId = it.avatarId,
-                    ),
-                    stats =
-                    UserStatsDto(
-                        rating = BigDecimal(it.rating),
-                        wins = it.wins,
-                        losses = it.losses,
-                        ties = it.ties,
-                    )
-                )
-            }
-        return leaderboard.sortedBy { it.stats.rating }.reversed()
-    }
-
-    fun getLeaderboardByTier(tier: LeaderboardTierEnum): List<LeaderboardEntryDto> {
-        var leaderboardEntry = getSortedLeaderBoard()
-        var leaderboardSize = leaderboardEntry.size
-        if (tier == LeaderboardTierEnum.TIER1)
-            return leaderboardEntry.subList(0, (0.1 * leaderboardSize).toInt() + 1)
-        else {
-            leaderboardEntry =
-                leaderboardEntry.subList((0.1 * leaderboardSize).toInt() + 1, leaderboardSize)
-            leaderboardSize = leaderboardEntry.size
-            return if (tier == LeaderboardTierEnum.TIER2)
-                leaderboardEntry.subList(0, (0.15 * leaderboardSize).toInt() + 1)
-            else {
-                leaderboardEntry =
-                    leaderboardEntry.subList((0.15 * leaderboardSize).toInt() + 1, leaderboardSize)
-                leaderboardSize = leaderboardEntry.size
-                if (tier == LeaderboardTierEnum.TIER3)
-                    leaderboardEntry.subList(0, (0.25 * leaderboardSize).toInt() + 1)
-                else leaderboardEntry.subList((0.25 * leaderboardSize).toInt() + 1, leaderboardSize)
-            }
-        }
-    }
-
-    fun getMinRatingForTier(tier: LeaderboardTierEnum): Double {
-        val leaderboardEntry = getLeaderboardByTier(tier)
-        return leaderboardEntry[leaderboardEntry.size - 1].stats.rating.toDouble()
-    }
-
-    fun getUserTierByRating(rating: Double): LeaderboardTierEnum {
-        return if (rating >= getMinRatingForTier(LeaderboardTierEnum.TIER1)) LeaderboardTierEnum.TIER1
-        else if (rating < getMinRatingForTier(LeaderboardTierEnum.TIER1) &&
-            rating >= getMinRatingForTier(LeaderboardTierEnum.TIER2)
-        )
-            LeaderboardTierEnum.TIER2
-        else if (rating < getMinRatingForTier(LeaderboardTierEnum.TIER2) &&
-            rating >= getMinRatingForTier(LeaderboardTierEnum.TIER3)
-        )
-            LeaderboardTierEnum.TIER3
-        else LeaderboardTierEnum.TIER4
-    }
 
     fun getUserProfile(userId: UUID, email: String): CurrentUserProfileDto {
         val user = publicUserRepository.findById(userId).get()
@@ -154,7 +93,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
             name = user.name,
             country = user.country,
             college = user.college,
+            tutorialLevel = user.tutorialLevel,
             avatarId = user.avatarId,
+            isTutorialComplete = user.tutorialLevel == totalTutorialLevels.toInt()
         )
     }
 
@@ -165,10 +106,34 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 name = updateCurrentUserProfileDto.name ?: user.name,
                 country = updateCurrentUserProfileDto.country ?: user.country,
                 college = updateCurrentUserProfileDto.college ?: user.college,
-                tutorialLevel = updateCurrentUserProfileDto.tutorialLevel?.plus(1)
-                    ?: user.tutorialLevel
+                tutorialLevel =
+                updateTutorialLevel(
+                    updateCurrentUserProfileDto.updateTutorialLevel, user.tutorialLevel
+                )
             )
         publicUserRepository.save(updatedUser)
+    }
+
+    fun updateTutorialLevel(updateTutorialType: TutorialUpdateTypeDto?, tutorialLevel: Int): Int {
+        var updatedTutorialLevel = tutorialLevel
+        when (updateTutorialType) {
+            TutorialUpdateTypeDto.NEXT -> {
+                if (tutorialLevel == totalTutorialLevels.toInt()) {
+                    return tutorialLevel
+                }
+                updatedTutorialLevel += 1
+            }
+            TutorialUpdateTypeDto.PREVIOUS -> {
+                if (tutorialLevel == 1) {
+                    return 1
+                }
+                updatedTutorialLevel -= 1
+            }
+            else -> {
+                return tutorialLevel
+            }
+        }
+        return updatedTutorialLevel
     }
 
     fun updatePublicRating(

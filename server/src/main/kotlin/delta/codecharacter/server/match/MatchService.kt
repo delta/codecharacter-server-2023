@@ -104,9 +104,6 @@ class MatchService(
             throw CustomException(HttpStatus.BAD_REQUEST, "You cannot play against yourself")
         }
 
-        val userTier = publicUserService.getUserTierByRating(publicUser.rating)
-        val opponentTier = publicUserService.getUserTierByRating(publicOpponent.rating)
-
         val (userLanguage, userCode) = lockedCodeService.getLockedCode(userId)
         val userMap = lockedMapService.getLockedMap(userId)
 
