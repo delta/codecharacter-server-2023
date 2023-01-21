@@ -1187,6 +1187,45 @@ paths:
           name: size
           description: Size of the page
     parameters: []
+  /dc/submit:
+    post:
+      summary: Match Execution for Daily Challenges
+      description: Match making for Daily Challenges
+      operationId: createDailyChallengeMatch
+      responses:
+        '201':
+          description: Created
+        '400':
+          description: Bad Request
+          headers: { }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericError'
+              examples:
+                Example:
+                  value:
+                    message: Some field missing
+        '401':
+          description: Unauthorized
+      requestBody:
+        required: true
+        content:
+           application/json:
+              schema:
+                $ref: '#/components/schemas/DailyChallengeMatchRequest'
+              examples:
+                CodeExample:
+                  value:
+                    value : "#include<iostream>"
+                    language: CPP
+                MapExample:
+                  value:
+                    value: "[[0,0,0]]"
+      tags:
+        - Daily Challenges
+
+
 components:
   schemas:
     PasswordLoginRequest:
@@ -1833,6 +1872,18 @@ components:
         - userName
         - score
         - avatarId
+    DailyChallengeMatchRequest:
+      title: DailyChallengeMatchRequest
+      description: Request Model for the daily challenge
+      type: object
+      properties:
+        value:
+          type: string
+          example: "#include<iostream>"
+        language:
+          $ref: '#/components/schemas/Language'
+      required:
+        - value
     GenericError:
       title: GenericError
       type: object

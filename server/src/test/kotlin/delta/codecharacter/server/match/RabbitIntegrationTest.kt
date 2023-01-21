@@ -210,7 +210,7 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
         assertThat(match.games.last()).isEqualTo(game2)
 
         val gameRequestEntityString1 =
-            this.rabbitTemplate.receiveAndConvert("gameRequestQueue") as String
+            this.rabbitTemplate.receiveAndConvert("gameRequestQueue") as String?
         val gameRequestEntity1 =
             mapper.readValue(gameRequestEntityString1, GameRequestEntity::class.java)
         assertThat(gameRequestEntity1.gameId).isEqualTo(game1.id)
@@ -219,7 +219,7 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
         assertThat(gameRequestEntity1.language).isEqualTo(userLockedCode.language)
 
         val gameRequestEntityString2 =
-            this.rabbitTemplate.receiveAndConvert("gameRequestQueue") as String
+            this.rabbitTemplate.receiveAndConvert("gameRequestQueue") as String?
         val gameRequestEntity2 =
             mapper.readValue(gameRequestEntityString2, GameRequestEntity::class.java)
         assertThat(gameRequestEntity2.gameId).isEqualTo(game2.id)
