@@ -118,13 +118,13 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         var updatedTutorialLevel = tutorialLevel
         when (updateTutorialType) {
             TutorialUpdateTypeDto.NEXT -> {
-                if (tutorialLevel == totalTutorialLevels.toInt()) {
+                if (tutorialLevel >= totalTutorialLevels.toInt()) {
                     return tutorialLevel
                 }
                 updatedTutorialLevel += 1
             }
             TutorialUpdateTypeDto.PREVIOUS -> {
-                if (tutorialLevel == 1) {
+                if (tutorialLevel <= 1) {
                     return 1
                 }
                 updatedTutorialLevel -= 1
