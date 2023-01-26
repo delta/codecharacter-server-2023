@@ -101,31 +101,35 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun updateUserProfile(userId: UUID, updateCurrentUserProfileDto: UpdateCurrentUserProfileDto) {
         val user = publicUserRepository.findById(userId).get()
-        if (updateCurrentUserProfileDto.name.isNullOrEmpty() &&
-            updateCurrentUserProfileDto.college.isNullOrEmpty() &&
-            updateCurrentUserProfileDto.avatarId == user.avatarId &&
-            updateCurrentUserProfileDto.country == user.country
-        ) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "No User Details have changed")
-        } else {
-            if (updateCurrentUserProfileDto.name?.length!! <= 5) {
-                throw CustomException(HttpStatus.BAD_REQUEST, "Username must be minimum 5 characters")
-            } else {
-                val updatedUser =
-                    user.copy(
-                        name = updateCurrentUserProfileDto.name ?: user.name,
-                        country = updateCurrentUserProfileDto.country ?: user.country,
-                        college = updateCurrentUserProfileDto.college ?: user.college,
-                        avatarId = updateCurrentUserProfileDto.avatarId ?: user.avatarId
-                    )
-                publicUserRepository.save(updatedUser)
-            }
+
+        if (updateCurrentUserProfileDto.name != null && updateCurrentUserProfileDto.name!!.length < 5) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Username must be minimum 5 characters")
         }
+
+        // how to check if country in list of countries?
+        if (updateCurrentUserProfileDto.country != null &&
+            updateCurrentUserProfileDto.country!!.isEmpty()
+        ) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Country must not be an empty string")
+        }
+
+        if (updateCurrentUserProfileDto.college != null &&
+            updateCurrentUserProfileDto.college!!.isEmpty()
+        ) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "College must not be an empty string")
+        }
+        if (updateCurrentUserProfileDto.avatarId != null &&
+            updateCurrentUserProfileDto.avatarId!! !in 0..19
+        ) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "AvatarId must be between 0 and 19")
+        }
+
         val updatedUser =
             user.copy(
                 name = updateCurrentUserProfileDto.name ?: user.name,
                 country = updateCurrentUserProfileDto.country ?: user.country,
                 college = updateCurrentUserProfileDto.college ?: user.college,
+                avatarId = updateCurrentUserProfileDto.avatarId ?: user.avatarId,
                 tutorialLevel =
                 updateTutorialLevel(
                     updateCurrentUserProfileDto.updateTutorialLevel, user.tutorialLevel

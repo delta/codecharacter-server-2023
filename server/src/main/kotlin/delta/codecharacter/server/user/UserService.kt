@@ -129,6 +129,22 @@ class UserService(
         ) =
             registerUserRequestDto
 
+        if (username.length < 5) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Username must be minimum 5 characters long")
+        }
+        if (name.length < 10) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Name must be minimum 10 characters long")
+        }
+        if (avatarId !in 0..19) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "AvatarId must be between 0 and 19")
+        }
+        if (college.isEmpty()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "College must not be empty")
+        }
+        // how to check if country in list of countries?
+        if (country.isEmpty()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Country must not be empty")
+        }
         if (password != passwordConfirmation) {
             throw CustomException(
                 HttpStatus.BAD_REQUEST, "Password and password confirmation don't match"
