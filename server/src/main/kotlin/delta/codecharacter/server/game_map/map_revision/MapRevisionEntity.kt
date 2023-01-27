@@ -1,5 +1,6 @@
 package delta.codecharacter.server.game_map.map_revision
 
+import delta.codecharacter.dtos.GameMapTypeDto
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import org.springframework.data.mongodb.core.mapping.DocumentReference
@@ -19,6 +20,8 @@ import java.util.UUID
 data class MapRevisionEntity(
     @Id val id: UUID,
     val map: String,
+    val mapImage: String,
+    val mapType: GameMapTypeDto,
     val message: String,
     @DocumentReference(lazy = true) val parentRevision: MapRevisionEntity?,
     val userId: UUID,

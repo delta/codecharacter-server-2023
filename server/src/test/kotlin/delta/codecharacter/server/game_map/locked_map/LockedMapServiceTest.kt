@@ -1,5 +1,6 @@
 package delta.codecharacter.server.game_map.locked_map
 
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.config.DefaultCodeMapConfiguration
 import delta.codecharacter.server.logic.validation.MapValidator
@@ -31,14 +32,18 @@ internal class LockedMapServiceTest {
     @Test
     fun `should return latest map`() {
         val userId = UUID.randomUUID()
-        val lockedMapEntity = LockedMapEntity(map = "map", userId = userId)
+        val lockedMapEntity =
+            LockedMapEntity(
+                map = "map", userId = userId, mapImage = "", mapType = GameMapTypeDto.NORMAL
+            )
 
         every { defaultCodeMapConfiguration.defaultMap } returns "[[0]]"
-        every { lockedMapRepository.findById(userId) } returns Optional.of(lockedMapEntity)
+        every { lockedMapRepository.findByUserIdAndMapType(userId, GameMapTypeDto.NORMAL) } returns
+            Optional.of(lockedMapEntity)
 
         val latestMap = lockedMapService.getLockedMap(userId)
 
-        verify { lockedMapRepository.findById(userId) }
+        verify { lockedMapRepository.findByUserIdAndMapType(userId, GameMapTypeDto.NORMAL) }
         confirmVerified(lockedMapRepository)
         assertNotNull(latestMap)
     }
@@ -46,8 +51,11 @@ internal class LockedMapServiceTest {
     @Test
     fun `should update latest map`() {
         val userId = UUID.randomUUID()
-        val lockedMapEntity = LockedMapEntity(map = "map", userId = userId)
-        val mapDto = UpdateLatestMapRequestDto(map = lockedMapEntity.map)
+        val lockedMapEntity =
+            LockedMapEntity(
+                map = "map", userId = userId, mapType = GameMapTypeDto.NORMAL, mapImage = ""
+            )
+        val mapDto = UpdateLatestMapRequestDto(map = lockedMapEntity.map, mapImage = "")
 
         every { lockedMapRepository.save(any()) } returns lockedMapEntity
         every { mapValidator.validateMap(lockedMapEntity.map) } returns Unit

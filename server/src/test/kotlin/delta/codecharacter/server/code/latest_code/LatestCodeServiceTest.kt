@@ -1,5 +1,6 @@
 package delta.codecharacter.server.code.latest_code
 
+import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.dtos.LanguageDto
 import delta.codecharacter.dtos.UpdateLatestCodeRequestDto
 import delta.codecharacter.server.code.LanguageEnum
@@ -32,16 +33,21 @@ internal class LatestCodeServiceTest {
         val userId = UUID.randomUUID()
         val latestCodeEntity =
             LatestCodeEntity(
-                code = "code", language = LanguageEnum.C, userId = userId, lastSavedAt = Instant.now()
+                code = "code",
+                language = LanguageEnum.C,
+                userId = userId,
+                codeType = CodeTypeDto.NORMAL,
+                lastSavedAt = Instant.now()
             )
 
         every { defaultCodeMapConfiguration.defaultCode } returns "code"
         every { defaultCodeMapConfiguration.defaultLanguage } returns LanguageEnum.C
-        every { latestCodeRepository.findById(userId) } returns Optional.of(latestCodeEntity)
+        every { latestCodeRepository.findFirstByUserIdAndCodeType(userId, CodeTypeDto.NORMAL) } returns
+            Optional.of(latestCodeEntity)
 
-        val latestCode = latestCodeService.getLatestCode(userId)
+        val latestCode = latestCodeService.getLatestCode(userId, CodeTypeDto.NORMAL)
 
-        verify { latestCodeRepository.findById(userId) }
+        verify { latestCodeRepository.findFirstByUserIdAndCodeType(userId, CodeTypeDto.NORMAL) }
         confirmVerified(latestCodeRepository)
         assertNotNull(latestCode)
     }
@@ -51,7 +57,11 @@ internal class LatestCodeServiceTest {
         val userId = UUID.randomUUID()
         val latestCodeEntity =
             LatestCodeEntity(
-                code = "code", language = LanguageEnum.C, userId = userId, lastSavedAt = Instant.now()
+                code = "code",
+                language = LanguageEnum.C,
+                userId = userId,
+                codeType = CodeTypeDto.NORMAL,
+                lastSavedAt = Instant.now()
             )
         val codeDto = UpdateLatestCodeRequestDto(code = latestCodeEntity.code, language = LanguageDto.C)
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import delta.codecharacter.dtos.CreateMapRevisionRequestDto
 import delta.codecharacter.dtos.GameMapDto
 import delta.codecharacter.dtos.GameMapRevisionDto
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.TestAttributes
 import delta.codecharacter.server.WithMockCustomUser
@@ -49,7 +50,10 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
     fun `should create map revision`() {
 
         val validMap = mapper.writeValueAsString(List(64) { List(64) { 0 } })
-        val dto = CreateMapRevisionRequestDto(map = validMap, message = "message")
+        val dto =
+            CreateMapRevisionRequestDto(
+                map = validMap, message = "message", mapImage = "", mapType = GameMapTypeDto.NORMAL
+            )
 
         mockMvc
             .post("/user/map/revisions") {
@@ -74,6 +78,8 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
                 id = UUID.randomUUID(),
                 map = "map",
                 message = "message",
+                mapImage = "",
+                mapType = GameMapTypeDto.NORMAL,
                 userId = TestAttributes.user.id,
                 parentRevision = null,
                 createdAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
@@ -86,6 +92,8 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
                     id = mapRevisionEntity.id,
                     map = mapRevisionEntity.map,
                     message = "message",
+                    mapType = GameMapTypeDto.NORMAL,
+                    mapImage = "",
                     createdAt = mapRevisionEntity.createdAt
                 )
             )
@@ -103,12 +111,19 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
             LatestMapEntity(
                 userId = TestAttributes.user.id,
                 map = "map",
+                mapImage = "",
+                mapType = GameMapTypeDto.NORMAL,
                 lastSavedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
         mongoTemplate.insert<LatestMapEntity>(latestMapEntity)
 
         val expectedDto =
-            GameMapDto(map = latestMapEntity.map, lastSavedAt = latestMapEntity.lastSavedAt)
+            GameMapDto(
+                map = latestMapEntity.map,
+                lastSavedAt = latestMapEntity.lastSavedAt,
+                mapType = GameMapTypeDto.NORMAL,
+                mapImage = ""
+            )
 
         mockMvc.get("/user/map/latest") { contentType = MediaType.APPLICATION_JSON }.andExpect {
             status { is2xxSuccessful() }
@@ -124,12 +139,15 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
             LatestMapEntity(
                 userId = TestAttributes.user.id,
                 map = validMap,
+                mapImage = "",
+                mapType = GameMapTypeDto.NORMAL,
                 lastSavedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
 
         mongoTemplate.insert<LatestMapEntity>(oldMapEntity)
 
-        val dto = UpdateLatestMapRequestDto(map = validMap)
+        val dto =
+            UpdateLatestMapRequestDto(map = validMap, mapImage = "", mapType = GameMapTypeDto.NORMAL)
 
         mockMvc
             .post("/user/map/latest") {
@@ -151,11 +169,16 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
             LatestMapEntity(
                 userId = TestAttributes.user.id,
                 map = validMap,
+                mapImage = "",
+                mapType = GameMapTypeDto.NORMAL,
                 lastSavedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
         mongoTemplate.insert<LatestMapEntity>(oldMapEntity)
 
-        val dto = UpdateLatestMapRequestDto(map = validMap, lock = true)
+        val dto =
+            UpdateLatestMapRequestDto(
+                map = validMap, lock = true, mapImage = "", mapType = GameMapTypeDto.NORMAL
+            )
 
         mockMvc
             .post("/user/map/latest") {

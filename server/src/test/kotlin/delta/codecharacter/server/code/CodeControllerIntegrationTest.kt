@@ -3,6 +3,7 @@ package delta.codecharacter.server.code
 import com.fasterxml.jackson.databind.ObjectMapper
 import delta.codecharacter.dtos.CodeDto
 import delta.codecharacter.dtos.CodeRevisionDto
+import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.dtos.CreateCodeRevisionRequestDto
 import delta.codecharacter.dtos.LanguageDto
 import delta.codecharacter.dtos.UpdateLatestCodeRequestDto
@@ -79,6 +80,7 @@ internal class CodeControllerIntegrationTest(@Autowired val mockMvc: MockMvc) {
                 message = "message",
                 language = LanguageEnum.CPP,
                 userId = TestAttributes.user.id,
+                codeType = CodeTypeDto.NORMAL,
                 parentRevision = null,
                 createdAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
@@ -91,6 +93,7 @@ internal class CodeControllerIntegrationTest(@Autowired val mockMvc: MockMvc) {
                     code = codeRevisionEntity.code,
                     message = codeRevisionEntity.message,
                     language = LanguageDto.CPP,
+                    codeType = codeRevisionEntity.codeType,
                     createdAt = codeRevisionEntity.createdAt
                 )
             )
@@ -109,6 +112,7 @@ internal class CodeControllerIntegrationTest(@Autowired val mockMvc: MockMvc) {
                 userId = TestAttributes.user.id,
                 code = "code",
                 language = LanguageEnum.CPP,
+                codeType = CodeTypeDto.NORMAL,
                 lastSavedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
         mongoTemplate.insert<LatestCodeEntity>(latestCodeEntity)
@@ -117,6 +121,7 @@ internal class CodeControllerIntegrationTest(@Autowired val mockMvc: MockMvc) {
             CodeDto(
                 code = latestCodeEntity.code,
                 language = LanguageDto.CPP,
+                codeType = latestCodeEntity.codeType,
                 lastSavedAt = latestCodeEntity.lastSavedAt
             )
 
@@ -134,11 +139,15 @@ internal class CodeControllerIntegrationTest(@Autowired val mockMvc: MockMvc) {
                 userId = TestAttributes.user.id,
                 code = "#include <iostream>",
                 language = LanguageEnum.CPP,
+                codeType = CodeTypeDto.NORMAL,
                 lastSavedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
         mongoTemplate.insert<LatestCodeEntity>(oldCodeEntity)
 
-        val dto = UpdateLatestCodeRequestDto(code = "import sys", language = LanguageDto.PYTHON)
+        val dto =
+            UpdateLatestCodeRequestDto(
+                code = "import sys", language = LanguageDto.PYTHON, codeType = CodeTypeDto.NORMAL
+            )
         mockMvc
             .post("/user/code/latest") {
                 content = mapper.writeValueAsString(dto)
@@ -160,12 +169,18 @@ internal class CodeControllerIntegrationTest(@Autowired val mockMvc: MockMvc) {
                 userId = TestAttributes.user.id,
                 code = "#include <iostream>",
                 language = LanguageEnum.CPP,
+                codeType = CodeTypeDto.NORMAL,
                 lastSavedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS)
             )
         mongoTemplate.insert<LatestCodeEntity>(oldCodeEntity)
 
         val dto =
-            UpdateLatestCodeRequestDto(code = "import sys", language = LanguageDto.PYTHON, lock = true)
+            UpdateLatestCodeRequestDto(
+                code = "import sys",
+                language = LanguageDto.PYTHON,
+                lock = true,
+                codeType = CodeTypeDto.NORMAL
+            )
 
         mockMvc
             .post("/user/code/latest") {

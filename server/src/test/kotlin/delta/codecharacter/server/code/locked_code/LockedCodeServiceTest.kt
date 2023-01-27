@@ -1,5 +1,6 @@
 package delta.codecharacter.server.code.locked_code
 
+import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.dtos.LanguageDto
 import delta.codecharacter.dtos.UpdateLatestCodeRequestDto
 import delta.codecharacter.server.code.LanguageEnum
@@ -30,15 +31,21 @@ internal class LockedCodeServiceTest {
     fun `should return latest code`() {
         val userId = UUID.randomUUID()
         val lockedCodeEntity =
-            LockedCodeEntity(code = "code", language = LanguageEnum.C, userId = userId)
+            LockedCodeEntity(
+                code = "code",
+                language = LanguageEnum.C,
+                codeType = CodeTypeDto.NORMAL,
+                userId = userId
+            )
 
         every { defaultCodeMapConfiguration.defaultCode } returns "code"
         every { defaultCodeMapConfiguration.defaultLanguage } returns LanguageEnum.C
-        every { lockedCodeRepository.findById(userId) } returns Optional.of(lockedCodeEntity)
+        every { lockedCodeRepository.findFirstByUserIdAndCodeType(userId, CodeTypeDto.NORMAL) } returns
+            Optional.of(lockedCodeEntity)
 
         val latestCode = lockedCodeService.getLockedCode(userId)
 
-        verify { lockedCodeRepository.findById(userId) }
+        verify { lockedCodeRepository.findFirstByUserIdAndCodeType(userId, CodeTypeDto.NORMAL) }
         confirmVerified(lockedCodeRepository)
         assertNotNull(latestCode)
     }
@@ -47,7 +54,12 @@ internal class LockedCodeServiceTest {
     fun `should update latest code`() {
         val userId = UUID.randomUUID()
         val lockedCodeEntity =
-            LockedCodeEntity(code = "code", language = LanguageEnum.C, userId = userId)
+            LockedCodeEntity(
+                code = "code",
+                language = LanguageEnum.C,
+                userId = userId,
+                codeType = CodeTypeDto.NORMAL
+            )
         val codeDto = UpdateLatestCodeRequestDto(code = lockedCodeEntity.code, language = LanguageDto.C)
 
         every { lockedCodeRepository.save(any()) } returns lockedCodeEntity

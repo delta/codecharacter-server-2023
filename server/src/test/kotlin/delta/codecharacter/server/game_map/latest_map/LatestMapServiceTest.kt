@@ -1,5 +1,6 @@
 package delta.codecharacter.server.game_map.latest_map
 
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.config.DefaultCodeMapConfiguration
 import delta.codecharacter.server.logic.validation.MapValidator
@@ -33,14 +34,21 @@ internal class LatestMapServiceTest {
     fun `should return latest map`() {
         val userId = UUID.randomUUID()
         val latestMapEntity =
-            LatestMapEntity(map = "[[0]]", userId = userId, lastSavedAt = Instant.now())
+            LatestMapEntity(
+                map = "[[0]]",
+                userId = userId,
+                mapType = GameMapTypeDto.NORMAL,
+                mapImage = "",
+                lastSavedAt = Instant.now()
+            )
 
         every { defaultCodeMapConfiguration.defaultMap } returns "[[0]]"
-        every { latestMapRepository.findById(userId) } returns Optional.of(latestMapEntity)
+        every { latestMapRepository.findByUserIdAndMapType(userId, GameMapTypeDto.NORMAL) } returns
+            Optional.of(latestMapEntity)
 
         val latestMap = latestMapService.getLatestMap(userId)
 
-        verify { latestMapRepository.findById(userId) }
+        verify { latestMapRepository.findByUserIdAndMapType(userId, GameMapTypeDto.NORMAL) }
         confirmVerified(latestMapRepository)
         assertNotNull(latestMap)
     }
@@ -49,8 +57,14 @@ internal class LatestMapServiceTest {
     fun `should update latest map`() {
         val userId = UUID.randomUUID()
         val latestMapEntity =
-            LatestMapEntity(map = "[[0]]", userId = userId, lastSavedAt = Instant.now())
-        val mapDto = UpdateLatestMapRequestDto(map = latestMapEntity.map)
+            LatestMapEntity(
+                map = "[[0]]",
+                userId = userId,
+                mapType = GameMapTypeDto.NORMAL,
+                mapImage = "",
+                lastSavedAt = Instant.now()
+            )
+        val mapDto = UpdateLatestMapRequestDto(map = latestMapEntity.map, mapImage = "")
 
         every { latestMapRepository.save(any()) } returns latestMapEntity
         every { mapValidator.validateMap(latestMapEntity.map) } returns Unit

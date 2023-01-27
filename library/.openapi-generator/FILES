@@ -14,6 +14,7 @@ src/main/kotlin/delta/codecharacter/dtos/AuthStatusResponseDto.kt
 src/main/kotlin/delta/codecharacter/dtos/ChallengeTypeDto.kt
 src/main/kotlin/delta/codecharacter/dtos/CodeDto.kt
 src/main/kotlin/delta/codecharacter/dtos/CodeRevisionDto.kt
+src/main/kotlin/delta/codecharacter/dtos/CodeTypeDto.kt
 src/main/kotlin/delta/codecharacter/dtos/CompleteProfileRequestDto.kt
 src/main/kotlin/delta/codecharacter/dtos/CreateCodeRevisionRequestDto.kt
 src/main/kotlin/delta/codecharacter/dtos/CreateMapRevisionRequestDto.kt
@@ -26,6 +27,7 @@ src/main/kotlin/delta/codecharacter/dtos/ForgotPasswordRequestDto.kt
 src/main/kotlin/delta/codecharacter/dtos/GameDto.kt
 src/main/kotlin/delta/codecharacter/dtos/GameMapDto.kt
 src/main/kotlin/delta/codecharacter/dtos/GameMapRevisionDto.kt
+src/main/kotlin/delta/codecharacter/dtos/GameMapTypeDto.kt
 src/main/kotlin/delta/codecharacter/dtos/GameStatusDto.kt
 src/main/kotlin/delta/codecharacter/dtos/GenericErrorDto.kt
 src/main/kotlin/delta/codecharacter/dtos/LanguageDto.kt

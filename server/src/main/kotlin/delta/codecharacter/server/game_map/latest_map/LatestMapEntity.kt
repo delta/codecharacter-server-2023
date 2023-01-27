@@ -1,5 +1,6 @@
 package delta.codecharacter.server.game_map.latest_map
 
+import delta.codecharacter.dtos.GameMapTypeDto
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
 import java.time.Instant
@@ -16,5 +17,7 @@ import java.util.UUID
 data class LatestMapEntity(
     @Id val userId: UUID,
     val map: String,
+    val mapType: GameMapTypeDto,
+    val mapImage: String,
     val lastSavedAt: Instant,
 )

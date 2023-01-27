@@ -8,6 +8,7 @@ package delta.codecharacter.core
 import delta.codecharacter.dtos.CreateMapRevisionRequestDto
 import delta.codecharacter.dtos.GameMapDto
 import delta.codecharacter.dtos.GameMapRevisionDto
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.GenericErrorDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import io.swagger.v3.oas.annotations.*
@@ -77,7 +78,7 @@ interface MapApi {
             value = ["/user/map/latest"],
             produces = ["application/json"]
     )
-    fun getLatestMap(): ResponseEntity<GameMapDto> {
+    fun getLatestMap(@Parameter(description = "map type", schema = Schema(allowableValues = ["NORMAL", "DAILY_CHALLENGE"], defaultValue = "NORMAL")) @Valid @RequestParam(value = "type", required = false, defaultValue = "NORMAL") type: GameMapTypeDto): ResponseEntity<GameMapDto> {
         return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
     }
 
@@ -96,7 +97,7 @@ interface MapApi {
             value = ["/user/map/revisions"],
             produces = ["application/json"]
     )
-    fun getMapRevisions(): ResponseEntity<List<GameMapRevisionDto>> {
+    fun getMapRevisions(@Parameter(description = "map type", schema = Schema(allowableValues = ["NORMAL", "DAILY_CHALLENGE"], defaultValue = "NORMAL")) @Valid @RequestParam(value = "type", required = false, defaultValue = "NORMAL") type: GameMapTypeDto): ResponseEntity<List<GameMapRevisionDto>> {
         return ResponseEntity(HttpStatus.NOT_IMPLEMENTED)
     }
 

@@ -4,6 +4,7 @@ import delta.codecharacter.core.MapApi
 import delta.codecharacter.dtos.CreateMapRevisionRequestDto
 import delta.codecharacter.dtos.GameMapDto
 import delta.codecharacter.dtos.GameMapRevisionDto
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.game_map.latest_map.LatestMapService
 import delta.codecharacter.server.game_map.locked_map.LockedMapService
@@ -32,17 +33,16 @@ class GameMapController(
     }
 
     @Secured(value = ["ROLE_USER"])
-    override fun getMapRevisions(): ResponseEntity<List<GameMapRevisionDto>> {
+    override fun getLatestMap(type: GameMapTypeDto): ResponseEntity<GameMapDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as UserEntity
-        return ResponseEntity.ok(mapRevisionService.getMapRevisions(user.id))
+        return ResponseEntity.ok(latestMapService.getLatestMap(user.id, type))
     }
 
     @Secured(value = ["ROLE_USER"])
-    override fun getLatestMap(): ResponseEntity<GameMapDto> {
+    override fun getMapRevisions(type: GameMapTypeDto): ResponseEntity<List<GameMapRevisionDto>> {
         val user = SecurityContextHolder.getContext().authentication.principal as UserEntity
-        return ResponseEntity.ok(latestMapService.getLatestMap(user.id))
+        return ResponseEntity.ok(mapRevisionService.getMapRevisions(user.id, type))
     }
-
     @Secured(value = ["ROLE_USER"])
     override fun updateLatestMap(
         updateLatestMapRequestDto: UpdateLatestMapRequestDto

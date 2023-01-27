@@ -1,7 +1,15 @@
 package delta.codecharacter.server.match
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import delta.codecharacter.dtos.*
+import delta.codecharacter.dtos.ChallengeTypeDto
+import delta.codecharacter.dtos.CreateMatchRequestDto
+import delta.codecharacter.dtos.DailyChallengeMatchRequestDto
+import delta.codecharacter.dtos.GameDto
+import delta.codecharacter.dtos.GameStatusDto
+import delta.codecharacter.dtos.MatchDto
+import delta.codecharacter.dtos.MatchModeDto
+import delta.codecharacter.dtos.PublicUserDto
+import delta.codecharacter.dtos.VerdictDto
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.code.code_revision.CodeRevisionService
 import delta.codecharacter.server.code.latest_code.LatestCodeService
@@ -29,7 +37,6 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Instant
 import java.util.UUID
-import javax.swing.LookAndFeel
 
 @Service
 class MatchService(
@@ -133,22 +140,22 @@ class MatchService(
         gameService.sendGameRequest(game2, opponentCode, opponentLanguage, userMap)
     }
 
-    fun createDCMatch(userId: UUID,dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto){
-        val (_,chall,challType,_,completionStatus) = dailyChallengeService.getDailyChallengeByDate()
-        val (value  , _) = dailyChallengeMatchRequestDto
-        if (completionStatus!=null && completionStatus){
-            throw CustomException(HttpStatus.ACCEPTED,"You have already completed your daily Challenge")
+    fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
+        val (_, chall, challType, _, completionStatus) = dailyChallengeService.getDailyChallengeByDate()
+        val (value, _) = dailyChallengeMatchRequestDto
+        if (completionStatus != null && completionStatus) {
+            throw CustomException(HttpStatus.ACCEPTED, "You have already completed your daily Challenge")
         }
-        val language : LanguageEnum
-        val map : String
-        val code : String
-        when(challType){
-            ChallengeTypeDto.CODE->{
+        val language: LanguageEnum
+        val map: String
+        val code: String
+        when (challType) {
+            ChallengeTypeDto.CODE -> {
                 code = chall
                 language = LanguageEnum.CPP
                 map = value
             }
-            ChallengeTypeDto.MAP->{
+            ChallengeTypeDto.MAP -> {
                 map = chall
                 language = LanguageEnum.valueOf(dailyChallengeMatchRequestDto.language.toString())
                 code = value
@@ -156,15 +163,15 @@ class MatchService(
         }
         val matchId = UUID.randomUUID()
         val game = gameService.createGame(matchId)
-        val match = DailyChallengeMatchEntity(
-            id = matchId,
-            verdict = DailyChallengeMatchVerdictEnum.STARTED,
-            createdAt = Instant.now(),
-            game = game
-        )
+        val match =
+            DailyChallengeMatchEntity(
+                id = matchId,
+                verdict = DailyChallengeMatchVerdictEnum.STARTED,
+                createdAt = Instant.now(),
+                game = game
+            )
         dailyChallengeMatchRepository.save(match)
-        gameService.sendGameRequest(game,code,language,map)
-
+        gameService.sendGameRequest(game, code, language, map)
     }
     fun createMatch(userId: UUID, createMatchRequestDto: CreateMatchRequestDto) {
         when (createMatchRequestDto.mode) {
@@ -235,7 +242,7 @@ class MatchService(
     fun receiveGameResult(gameStatusUpdateJson: String) {
         val updatedGame = gameService.updateGameStatus(gameStatusUpdateJson)
         val matchId = updatedGame.matchId
-        if(matchRepository.findById(matchId).isPresent) {
+        if (matchRepository.findById(matchId).isPresent) {
             val match = matchRepository.findById(updatedGame.matchId).get()
             if (match.mode != MatchModeEnum.AUTO && match.games.first().id == updatedGame.id) {
                 simpMessagingTemplate.convertAndSend(
@@ -268,11 +275,7 @@ class MatchService(
                     )
                 val finishedMatch = match.copy(verdict = verdict)
                 val (newUserRating, newOpponentRating) =
-                    ratingHistoryService.updateRating(
-                        match.player1.userId,
-                        match.player2.userId,
-                        verdict
-                    )
+                    ratingHistoryService.updateRating(match.player1.userId, match.player2.userId, verdict)
 
                 publicUserService.updatePublicRating(
                     userId = match.player1.userId,
@@ -292,18 +295,18 @@ class MatchService(
                         match.player1.userId,
                         "Match Result",
                         "${
-                            when (verdict) {
-                                MatchVerdictEnum.PLAYER1 -> "Won"
-                                MatchVerdictEnum.PLAYER2 -> "Lost"
-                                MatchVerdictEnum.TIE -> "Tied"
-                            }
+                        when (verdict) {
+                            MatchVerdictEnum.PLAYER1 -> "Won"
+                            MatchVerdictEnum.PLAYER2 -> "Lost"
+                            MatchVerdictEnum.TIE -> "Tied"
+                        }
                         } against ${match.player2.username}",
                     )
                 }
 
                 matchRepository.save(finishedMatch)
             }
-        }else if (dailyChallengeMatchRepository.findById(matchId).isPresent){
+        } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {
             println(updatedGame.destruction)
             println(updatedGame.matchId)
         }

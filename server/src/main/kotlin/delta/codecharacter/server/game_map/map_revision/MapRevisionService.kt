@@ -2,6 +2,7 @@ package delta.codecharacter.server.game_map.map_revision
 
 import delta.codecharacter.dtos.CreateMapRevisionRequestDto
 import delta.codecharacter.dtos.GameMapRevisionDto
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.server.logic.validation.MapValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -16,14 +17,20 @@ class MapRevisionService(
 ) {
 
     fun createMapRevision(userId: UUID, createMapRevisionRequestDto: CreateMapRevisionRequestDto) {
-        val (map, message) = createMapRevisionRequestDto
+        val (map, _, message, mapType) = createMapRevisionRequestDto
         mapValidator.validateMap(map)
         val parentCodeRevision =
-            mapRevisionRepository.findFirstByUserIdOrderByCreatedAtDesc(userId).orElse(null)
+            mapRevisionRepository
+                .findFirstByUserIdAndMapTypeOrderByCreatedAtDesc(
+                    userId, mapType ?: GameMapTypeDto.NORMAL
+                )
+                .orElse(null)
         mapRevisionRepository.save(
             MapRevisionEntity(
                 id = UUID.randomUUID(),
                 map = map,
+                mapType = mapType ?: GameMapTypeDto.NORMAL,
+                mapImage = createMapRevisionRequestDto.mapImage,
                 message = message,
                 userId = userId,
                 parentRevision = parentCodeRevision,
@@ -32,15 +39,23 @@ class MapRevisionService(
         )
     }
 
-    fun getMapRevisions(userId: UUID): List<GameMapRevisionDto> {
-        return mapRevisionRepository.findAllByUserIdOrderByCreatedAtDesc(userId).map {
-            GameMapRevisionDto(
-                id = it.id,
-                map = it.map,
-                message = it.message,
-                parentRevision = it.parentRevision?.id,
-                createdAt = it.createdAt
-            )
-        }
+    fun getMapRevisions(
+        userId: UUID,
+        mapType: GameMapTypeDto? = GameMapTypeDto.NORMAL
+    ): List<GameMapRevisionDto> {
+        return mapRevisionRepository.findAllByUserIdAndMapTypeOrderByCreatedAtDesc(
+            userId, mapType ?: GameMapTypeDto.NORMAL
+        )
+            .map {
+                GameMapRevisionDto(
+                    id = it.id,
+                    map = it.map,
+                    mapType = it.mapType,
+                    mapImage = it.mapImage,
+                    message = it.message,
+                    parentRevision = it.parentRevision?.id,
+                    createdAt = it.createdAt
+                )
+            }
     }
 }

@@ -8,10 +8,9 @@ import java.time.Instant
 import java.util.UUID
 
 @Document(collation = "daily_challenge_match")
-
 data class DailyChallengeMatchEntity(
-    @Id val id : UUID,
-    @DocumentReference(lazy = true) val game : GameEntity,
+    @Id val id: UUID,
+    @DocumentReference(lazy = true) val game: GameEntity,
     val verdict: DailyChallengeMatchVerdictEnum,
-    val createdAt:Instant
+    val createdAt: Instant
 )

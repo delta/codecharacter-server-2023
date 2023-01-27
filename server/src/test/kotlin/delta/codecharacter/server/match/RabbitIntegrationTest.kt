@@ -1,7 +1,9 @@
 package delta.codecharacter.server.match
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.dtos.CreateMatchRequestDto
+import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.MatchModeDto
 import delta.codecharacter.server.TestAttributes
 import delta.codecharacter.server.WithMockCustomUser
@@ -76,6 +78,7 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
                     id = UUID.randomUUID(),
                     userId = TestAttributes.user.id,
                     code = "code",
+                    codeType = CodeTypeDto.NORMAL,
                     message = "message",
                     language = LanguageEnum.PYTHON,
                     createdAt = Instant.now(),
@@ -89,6 +92,8 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
                     id = UUID.randomUUID(),
                     userId = TestAttributes.user.id,
                     map = "map",
+                    mapType = GameMapTypeDto.NORMAL,
+                    mapImage = "",
                     message = "message",
                     createdAt = Instant.now(),
                     parentRevision = null
@@ -151,6 +156,7 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
                 LockedCodeEntity(
                     userId = TestAttributes.user.id,
                     code = "user-code",
+                    codeType = CodeTypeDto.NORMAL,
                     language = LanguageEnum.PYTHON,
                 )
             )
@@ -158,6 +164,8 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
             mongoTemplate.save(
                 LockedMapEntity(
                     userId = TestAttributes.user.id,
+                    mapImage = "",
+                    mapType = GameMapTypeDto.NORMAL,
                     map = "user-map",
                 )
             )
@@ -167,6 +175,7 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
                 LockedCodeEntity(
                     userId = opponentUser.id,
                     code = "opponent-code",
+                    codeType = CodeTypeDto.NORMAL,
                     language = LanguageEnum.PYTHON,
                 )
             )
@@ -174,6 +183,8 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
             mongoTemplate.save(
                 LockedMapEntity(
                     userId = opponentUser.id,
+                    mapType = GameMapTypeDto.NORMAL,
+                    mapImage = "",
                     map = "opponent-map",
                 )
             )

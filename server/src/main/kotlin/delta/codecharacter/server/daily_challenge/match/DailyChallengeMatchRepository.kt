@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-interface DailyChallengeMatchRepository : MongoRepository<DailyChallengeMatchEntity,UUID> {
-}
+interface DailyChallengeMatchRepository : MongoRepository<DailyChallengeMatchEntity, UUID>

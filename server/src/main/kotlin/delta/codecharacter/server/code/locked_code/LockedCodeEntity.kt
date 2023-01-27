@@ -1,5 +1,6 @@
 package delta.codecharacter.server.code.locked_code
 
+import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.server.code.LanguageEnum
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
@@ -13,4 +14,9 @@ import java.util.UUID
  * @param language
  */
 @Document(collection = "locked_code")
-data class LockedCodeEntity(@Id val userId: UUID, val code: String, val language: LanguageEnum)
+data class LockedCodeEntity(
+    @Id val userId: UUID,
+    val code: String,
+    val codeType: CodeTypeDto,
+    val language: LanguageEnum
+)
