@@ -9,6 +9,7 @@ import delta.codecharacter.dtos.GameStatusDto
 import delta.codecharacter.dtos.MatchDto
 import delta.codecharacter.dtos.MatchModeDto
 import delta.codecharacter.dtos.PublicUserDto
+import delta.codecharacter.dtos.TierTypeDto
 import delta.codecharacter.dtos.VerdictDto
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.code.code_revision.CodeRevisionService
@@ -211,6 +212,7 @@ class MatchService(
                 PublicUserDto(
                     username = matchEntity.player1.username,
                     name = matchEntity.player1.name,
+                    tier = TierTypeDto.valueOf(matchEntity.player1.tier.name),
                     country = matchEntity.player1.country,
                     college = matchEntity.player1.college,
                     avatarId = matchEntity.player1.avatarId,
@@ -219,6 +221,7 @@ class MatchService(
                 PublicUserDto(
                     username = matchEntity.player2.username,
                     name = matchEntity.player2.name,
+                    tier = TierTypeDto.valueOf(matchEntity.player2.tier.name),
                     country = matchEntity.player2.country,
                     college = matchEntity.player2.college,
                     avatarId = matchEntity.player2.avatarId,

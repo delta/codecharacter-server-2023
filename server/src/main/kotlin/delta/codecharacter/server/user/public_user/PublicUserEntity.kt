@@ -1,5 +1,6 @@
 package delta.codecharacter.server.user.public_user
 
+import delta.codecharacter.server.leaderboard.LeaderBoardEnum
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed
 import org.springframework.data.mongodb.core.mapping.Document
@@ -13,6 +14,7 @@ data class PublicUserEntity(
     val country: String,
     val college: String,
     val avatarId: Int,
+    val tier: LeaderBoardEnum,
     val tutorialLevel: Int,
     val rating: Double,
     val wins: Int,

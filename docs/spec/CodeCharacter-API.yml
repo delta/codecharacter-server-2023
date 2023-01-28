@@ -296,6 +296,11 @@ paths:
           in: query
           name: size
           description: Size of the page
+        - schema:
+            $ref: '#/components/schemas/TierType'
+          in: query
+          name: tier
+          description: Leaderboard Tier
       description: Get leaderboard
     parameters: []
   /top-matches:
@@ -529,6 +534,7 @@ paths:
                     college: NITT
                     avatarId: 1
                     tutorialLevel: 2
+                    tier: TIER1
                     isProfileComplete: true
                     isTutorialComplete: true
         '401':
@@ -1197,10 +1203,6 @@ paths:
   '/dc/leaderboard':
     get:
       summary: Get Daily Challenges Leaderboard
-      description: Get Leaderboard for daily challenges
-      operationId: getDailyChallengeLeaderBoard
-      tags:
-        - Daily Challenges
       responses:
         '200':
           description: OK
@@ -1216,6 +1218,10 @@ paths:
           description: Forbidden
         '404':
           description: Not Found
+      description: Get Leaderboard for daily challenges
+      operationId: getDailyChallengeLeaderBoard
+      tags:
+        - Daily Challenges
       parameters:
         - schema:
             type: integer
@@ -1368,6 +1374,8 @@ components:
         country:
           type: string
           example: IN
+        tier:
+          $ref: '#/components/schemas/TierType'
         college:
           type: string
           example: Test
@@ -1377,6 +1385,7 @@ components:
       required:
         - username
         - name
+        - tier
         - country
         - college
         - avatarId
@@ -1691,6 +1700,8 @@ components:
         tutorialLevel:
           type: integer
           example: 1
+        tier:
+          $ref: '#/components/schemas/TierType'
         isProfileComplete:
           type: boolean
           default: false
@@ -2040,6 +2051,15 @@ components:
         - NORMAL
         - DAILY_CHALLENGE
       default: NORMAL
+    TierType:
+      title: TierType
+      type: string
+      enum:
+        - TIER_PRACTICE
+        - TIER1
+        - TIER2
+        - TIER3
+        - TIER4
   securitySchemes:
     oauth2-google:
       type: oauth2
