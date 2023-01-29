@@ -32,6 +32,7 @@ src/main/kotlin/delta/codecharacter/dtos/GameStatusDto.kt
 src/main/kotlin/delta/codecharacter/dtos/GenericErrorDto.kt
 src/main/kotlin/delta/codecharacter/dtos/LanguageDto.kt
 src/main/kotlin/delta/codecharacter/dtos/LeaderboardEntryDto.kt
+src/main/kotlin/delta/codecharacter/dtos/MapCommitByCommitIdResponseDto.kt
 src/main/kotlin/delta/codecharacter/dtos/MatchDto.kt
 src/main/kotlin/delta/codecharacter/dtos/MatchModeDto.kt
 src/main/kotlin/delta/codecharacter/dtos/NotificationDto.kt

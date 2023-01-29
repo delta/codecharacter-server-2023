@@ -5,6 +5,7 @@ import delta.codecharacter.dtos.CreateMapRevisionRequestDto
 import delta.codecharacter.dtos.GameMapDto
 import delta.codecharacter.dtos.GameMapRevisionDto
 import delta.codecharacter.dtos.GameMapTypeDto
+import delta.codecharacter.dtos.MapCommitByCommitIdResponseDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.game_map.latest_map.LatestMapService
 import delta.codecharacter.server.game_map.locked_map.LockedMapService
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.annotation.Secured
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 @RestController
 class GameMapController(
@@ -53,5 +55,13 @@ class GameMapController(
             lockedMapService.updateLockedMap(user.id, updateLatestMapRequestDto)
         }
         return ResponseEntity.ok().build()
+    }
+
+    @Secured(value = ["ROLE_USER"])
+    override fun getMapByCommitID(commitId: UUID): ResponseEntity<MapCommitByCommitIdResponseDto> {
+        val user = SecurityContextHolder.getContext().authentication.principal as UserEntity
+        return ResponseEntity.ok(
+            mapRevisionService.getMapRevisionByCommitId(user.id, commitId = commitId)
+        )
     }
 }

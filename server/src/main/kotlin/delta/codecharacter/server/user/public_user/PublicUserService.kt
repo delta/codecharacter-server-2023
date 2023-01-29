@@ -46,7 +46,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 ties = 0,
                 score = 0.0,
                 tier = LeaderBoardEnum.TIER_PRACTICE,
-                challengesCompleted = null,
+                isDailyChallengeCompleted = false,
                 tutorialLevel = 1,
             )
         publicUserRepository.save(publicUser)
@@ -182,5 +182,13 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun isUsernameUnique(username: String): Boolean {
         return publicUserRepository.findByUsername(username).isEmpty
+    }
+
+    fun updateIsDailyChallengeComplete() {
+        val users = publicUserRepository.findAll()
+        users.forEach { user ->
+            val updatedUser = user.copy(isDailyChallengeCompleted = false)
+            publicUserRepository.save(updatedUser)
+        }
     }
 }

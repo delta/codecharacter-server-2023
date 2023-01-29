@@ -936,6 +936,35 @@ paths:
       tags:
         - map
     parameters: []
+  /user/map/revision/{commitId}:
+    get:
+      summary: Get the Map and image of the commit ID
+      tags:
+        - map
+      responses:
+        200:
+          description: OK
+          headers: { }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MapCommitByCommitIdResponse'
+              examples:
+                Example:
+                  value:
+                    mapImage: 'base-64-string'
+                    map: 0000\n0000\0001\n0000
+        401:
+          description: Unauthorized
+      operationId: getMapByCommitID
+      parameters:
+        - schema:
+            type: string
+            format: uuid
+            example: 123e456-e445b-12d3-a4565-212324
+          in: path
+          required: true
+          name: commitId
   /user/matches:
     get:
       summary: Get user matches
@@ -1603,6 +1632,20 @@ components:
         - map
         - mapImage
         - message
+    MapCommitByCommitIdResponse:
+      title: MapCommitByCommitIdResponse
+      type: object
+      description: Get map image and map by commitId
+      properties:
+        mapImage:
+          type: string
+          example: 'base-64-string'
+        map:
+          type: string
+          example: 0000\n0000\n0001\n0000
+      required:
+        - mapImage
+        - map
     ActivateUserRequest:
       title: ActivateUserRequest
       type: object

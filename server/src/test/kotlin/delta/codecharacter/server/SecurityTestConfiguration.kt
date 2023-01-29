@@ -43,7 +43,7 @@ class TestAttributes {
                 ties = 1,
                 tier = LeaderBoardEnum.TIER_PRACTICE,
                 score = 0.0,
-                challengesCompleted = null,
+                isDailyChallengeCompleted = false,
                 tutorialLevel = 1
             )
     }

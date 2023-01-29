@@ -22,5 +22,5 @@ data class PublicUserEntity(
     val ties: Int,
     val isActivated: Boolean = true,
     val score: Double,
-    val challengesCompleted: Array<String>?
+    val isDailyChallengeCompleted: Boolean = false,
 )

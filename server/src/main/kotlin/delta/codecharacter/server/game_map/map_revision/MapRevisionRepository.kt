@@ -17,4 +17,6 @@ interface MapRevisionRepository : MongoRepository<MapRevisionEntity, UUID> {
         userId: UUID,
         mapType: GameMapTypeDto
     ): Optional<MapRevisionEntity>
+
+    fun findByUserIdAndId(userId: UUID, commitId: UUID): Optional<MapRevisionEntity>
 }
