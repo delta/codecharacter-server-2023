@@ -164,11 +164,13 @@ class MatchService(
         }
         val matchId = UUID.randomUUID()
         val game = gameService.createGame(matchId)
+        val user = publicUserService.getPublicUser(userId)
         val match =
             DailyChallengeMatchEntity(
                 id = matchId,
                 verdict = DailyChallengeMatchVerdictEnum.STARTED,
                 createdAt = Instant.now(),
+                user = user,
                 game = game
             )
         dailyChallengeMatchRepository.save(match)
@@ -312,6 +314,15 @@ class MatchService(
         } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {
             println(updatedGame.destruction)
             println(updatedGame.matchId)
+      /*
+       * Get the DCMatch with help of the matchId
+       * pass the game parameters into the daily-challenge-verdict-algorithm
+       * Game-Parameters :- GameStatus, destruction,coinsUsed
+       * Store the verdict back in verdict in daily-challenge entity
+       * websocket for sending game status /updates/{userId} -> userId from dcMatchEntity
+       * store the finsished DC Match
+       * If verdict-> success make isDailyChallengeComplete-true
+       */
         }
     }
 }
