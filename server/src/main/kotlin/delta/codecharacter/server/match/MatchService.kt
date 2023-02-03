@@ -11,7 +11,6 @@ import delta.codecharacter.dtos.MatchModeDto
 import delta.codecharacter.dtos.PublicUserDto
 import delta.codecharacter.dtos.TierTypeDto
 import delta.codecharacter.dtos.VerdictDto
-import delta.codecharacter.server.code.Code
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.code.code_revision.CodeRevisionService
 import delta.codecharacter.server.code.latest_code.LatestCodeService
@@ -23,6 +22,7 @@ import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchVerdi
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game.GameService
 import delta.codecharacter.server.game.GameStatusEnum
+import delta.codecharacter.server.game.queue.entities.PvpCode
 import delta.codecharacter.server.game_map.latest_map.LatestMapService
 import delta.codecharacter.server.game_map.locked_map.LockedMapService
 import delta.codecharacter.server.game_map.map_revision.MapRevisionService
@@ -144,8 +144,8 @@ class MatchService(
         val (userLanguage, userCode) = lockedCodeService.getLockedCode(userId)
         val (opponentLanguage, opponentCode) = lockedCodeService.getLockedCode(opponentId)
 
-        val userCodeBase = Code(code = userCode, language = userLanguage)
-        val opponentCodeBase = Code(code = opponentCode, language = opponentLanguage)
+        val userCodeBase = PvpCode(code = userCode, language = userLanguage)
+        val opponentCodeBase = PvpCode(code = opponentCode, language = opponentLanguage)
 
         val matchId = UUID.randomUUID()
 
