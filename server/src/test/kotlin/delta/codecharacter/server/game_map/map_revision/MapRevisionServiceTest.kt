@@ -92,7 +92,6 @@ internal class MapRevisionServiceTest {
         confirmVerified(mapRevisionRepository)
         assertThat(mapRevisionDtos.size).isEqualTo(1)
         assertThat(mapRevisionDto.id).isEqualTo(mapRevisionEntity.id)
-        assertThat(mapRevisionDto.mapImage).isEqualTo(mapRevisionEntity.mapImage)
         assertThat(mapRevisionDto.map).isEqualTo(mapRevisionEntity.map)
         assertThat(mapRevisionDto.parentRevision).isEqualTo(mapRevisionEntity.parentRevision?.id)
     }

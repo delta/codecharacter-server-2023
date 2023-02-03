@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema
  * GameMap revision model
  * @param id
  * @param map
- * @param mapImage
  * @param createdAt
  * @param message
  * @param parentRevision
@@ -29,9 +28,6 @@ data class GameMapRevisionDto(
 
     @Schema(example = "0000\n0010\n0100\n1000\n", required = true, description = "")
     @field:JsonProperty("map", required = true) val map: kotlin.String,
-
-    @Schema(example = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII", required = true, description = "")
-    @field:JsonProperty("mapImage", required = true) val mapImage: kotlin.String,
 
     @Schema(example = "null", required = true, description = "")
     @field:JsonProperty("createdAt", required = true) val createdAt: java.time.Instant,

@@ -105,7 +105,7 @@ internal class MatchServiceTest {
         val codeRevision =
             CodeRevisionDto(codeRevisionId, "code", "message", LanguageDto.CPP, Instant.now())
         val mapRevisionId = UUID.randomUUID()
-        val mapRevision = GameMapRevisionDto(mapRevisionId, "map", "", Instant.now(), "message")
+        val mapRevision = GameMapRevisionDto(mapRevisionId, "map", Instant.now(), "message")
 
         val createMatchRequestDto =
             CreateMatchRequestDto(
@@ -132,7 +132,7 @@ internal class MatchServiceTest {
         val codeRevision =
             CodeRevisionDto(codeRevisionId, "code", "message", LanguageDto.CPP, Instant.now())
         val mapRevisionId = UUID.randomUUID()
-        val mapRevision = GameMapRevisionDto(mapRevisionId, "map", "", Instant.now(), "message")
+        val mapRevision = GameMapRevisionDto(mapRevisionId, "map", Instant.now(), "message")
 
         val createMatchRequestDto =
             CreateMatchRequestDto(
@@ -158,7 +158,7 @@ internal class MatchServiceTest {
         val codeRevision =
             CodeRevisionDto(codeRevisionId, "code", "message", LanguageDto.CPP, Instant.now())
         val mapRevisionId = UUID.randomUUID()
-        val mapRevision = GameMapRevisionDto(mapRevisionId, "map", "", Instant.now(), "message")
+        val mapRevision = GameMapRevisionDto(mapRevisionId, "map", Instant.now(), "message")
         val game = mockk<GameEntity>()
 
         val createMatchRequestDto =

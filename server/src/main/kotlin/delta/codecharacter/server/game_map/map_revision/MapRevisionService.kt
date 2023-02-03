@@ -53,7 +53,6 @@ class MapRevisionService(
                 GameMapRevisionDto(
                     id = it.id,
                     map = it.map,
-                    mapImage = it.mapImage,
                     message = it.message,
                     parentRevision = it.parentRevision?.id,
                     createdAt = it.createdAt

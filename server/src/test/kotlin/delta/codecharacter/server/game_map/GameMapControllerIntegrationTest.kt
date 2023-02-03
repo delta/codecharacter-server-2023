@@ -92,7 +92,6 @@ internal class GameMapControllerIntegrationTest(@Autowired val mockMvc: MockMvc)
                     id = mapRevisionEntity.id,
                     map = mapRevisionEntity.map,
                     message = "message",
-                    mapImage = "",
                     createdAt = mapRevisionEntity.createdAt
                 )
             )
