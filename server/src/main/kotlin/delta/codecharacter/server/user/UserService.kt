@@ -139,8 +139,8 @@ class UserService(
             throw CustomException(HttpStatus.BAD_REQUEST, "Username already taken")
         }
 
-        if (!verifyReCaptcha(recaptchaCode))
-            throw CustomException(HttpStatus.BAD_REQUEST, "Invalid ReCaptcha")
+        //        if (!verifyReCaptcha(recaptchaCode))
+        //            throw CustomException(HttpStatus.BAD_REQUEST, "Invalid ReCaptcha")
 
         val userId = UUID.randomUUID()
         try {

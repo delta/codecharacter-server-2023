@@ -2014,6 +2014,7 @@ components:
         - SELF
         - MANUAL
         - AUTO
+        - PVP
       description: Match Mode
     Verdict:
       type: string

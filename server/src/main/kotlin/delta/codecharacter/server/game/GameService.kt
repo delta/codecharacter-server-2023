@@ -2,9 +2,11 @@ package delta.codecharacter.server.game
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import delta.codecharacter.server.code.Code
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game.game_log.GameLogService
+import delta.codecharacter.server.game.queue.entities.GamePvPRequestEntity
 import delta.codecharacter.server.game.queue.entities.GameRequestEntity
 import delta.codecharacter.server.game.queue.entities.GameStatusUpdateEntity
 import delta.codecharacter.server.params.GameParameters
@@ -53,6 +55,16 @@ class GameService(
         rabbitTemplate.convertAndSend("gameRequestQueue", mapper.writeValueAsString(gameRequest))
     }
 
+    fun sendPlayerVsPlayerGameRequest(game: GameEntity, userCodeBase: Code, opponentCodeBase: Code) {
+        val gamePvpRequest =
+            GamePvPRequestEntity(
+                gameId = game.id,
+                playerUser = userCodeBase,
+                playerOpponent = opponentCodeBase,
+                parameters = parameters
+            )
+        rabbitTemplate.convertAndSend("gamePvpRequestQueue", mapper.writeValueAsString(gamePvpRequest))
+    }
     fun updateGameStatus(gameStatusUpdateJson: String): GameEntity {
         val gameStatusUpdateEntity =
             mapper.readValue(gameStatusUpdateJson, GameStatusUpdateEntity::class.java)

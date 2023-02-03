@@ -11,6 +11,7 @@ import delta.codecharacter.dtos.MatchModeDto
 import delta.codecharacter.dtos.PublicUserDto
 import delta.codecharacter.dtos.TierTypeDto
 import delta.codecharacter.dtos.VerdictDto
+import delta.codecharacter.server.code.Code
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.code.code_revision.CodeRevisionService
 import delta.codecharacter.server.code.latest_code.LatestCodeService
@@ -27,6 +28,7 @@ import delta.codecharacter.server.game_map.locked_map.LockedMapService
 import delta.codecharacter.server.game_map.map_revision.MapRevisionService
 import delta.codecharacter.server.logic.verdict.VerdictAlgorithm
 import delta.codecharacter.server.notifications.NotificationService
+import delta.codecharacter.server.user.public_user.PublicUserEntity
 import delta.codecharacter.server.user.public_user.PublicUserService
 import delta.codecharacter.server.user.rating_history.RatingHistoryService
 import org.springframework.amqp.rabbit.annotation.RabbitListener
@@ -104,15 +106,9 @@ class MatchService(
         gameService.sendGameRequest(game, code, LanguageEnum.valueOf(language.name), map)
     }
 
-    fun createDualMatch(userId: UUID, opponentUsername: String) {
-        val publicUser = publicUserService.getPublicUser(userId)
-        val publicOpponent = publicUserService.getPublicUserByUsername(opponentUsername)
+    fun createPlayerVsMapMatch(publicUser: PublicUserEntity, publicOpponent: PublicUserEntity) {
+        val userId = publicUser.userId
         val opponentId = publicOpponent.userId
-
-        if (userId == opponentId) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "You cannot play against yourself")
-        }
-
         val (userLanguage, userCode) = lockedCodeService.getLockedCode(userId)
         val userMap = lockedMapService.getLockedMap(userId)
 
@@ -141,6 +137,54 @@ class MatchService(
         gameService.sendGameRequest(game2, opponentCode, opponentLanguage, userMap)
     }
 
+    fun createPlayerVsPlayerMatch(publicUser: PublicUserEntity, publicOpponent: PublicUserEntity) {
+        val userId = publicUser.userId
+        val opponentId = publicOpponent.userId
+
+        val (userLanguage, userCode) = lockedCodeService.getLockedCode(userId)
+        val (opponentLanguage, opponentCode) = lockedCodeService.getLockedCode(opponentId)
+
+        val userCodeBase = Code(code = userCode, language = userLanguage)
+        val opponentCodeBase = Code(code = opponentCode, language = opponentLanguage)
+
+        val matchId = UUID.randomUUID()
+
+        val game = gameService.createGame(matchId)
+
+        val match =
+            MatchEntity(
+                id = matchId,
+                games = listOf(game),
+                mode = MatchModeEnum.MANUAL,
+                verdict = MatchVerdictEnum.TIE,
+                createdAt = Instant.now(),
+                totalPoints = 0,
+                player1 = publicUser,
+                player2 = publicOpponent,
+            )
+        matchRepository.save(match)
+
+        gameService.sendPlayerVsPlayerGameRequest(game, userCodeBase, opponentCodeBase)
+    }
+    fun createDualMatch(userId: UUID, opponentUsername: String, mode: MatchModeDto) {
+        val publicUser = publicUserService.getPublicUser(userId)
+        val publicOpponent = publicUserService.getPublicUserByUsername(opponentUsername)
+        val opponentId = publicOpponent.userId
+        if (publicUser.userId == opponentId) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "You cannot play against yourself")
+        }
+        when (mode) {
+            MatchModeDto.MANUAL -> {
+                createPlayerVsMapMatch(publicUser, publicOpponent)
+            }
+            MatchModeDto.PVP -> {
+                createPlayerVsPlayerMatch(publicUser, publicOpponent)
+            }
+            else -> {
+                throw CustomException(HttpStatus.BAD_REQUEST, "You selected wrong mode")
+            }
+        }
+    }
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
         val (_, chall, challType, _, completionStatus) = dailyChallengeService.getDailyChallengeByDate()
         val (value, _) = dailyChallengeMatchRequestDto
@@ -182,11 +226,13 @@ class MatchService(
                 val (_, _, mapRevisionId, codeRevisionId) = createMatchRequestDto
                 createSelfMatch(userId, codeRevisionId, mapRevisionId)
             }
-            MatchModeDto.MANUAL, MatchModeDto.AUTO -> {
+            MatchModeDto.MANUAL, MatchModeDto.AUTO, MatchModeDto.PVP -> {
                 if (createMatchRequestDto.opponentUsername == null) {
                     throw CustomException(HttpStatus.BAD_REQUEST, "Opponent ID is required")
                 }
-                createDualMatch(userId, createMatchRequestDto.opponentUsername!!)
+                createDualMatch(
+                    userId, createMatchRequestDto.opponentUsername!!, createMatchRequestDto.mode
+                )
             }
         }
     }
