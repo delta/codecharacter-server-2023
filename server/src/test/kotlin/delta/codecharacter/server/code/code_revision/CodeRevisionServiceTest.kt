@@ -90,7 +90,6 @@ internal class CodeRevisionServiceTest {
         assertThat(codeRevisionDtos.size).isEqualTo(1)
         assertThat(codeRevisionDto.id).isEqualTo(codeRevisionEntity.id)
         assertThat(codeRevisionDto.code).isEqualTo(codeRevisionEntity.code)
-        assertThat(codeRevisionDto.codeType).isEqualTo(codeRevisionEntity.codeType)
         assertThat(codeRevisionDto.language.name).isEqualTo(codeRevisionEntity.language.name)
         assertThat(codeRevisionDto.parentRevision).isEqualTo(codeRevisionEntity.parentRevision?.id)
         assertThat(codeRevisionDto.createdAt).isEqualTo(codeRevisionEntity.createdAt)

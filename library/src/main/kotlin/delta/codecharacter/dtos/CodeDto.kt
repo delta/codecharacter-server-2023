@@ -2,7 +2,6 @@ package delta.codecharacter.dtos
 
 import java.util.Objects
 import com.fasterxml.jackson.annotation.JsonProperty
-import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.dtos.LanguageDto
 import jakarta.validation.constraints.DecimalMax
 import jakarta.validation.constraints.DecimalMin
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 /**
  * Code model
  * @param code
- * @param codeType
  * @param lastSavedAt
  * @param language
  */
@@ -26,10 +24,6 @@ data class CodeDto(
 
     @Schema(example = "#include <iostream>", required = true, description = "")
     @field:JsonProperty("code", required = true) val code: kotlin.String,
-
-    @field:Valid
-    @Schema(example = "null", required = true, description = "")
-    @field:JsonProperty("codeType", required = true) val codeType: CodeTypeDto = CodeTypeDto.NORMAL,
 
     @Schema(example = "2021-01-01T00:00Z", required = true, description = "")
     @field:JsonProperty("lastSavedAt", required = true) val lastSavedAt: java.time.Instant,

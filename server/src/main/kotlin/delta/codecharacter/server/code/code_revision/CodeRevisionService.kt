@@ -47,7 +47,6 @@ class CodeRevisionService(@Autowired private val codeRevisionRepository: CodeRev
                 CodeRevisionDto(
                     id = it.id,
                     code = it.code,
-                    codeType = it.codeType,
                     message = it.message,
                     language = LanguageDto.valueOf(it.language.name),
                     createdAt = it.createdAt,

@@ -12,3 +12,10 @@ data class GameRequestEntity(
     @field:JsonProperty("language", required = true) val language: LanguageEnum,
     @field:JsonProperty("map", required = true) val map: String,
 )
+
+/*
+ * PLayer 1 code -> class(code and language)
+ * Player 2 code ->
+ *
+ *
+ * */

@@ -151,7 +151,7 @@ class MatchService(
         val map: String
         val code: String
         when (challType) {
-            ChallengeTypeDto.CODE -> {
+            ChallengeTypeDto.CODE -> { // code as question and map as answer
                 code = chall
                 language = LanguageEnum.CPP
                 map = value

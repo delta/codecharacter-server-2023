@@ -4,6 +4,7 @@ import delta.codecharacter.dtos.CodeDto
 import delta.codecharacter.dtos.CodeTypeDto
 import delta.codecharacter.dtos.LanguageDto
 import delta.codecharacter.dtos.UpdateLatestCodeRequestDto
+import delta.codecharacter.server.code.Code
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.config.DefaultCodeMapConfiguration
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,39 +20,58 @@ class LatestCodeService(
 ) {
 
     fun getLatestCode(userId: UUID, codeType: CodeTypeDto = CodeTypeDto.NORMAL): CodeDto {
-        val latestCode: CodeDto =
+        val latestCode = HashMap<CodeTypeDto, Code>()
+        latestCode[codeType] = defaultCodeMapConfiguration.defaultLatestCode
+        val code: CodeDto =
             latestCodeRepository
-                .findFirstByUserIdAndCodeType(userId, codeType)
+                .findById(userId)
                 .orElse(
                     LatestCodeEntity(
                         userId = userId,
-                        code = defaultCodeMapConfiguration.defaultCode,
-                        language = defaultCodeMapConfiguration.defaultLanguage,
-                        codeType = codeType,
-                        lastSavedAt = Instant.MIN
+                        latestCode = latestCode,
                     )
                 )
                 .let { code ->
                     CodeDto(
-                        code = code.code,
-                        language = LanguageDto.valueOf(code.language.name),
-                        codeType = code.codeType,
-                        lastSavedAt = code.lastSavedAt,
+                        code = code.latestCode[codeType]?.code.toString(),
+                        language =
+                        LanguageDto.valueOf(code.latestCode[codeType]?.language?.name.toString()),
+                        lastSavedAt = code.latestCode[codeType]?.lastSavedAt ?: Instant.MIN,
                     )
                 }
 
-        return latestCode
+        return code
     }
 
     fun updateLatestCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
-        latestCodeRepository.save(
-            LatestCodeEntity(
+        val latestCode = HashMap<CodeTypeDto, Code>()
+        latestCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =
+            Code(
                 code = updateLatestCodeRequestDto.code,
-                codeType = updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL,
                 language = LanguageEnum.valueOf(updateLatestCodeRequestDto.language.name),
-                userId = userId,
                 lastSavedAt = Instant.now()
             )
-        )
+        if (latestCodeRepository.findById(userId).isEmpty) {
+            latestCodeRepository.save(
+                LatestCodeEntity(
+                    latestCode = latestCode,
+                    userId = userId,
+                )
+            )
+        } else {
+            val code = latestCodeRepository.findById(userId).get()
+            val currentLatestCode = code.latestCode
+            currentLatestCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =
+                Code(
+                    code = updateLatestCodeRequestDto.code,
+                    language = LanguageEnum.valueOf(updateLatestCodeRequestDto.language.name),
+                    lastSavedAt = Instant.now()
+                )
+            val updateCodeEntity =
+                code.copy(
+                    latestCode = currentLatestCode,
+                )
+            latestCodeRepository.save(updateCodeEntity)
+        }
     }
 }
