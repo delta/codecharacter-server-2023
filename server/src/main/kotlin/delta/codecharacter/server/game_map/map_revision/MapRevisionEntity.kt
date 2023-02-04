@@ -12,6 +12,9 @@ import java.util.UUID
  *
  * @param id
  * @param map
+ * @param mapImage
+ * @param mapType
+ * @param message
  * @param parentRevision
  * @param userId
  * @param createdAt

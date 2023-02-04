@@ -13,6 +13,8 @@ import java.util.UUID
  *
  * @param id
  * @param code
+ * @param codeType
+ * @param message
  * @param language
  * @param parentRevision
  * @param userId
