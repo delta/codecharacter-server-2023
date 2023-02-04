@@ -33,7 +33,8 @@ class LatestMapService(
             .let { latestMap ->
                 GameMapDto(
                     map = latestMap.latestMap[mapType]?.map ?: defaultCodeMapConfiguration.defaultMap,
-                    mapImage = latestMap.latestMap[mapType]?.mapImage ?: "",
+                    mapImage = latestMap.latestMap[mapType]?.mapImage
+                        ?: defaultCodeMapConfiguration.defaultMapImage,
                     lastSavedAt = latestMap.latestMap[mapType]?.lastSavedAt ?: Instant.MIN
                 )
             }

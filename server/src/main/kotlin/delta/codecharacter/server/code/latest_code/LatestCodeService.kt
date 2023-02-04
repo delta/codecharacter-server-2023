@@ -33,9 +33,12 @@ class LatestCodeService(
                 )
                 .let { code ->
                     CodeDto(
-                        code = code.latestCode[codeType]?.code.toString(),
+                        code = code.latestCode[codeType]?.code ?: defaultCodeMapConfiguration.defaultCode,
                         language =
-                        LanguageDto.valueOf(code.latestCode[codeType]?.language?.name.toString()),
+                        LanguageDto.valueOf(
+                            code.latestCode[codeType]?.language?.name
+                                ?: defaultCodeMapConfiguration.defaultLanguage.name
+                        ),
                         lastSavedAt = code.latestCode[codeType]?.lastSavedAt ?: Instant.MIN,
                     )
                 }
