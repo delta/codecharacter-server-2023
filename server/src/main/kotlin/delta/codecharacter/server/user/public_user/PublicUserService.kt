@@ -102,26 +102,27 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     fun updateUserProfile(userId: UUID, updateCurrentUserProfileDto: UpdateCurrentUserProfileDto) {
         val user = publicUserRepository.findById(userId).get()
 
-        if (updateCurrentUserProfileDto.name != null && updateCurrentUserProfileDto.name!!.length < 5) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Username must be minimum 5 characters")
+        if (updateCurrentUserProfileDto.name != null &&
+            updateCurrentUserProfileDto.name!!.trim().length < 5
+        ) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Name must be minimum 5 characters")
         }
 
-        // how to check if country in list of countries?
         if (updateCurrentUserProfileDto.country != null &&
-            updateCurrentUserProfileDto.country!!.isEmpty()
+            updateCurrentUserProfileDto.country!!.trim().isEmpty()
         ) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Country must not be an empty string")
+            throw CustomException(HttpStatus.BAD_REQUEST, "Country can not be an empty")
         }
 
         if (updateCurrentUserProfileDto.college != null &&
-            updateCurrentUserProfileDto.college!!.isEmpty()
+            updateCurrentUserProfileDto.college!!.trim().isEmpty()
         ) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "College must not be an empty string")
+            throw CustomException(HttpStatus.BAD_REQUEST, "College can not be an empty")
         }
         if (updateCurrentUserProfileDto.avatarId != null &&
             updateCurrentUserProfileDto.avatarId!! !in 0..19
         ) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "AvatarId must be between 0 and 19")
+            throw CustomException(HttpStatus.BAD_REQUEST, "Selected Avatar is invalid")
         }
 
         val updatedUser =

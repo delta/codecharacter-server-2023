@@ -44,6 +44,7 @@ class DailyChallengeSeeder {
                         )
                 }
                 dailyChallengeRepository.saveAll(dcEntities)
+                logger.info("Seeding Daily-Challenges Completed")
             } else {
                 logger.error("dcConstants.json is empty or doesn't exist")
             }
