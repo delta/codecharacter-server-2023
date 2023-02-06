@@ -19,7 +19,7 @@ class DailyChallengeSeeder {
 
     private val logger: Logger = LoggerFactory.getLogger(DailyChallengeSeeder::class.java)
     @EventListener(ApplicationReadyEvent::class)
-    fun doSomethingAfterStartup() {
+    fun seedDailyChallenges() {
 
         if (dailyChallengeRepository.findAll().isEmpty()) {
             logger.info("Seeding daily_challenges")
