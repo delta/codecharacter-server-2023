@@ -10,6 +10,6 @@ class SchedulingService(@Autowired private val publicUserService: PublicUserServ
 
     @Scheduled(cron = "0 1 1 * * ?")
     fun updateIsDailyChallengeCompleted() {
-        publicUserService.updateIsDailyChallengeComplete()
+        publicUserService.updateIsDailyChallengeCompletedForAllUsers()
     }
 }

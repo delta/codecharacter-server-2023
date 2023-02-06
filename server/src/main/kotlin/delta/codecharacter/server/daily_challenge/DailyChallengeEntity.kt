@@ -13,4 +13,8 @@ data class DailyChallengeEntity(
     val challType: ChallengeTypeDto,
     val chall: String,
     val description: String?,
+    val perfectScore : Int,
+    val numberOfCompletions : Int,
+    val toleratedDestruction : Int,
+    val map : String
 )

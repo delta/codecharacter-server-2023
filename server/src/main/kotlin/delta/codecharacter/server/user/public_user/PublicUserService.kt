@@ -184,11 +184,17 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         return publicUserRepository.findByUsername(username).isEmpty
     }
 
-    fun updateIsDailyChallengeComplete() {
+    fun updateIsDailyChallengeCompletedForAllUsers() {
         val users = publicUserRepository.findAll()
         users.forEach { user ->
             val updatedUser = user.copy(isDailyChallengeCompleted = false)
             publicUserRepository.save(updatedUser)
         }
+    }
+
+    fun updateDailyChallengeScore(userId: UUID, score : Double) {
+        val user = publicUserRepository.findById(userId).get()
+        val updatedUser = user.copy(score = score, isDailyChallengeCompleted = true)
+        publicUserRepository.save(updatedUser)
     }
 }
