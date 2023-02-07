@@ -21,3 +21,10 @@ swaggerAnnotations: true
 title: CodeCharacter Core API
 useBeanValidation: true
 useTags: true
+useJakartaEe: true
+springVersion: 3.0.0
+useSpringBoot3: true
+generatorMetadata:
+  java:
+    jaxrs:
+      version: 2.1
