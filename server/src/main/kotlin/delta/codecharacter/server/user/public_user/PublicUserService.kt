@@ -10,7 +10,6 @@ import delta.codecharacter.dtos.UpdateCurrentUserProfileDto
 import delta.codecharacter.dtos.UserStatsDto
 import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
 import delta.codecharacter.server.exception.CustomException
-import delta.codecharacter.server.leaderboard.LeaderBoardEnum
 import delta.codecharacter.server.match.MatchVerdictEnum
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -46,16 +45,16 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 losses = 0,
                 ties = 0,
                 score = 0.0,
-                tier = LeaderBoardEnum.TIER_PRACTICE,
+                tier = TierTypeDto.TIER_PRACTICE,
+                isDailyChallengeCompleted = false,
                 tutorialLevel = 1,
                 dailyChallengeHistory = HashMap()
             )
         publicUserRepository.save(publicUser)
     }
 
-    fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
-        val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Direction.DESC, "rating"))
-        return publicUserRepository.findAll(pageRequest).content.map {
+    fun getLeaderboardList(): List<LeaderboardEntryDto> {
+        return publicUserRepository.findAll().map {
             LeaderboardEntryDto(
                 user =
                 PublicUserDto(
@@ -72,9 +71,48 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                     wins = it.wins,
                     losses = it.losses,
                     ties = it.ties
-                )
+                ),
             )
         }
+    }
+
+    fun updateLeaderboard(leaderboardList: List<LeaderboardEntryDto>) {
+        val leaderboardSize = leaderboardList.size
+        for (i in 0 until leaderboardSize) {
+            val user = publicUserRepository.findByUsername(leaderboardList[i].user.username).get()
+            if (i < 0.2 * leaderboardSize) {
+                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))
+            } else {
+                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))
+            }
+        }
+    }
+
+    fun updateTempLeaderboardByTier() {
+        updateLeaderboard(getLeaderboardList())
+    }
+
+    fun updateLeaderboard() {
+        val leaderboardList = getLeaderboardList().sortedBy { it.stats.rating }.reversed()
+        updateLeaderboard(leaderboardList)
+    }
+
+    fun getLeaderboardByTier(tier: TierTypeDto?): List<LeaderboardEntryDto> {
+        val leaderboardList = getLeaderboardList().sortedBy { it.stats.rating }.reversed()
+        val leaderboardSize = leaderboardList.size
+        return if (tier == TierTypeDto.TIER1) {
+            leaderboardList.subList(0, (0.2 * leaderboardSize).toInt())
+        } else {
+            leaderboardList.subList((0.2 * leaderboardSize).toInt(), leaderboardList.size)
+        }
+    }
+
+    fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
+        val leaderboardEntry = getLeaderboardByTier(tier)
+        if (size!! > leaderboardEntry.size) {
+            return leaderboardEntry
+        }
+        return leaderboardEntry.subList(page!! * size, (page * size) + size)
     }
 
     fun getDailyChallengeLeaderboard(
