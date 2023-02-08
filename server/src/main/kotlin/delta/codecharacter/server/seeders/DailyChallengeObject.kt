@@ -11,6 +11,6 @@ data class DailyChallengeObject(
     @field:JsonProperty("description") val description: String?,
     @field:JsonProperty("perfectScore") val perfectScore: Int,
     @field:JsonProperty("numberOfCompletions") val numberOfCompletions: Int,
-    @field:JsonProperty("toleratedDestruction") val toleratedDestruction : Int,
-    @field:JsonProperty("map") val map : String
+    @field:JsonProperty("toleratedDestruction") val toleratedDestruction: Int,
+    @field:JsonProperty("map") val map: String
 )

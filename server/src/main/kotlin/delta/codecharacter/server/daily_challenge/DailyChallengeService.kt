@@ -33,13 +33,13 @@ class DailyChallengeService(
 
     fun getDailyChallengeByDate(): DailyChallengeEntity {
         val dc =
-                dailyChallengeRepository.findByDay(findNumberOfDays()).orElseThrow {
-                    throw CustomException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid Request")
-                }
+            dailyChallengeRepository.findByDay(findNumberOfDays()).orElseThrow {
+                throw CustomException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid Request")
+            }
         return dc
     }
 
-    fun getDailyChallengeByDateForUser(userId : UUID): DailyChallengeGetRequestDto {
+    fun getDailyChallengeByDateForUser(userId: UUID): DailyChallengeGetRequestDto {
         val user = publicUserService.getPublicUser(userId)
         val dc = getDailyChallengeByDate()
         return DailyChallengeGetRequestDto(
@@ -51,22 +51,25 @@ class DailyChallengeService(
         )
     }
 
-    fun completeDailyChallenge(gameEntity: GameEntity, userId:UUID) : DailyChallengeMatchVerdictEnum {
-        val (_, coinsUsed, destruction,_,_) = gameEntity
-            if(gameEntity.status==GameStatusEnum.EXECUTE_ERROR) return DailyChallengeMatchVerdictEnum.FAILURE
-            val dc = dailyChallengeRepository.findByDay(findNumberOfDays()).get()
-            if((dc.challType==ChallengeTypeDto.MAP && destruction>dc.toleratedDestruction) ||
-                    (dc.challType==ChallengeTypeDto.CODE && destruction<dc.toleratedDestruction)  ) {
-                val score = dailyChallengeScoreAlgorithm.getDailyChallengeScore(
-                        playerCoinsUsed = coinsUsed,
-                        playerDestruction = destruction,
-                        dailyChallenge = dc,
-                )
-                val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions+1)
-                dailyChallengeRepository.save(updatedDc)
-                publicUserService.updateDailyChallengeScore(userId,score)
-                return DailyChallengeMatchVerdictEnum.SUCCESS
-            }
+    fun completeDailyChallenge(gameEntity: GameEntity, userId: UUID): DailyChallengeMatchVerdictEnum {
+        val (_, coinsUsed, destruction, _, _) = gameEntity
+        if (gameEntity.status == GameStatusEnum.EXECUTE_ERROR)
             return DailyChallengeMatchVerdictEnum.FAILURE
+        val dc = dailyChallengeRepository.findByDay(findNumberOfDays()).get()
+        if ((dc.challType == ChallengeTypeDto.MAP && destruction > dc.toleratedDestruction) ||
+            (dc.challType == ChallengeTypeDto.CODE && destruction < dc.toleratedDestruction)
+        ) {
+            val score =
+                dailyChallengeScoreAlgorithm.getDailyChallengeScore(
+                    playerCoinsUsed = coinsUsed,
+                    playerDestruction = destruction,
+                    dailyChallenge = dc,
+                )
+            val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions + 1)
+            dailyChallengeRepository.save(updatedDc)
+            publicUserService.updateDailyChallengeScore(userId, score)
+            return DailyChallengeMatchVerdictEnum.SUCCESS
+        }
+        return DailyChallengeMatchVerdictEnum.FAILURE
     }
 }
