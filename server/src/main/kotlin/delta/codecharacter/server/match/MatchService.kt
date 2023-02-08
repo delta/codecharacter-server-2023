@@ -142,11 +142,14 @@ class MatchService(
     }
 
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
-        val (_, chall, challType, _, completionStatus) = dailyChallengeService.getDailyChallengeByDateForUser(userId)
+        val (_, chall, challType, _, completionStatus) =
+            dailyChallengeService.getDailyChallengeByDateForUser(userId)
         val dc = dailyChallengeService.getDailyChallengeByDate()
         val (value, _) = dailyChallengeMatchRequestDto
         if (completionStatus != null && completionStatus) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "You have already completed your daily Challenge")
+            throw CustomException(
+                HttpStatus.BAD_REQUEST, "You have already completed your daily Challenge"
+            )
         }
         val language: LanguageEnum
         val map: String
@@ -313,29 +316,34 @@ class MatchService(
                 matchRepository.save(finishedMatch)
             }
         } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {
-                val match = dailyChallengeMatchRepository.findById(matchId).get()
-                simpMessagingTemplate.convertAndSend(
-                        "/updates/${match.user.userId}",
-                        mapper.writeValueAsString(
-                                GameDto(
-                                        id = updatedGame.id,
-                                        destruction = BigDecimal(updatedGame.destruction),
-                                        coinsUsed = updatedGame.coinsUsed,
-                                        status = GameStatusDto.valueOf(updatedGame.status.name),
-                                )
-                        )
+            val match = dailyChallengeMatchRepository.findById(matchId).get()
+            simpMessagingTemplate.convertAndSend(
+                "/updates/${match.user.userId}",
+                mapper.writeValueAsString(
+                    GameDto(
+                        id = updatedGame.id,
+                        destruction = BigDecimal(updatedGame.destruction),
+                        coinsUsed = updatedGame.coinsUsed,
+                        status = GameStatusDto.valueOf(updatedGame.status.name),
+                    )
                 )
-            if(updatedGame.status!=GameStatusEnum.EXECUTING) {
-                val updatedMatch = match.copy(verdict = dailyChallengeService.completeDailyChallenge(updatedGame, match.user.userId))
+            )
+            if (updatedGame.status != GameStatusEnum.EXECUTING) {
+                val updatedMatch =
+                    match.copy(
+                        verdict =
+                        dailyChallengeService.completeDailyChallenge(updatedGame, match.user.userId)
+                    )
                 notificationService.sendNotification(
-                        match.user.userId,
-                        title = "Daily Challenge Results",
-                        content = when (updatedMatch.verdict) {
-                            DailyChallengeMatchVerdictEnum.SUCCESS -> "Successfully Completed Challenge"
-                            else -> {
-                                "Failed to Complete Challenge"
-                            }
+                    match.user.userId,
+                    title = "Daily Challenge Results",
+                    content =
+                    when (updatedMatch.verdict) {
+                        DailyChallengeMatchVerdictEnum.SUCCESS -> "Successfully Completed Challenge"
+                        else -> {
+                            "Failed to Complete Challenge"
                         }
+                    }
                 )
                 dailyChallengeMatchRepository.save(updatedMatch)
             }
