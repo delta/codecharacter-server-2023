@@ -3,10 +3,10 @@ package delta.codecharacter.server.daily_challenge
 import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.dtos.DailyChallengeGetRequestDto
 import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchVerdictEnum
-import delta.codecharacter.server.daily_challenge.verdict.DailyChallengeScoreAlgorithm
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game.GameEntity
 import delta.codecharacter.server.game.GameStatusEnum
+import delta.codecharacter.server.logic.daily_challenge_score.DailyChallengeScoreAlgorithm
 import delta.codecharacter.server.user.public_user.PublicUserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -28,7 +28,7 @@ class DailyChallengeService(
         val givenDateTime = Instant.parse(tempDate)
         val nowDateTime = Instant.now()
         val period: Duration = Duration.between(givenDateTime, nowDateTime)
-        return period.toDays().toInt()+1
+        return period.toDays().toInt()
     }
 
     fun getDailyChallengeByDate(): DailyChallengeEntity {
@@ -53,40 +53,20 @@ class DailyChallengeService(
 
     fun completeDailyChallenge(gameEntity: GameEntity, userId:UUID) : DailyChallengeMatchVerdictEnum {
         val (_, coinsUsed, destruction,_,_) = gameEntity
-            val dc = dailyChallengeRepository.findByDay(findNumberOfDays()).get()
             if(gameEntity.status==GameStatusEnum.EXECUTE_ERROR) return DailyChallengeMatchVerdictEnum.FAILURE
+            val dc = dailyChallengeRepository.findByDay(findNumberOfDays()).get()
             if((dc.challType==ChallengeTypeDto.MAP && destruction>dc.toleratedDestruction) ||
                     (dc.challType==ChallengeTypeDto.CODE && destruction<dc.toleratedDestruction)  ) {
-                val verdict = dailyChallengeScoreAlgorithm.getDailyChallengeVerdict(
-                        userId,
+                val score = dailyChallengeScoreAlgorithm.getDailyChallengeScore(
                         playerCoinsUsed = coinsUsed,
                         playerDestruction = destruction,
                         dailyChallenge = dc,
                 )
-                if(verdict==DailyChallengeMatchVerdictEnum.SUCCESS){
-                    println("Initially")
-                    println(dc.numberOfCompletions)
-                    val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions+1)
-                    println("Updated")
-                    println(updatedDc.numberOfCompletions)
-                    dailyChallengeRepository.save(updatedDc)
-                }
-                return verdict
+                val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions+1)
+                dailyChallengeRepository.save(updatedDc)
+                publicUserService.updateDailyChallengeScore(userId,score)
+                return DailyChallengeMatchVerdictEnum.SUCCESS
             }
             return DailyChallengeMatchVerdictEnum.FAILURE
-
-
-    /*
-     * if destruction >= 60 --> completed --> usr can not play
-     * else not-completed user can play
-     *
-     * score = base-score + (value depending on coinsUsed and destruction %)
-     * base-score will get reduced as player starts solving challenge
-     * base-score = base-score - rv (rv-> reducing value) (like CTF style)
-     *
-     * Corresponding LeaderBoard updates
-     *
-     * Scheduling for isDailyChallengeComplete -> false by 24hrs
-     */
     }
 }
