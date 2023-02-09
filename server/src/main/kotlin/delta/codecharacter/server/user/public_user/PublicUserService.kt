@@ -46,8 +46,8 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 ties = 0,
                 score = 0.0,
                 tier = LeaderBoardEnum.TIER_PRACTICE,
-                isDailyChallengeCompleted = false,
                 tutorialLevel = 1,
+                dailyChallengeHistory = HashMap()
             )
         publicUserRepository.save(publicUser)
     }
@@ -209,17 +209,11 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         return publicUserRepository.findByUsername(username).isEmpty
     }
 
-    fun updateIsDailyChallengeCompletedForAllUsers() {
-        val users = publicUserRepository.findAll()
-        users.forEach { user ->
-            val updatedUser = user.copy(isDailyChallengeCompleted = false)
-            publicUserRepository.save(updatedUser)
-        }
-    }
-
-    fun updateDailyChallengeScore(userId: UUID, score: Double) {
+    fun updateDailyChallengeScore(userId: UUID, score: Double, dailyChallengeId: UUID, day: Int) {
         val user = publicUserRepository.findById(userId).get()
-        val updatedUser = user.copy(score = score, isDailyChallengeCompleted = true)
+        val current = user.dailyChallengeHistory
+        current[dailyChallengeId] = DailyChallengeHistory(score, day)
+        val updatedUser = user.copy(score = user.score + score, dailyChallengeHistory = current)
         publicUserRepository.save(updatedUser)
     }
 }

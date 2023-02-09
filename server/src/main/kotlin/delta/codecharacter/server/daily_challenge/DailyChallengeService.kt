@@ -47,7 +47,7 @@ class DailyChallengeService(
             chall = dc.chall,
             challType = dc.challType,
             description = dc.description,
-            completionStatus = user.isDailyChallengeCompleted
+            completionStatus = user.dailyChallengeHistory.containsKey(dc.id)
         )
     }
 
@@ -67,7 +67,7 @@ class DailyChallengeService(
                 )
             val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions + 1)
             dailyChallengeRepository.save(updatedDc)
-            publicUserService.updateDailyChallengeScore(userId, score)
+            publicUserService.updateDailyChallengeScore(userId, score, dc.id, dc.day)
             return DailyChallengeMatchVerdictEnum.SUCCESS
         }
         return DailyChallengeMatchVerdictEnum.FAILURE
