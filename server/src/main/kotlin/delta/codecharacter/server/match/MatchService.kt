@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Duration
@@ -206,6 +207,22 @@ class MatchService(
         }
     }
 
+    @Scheduled(cron = "* */6 * * * *")
+    fun createAutoMatch() {
+        val top20Users = publicUserService.getTop20()
+        val userIds = top20Users.map { it.userId }
+        val usernames = top20Users.map { it.username }
+        autoMatchRepository.deleteAll()
+        userIds.forEachIndexed { i, userId ->
+            run {
+                for (j in i + 1 until userIds.size) {
+                    val opponentUsername = usernames[j]
+                    createDualMatch(userId, opponentUsername)
+                }
+            }
+        }
+    }
+
     private fun mapMatchEntitiesToDtos(matchEntities: List<MatchEntity>): List<MatchDto> {
         return matchEntities.map { matchEntity ->
             MatchDto(
@@ -360,7 +377,28 @@ class MatchService(
                         } against ${match.player2.username}",
                     )
                 }
-
+                if (match.mode == MatchModeEnum.AUTO) {
+                    if (autoMatchRepository.findAll().all { autoMatch ->
+                            matchRepository.findById(autoMatch.matchId).get().games.all { game ->
+                                game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR
+                            }
+                        }
+                    ) {
+                        val matches = matchRepository.findByIdIn(autoMatchRepository.findAll().map { it.matchId })
+                        val userIds =
+                            matches.map { it.player1.userId }.toSet() + matches.map { it.player2.userId }.toSet()
+                        val newRatings =
+                            ratingHistoryService.updateAndGetAutoMatchRatings(userIds.toList(), matches)
+                        newRatings.forEach { (userId, newRating) ->
+                            publicUserService.updatePublicRating(
+                                userId = userId,
+                                isInitiator = true,
+                                verdict = verdict,
+                                newRating = newRating.rating
+                            )
+                        }
+                    }
+                }
                 matchRepository.save(finishedMatch)
             }
         } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {

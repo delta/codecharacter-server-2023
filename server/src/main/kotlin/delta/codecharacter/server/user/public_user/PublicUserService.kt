@@ -142,6 +142,10 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         }
     }
 
+    fun getLeaderboardSize(): Long {
+        return publicUserRepository.count()
+    }
+
     fun getDailyChallengeLeaderboard(
         page: Int?,
         size: Int?
@@ -281,5 +285,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         current[dailyChallenge.day] = DailyChallengeHistory(score, dailyChallenge)
         val updatedUser = user.copy(score = user.score + score, dailyChallengeHistory = current)
         publicUserRepository.save(updatedUser)
+    }
+
+    fun getTop20(): List<PublicUserEntity> {
+        return publicUserRepository.findTop20ByOrderByRatingDesc()
     }
 }

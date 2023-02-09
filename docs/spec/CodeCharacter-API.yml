@@ -303,6 +303,33 @@ paths:
           description: Leaderboard Tier
       description: Get leaderboard
     parameters: []
+
+  /leaderboard/size:
+    get:
+      summary: Get LeaderboardSize
+      tags:
+        - leaderboard
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: number
+                items:
+                  $ref: '#/components/schemas/LeaderboardSize'
+              examples:
+                Example:
+                  value:
+                  - leaderboardSize: 10
+        '401' :
+          description: Unauthorized
+        '404' :
+          description: Not Found
+      operationId: getLeaderboardSize
+      description: Get Leaderboard Size
+    parameters: []
+
   /top-matches:
     get:
       summary: Get top matches
@@ -1934,6 +1961,16 @@ components:
         - user
         - stats
       description: Leaderboard entry model
+    LeaderboardSize:
+      title: LeaderboardSize
+      type: object
+      properties:
+        leaderboardSize:
+          type: number
+          example: 10
+      required:
+        - leaderboardSize
+
     DailyChallengeGetRequest:
       title: Get daily challenge
       description: Get current-user daily challenge

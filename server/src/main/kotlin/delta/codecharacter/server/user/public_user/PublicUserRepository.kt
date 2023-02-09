@@ -8,6 +8,7 @@ import java.util.UUID
 
 interface PublicUserRepository : MongoRepository<PublicUserEntity, UUID> {
     fun findByUsername(username: String): Optional<PublicUserEntity>
+    fun findTop20ByOrderByRatingDesc(): List<PublicUserEntity>
 
     fun findAllByTier(tier: TierTypeDto?, pageRequest: PageRequest): List<PublicUserEntity>
 }
