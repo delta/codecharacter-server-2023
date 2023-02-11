@@ -12,7 +12,7 @@ data class DefaultCodeMapConfiguration(
         DefaultCodeMapConfiguration::class
             .java
             .classLoader
-            .getResource("codeMapConfig/cpp/run.cpp")
+            .getResource("player_code/cpp/run.cpp")
             ?.readText()
             ?: "",
     val defaultLanguage: LanguageEnum = LanguageEnum.CPP,
