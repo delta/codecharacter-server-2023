@@ -24,6 +24,7 @@ import java.util.UUID
 class PublicUserService(@Autowired private val publicUserRepository: PublicUserRepository) {
 
     @Value("\${environment.no-of-tutorial-level}") private lateinit var totalTutorialLevels: Number
+    @Value("\${environment.top-n-players}") private val topPlayers: Int = 0
     fun create(
         userId: UUID,
         username: String,
@@ -53,8 +54,28 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         publicUserRepository.save(publicUser)
     }
 
-    fun getLeaderboardList(): List<LeaderboardEntryDto> {
-        return publicUserRepository.findAll().map {
+    fun updateLeaderboard(publicUsers: List<PublicUserEntity>) {
+        for (i in publicUsers.indices) {
+            val user = publicUserRepository.findById(publicUsers[i].userId).get()
+            if (i < topPlayers) {
+                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))
+            } else {
+                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))
+            }
+        }
+    }
+
+    fun updateTempLeaderboardByTier() {
+        updateLeaderboard(publicUserRepository.findAll())
+    }
+
+    fun updateLeaderboard() {
+        updateLeaderboard(publicUserRepository.findAll(Sort.by(Sort.Order.desc("rating"))))
+    }
+
+    fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
+        val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Order.desc("rating")))
+        return publicUserRepository.findAll(pageRequest).content.filter { it.tier == tier }.map {
             LeaderboardEntryDto(
                 user =
                 PublicUserDto(
@@ -74,45 +95,6 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 ),
             )
         }
-    }
-
-    fun updateLeaderboard(leaderboardList: List<LeaderboardEntryDto>) {
-        val leaderboardSize = leaderboardList.size
-        for (i in 0 until leaderboardSize) {
-            val user = publicUserRepository.findByUsername(leaderboardList[i].user.username).get()
-            if (i < 0.2 * leaderboardSize) {
-                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))
-            } else {
-                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))
-            }
-        }
-    }
-
-    fun updateTempLeaderboardByTier() {
-        updateLeaderboard(getLeaderboardList())
-    }
-
-    fun updateLeaderboard() {
-        val leaderboardList = getLeaderboardList().sortedBy { it.stats.rating }.reversed()
-        updateLeaderboard(leaderboardList)
-    }
-
-    fun getLeaderboardByTier(tier: TierTypeDto?): List<LeaderboardEntryDto> {
-        val leaderboardList = getLeaderboardList().sortedBy { it.stats.rating }.reversed()
-        val leaderboardSize = leaderboardList.size
-        return if (tier == TierTypeDto.TIER1) {
-            leaderboardList.subList(0, (0.2 * leaderboardSize).toInt())
-        } else {
-            leaderboardList.subList((0.2 * leaderboardSize).toInt(), leaderboardList.size)
-        }
-    }
-
-    fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
-        val leaderboardEntry = getLeaderboardByTier(tier)
-        if (size!! > leaderboardEntry.size) {
-            return leaderboardEntry
-        }
-        return leaderboardEntry.subList(page!! * size, (page * size) + size)
     }
 
     fun getDailyChallengeLeaderboard(

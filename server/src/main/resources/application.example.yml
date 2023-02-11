@@ -30,6 +30,7 @@ environment:
   no-of-tutorial-level: 0
   registration-time: "* * * * * *"
   game-start-time: "* * * * * *"
+  top-n-players: 5
 
 server:
   compression:
