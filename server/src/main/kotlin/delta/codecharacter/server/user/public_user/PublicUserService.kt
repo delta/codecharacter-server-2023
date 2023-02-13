@@ -54,10 +54,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         publicUserRepository.save(publicUser)
     }
 
-    fun updateLeaderboard(publicUsers: List<PublicUserEntity>) {
-        for (i in publicUsers.indices) {
-            val user = publicUserRepository.findById(publicUsers[i].userId).get()
-            if (i < topPlayers) {
+    fun updateTiers(publicUsers: List<PublicUserEntity>) {
+        publicUsers.forEach { user ->
+            if (publicUsers.indexOf(user) < topPlayers) {
                 publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))
             } else {
                 publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))
@@ -65,17 +64,17 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         }
     }
 
-    fun updateTempLeaderboardByTier() {
-        updateLeaderboard(publicUserRepository.findAll())
+    fun updateLeaderboardAfterPracticePhase() {
+        updateTiers(publicUserRepository.findAll())
     }
 
-    fun updateLeaderboard() {
-        updateLeaderboard(publicUserRepository.findAll(Sort.by(Sort.Order.desc("rating"))))
+    fun updateTierForUser() {
+        updateTiers(publicUserRepository.findAll(Sort.by(Sort.Order.desc("rating"))))
     }
 
     fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
         val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Order.desc("rating")))
-        return publicUserRepository.findAll(pageRequest).content.filter { it.tier == tier }.map {
+        return publicUserRepository.findAllByTier(tier, pageRequest).map {
             LeaderboardEntryDto(
                 user =
                 PublicUserDto(
