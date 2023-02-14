@@ -12,12 +12,13 @@ class SchedulingService(@Autowired private val publicUserService: PublicUserServ
         publicUserService.updateIsDailyChallengeComplete()
     }
 
-    @Scheduled(cron = "\${environment.registration-time}")
+    @Scheduled(cron = "\${environment.registration-time}", zone = "GMT")
     fun updateTempLeaderboard() {
+        publicUserService.resetRatingsAfterPracticePhase()
         publicUserService.updateLeaderboardAfterPracticePhase()
     }
 
-    @Scheduled(cron = "\${environment.game-start-time}")
+    @Scheduled(cron = "\${environment.game-start-time}", zone = "GMT")
     fun updateLeaderboard() {
         publicUserService.updateTierForUser()
     }

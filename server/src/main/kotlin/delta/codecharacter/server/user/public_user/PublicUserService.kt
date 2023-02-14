@@ -24,7 +24,7 @@ import java.util.UUID
 class PublicUserService(@Autowired private val publicUserRepository: PublicUserRepository) {
 
     @Value("\${environment.no-of-tutorial-level}") private lateinit var totalTutorialLevels: Number
-    @Value("\${environment.top-n-players}") private val topPlayers: Int = 0
+    @Value("\${environment.top-n-players}") private lateinit var topPlayers: Number
     fun create(
         userId: UUID,
         username: String,
@@ -56,7 +56,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun updateTiers(publicUsers: List<PublicUserEntity>) {
         publicUsers.forEach { user ->
-            if (publicUsers.indexOf(user) < topPlayers) {
+            if (publicUsers.indexOf(user) < topPlayers.toInt()) {
                 publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))
             } else {
                 publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))
@@ -66,6 +66,15 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun updateLeaderboardAfterPracticePhase() {
         updateTiers(publicUserRepository.findAll())
+    }
+
+    fun resetRatingsAfterPracticePhase() {
+        val users = publicUserRepository.findAll()
+        users.forEach { user ->
+            publicUserRepository.save(
+                user.copy(rating = (1500).toDouble(), wins = 0, ties = 0, losses = 0)
+            )
+        }
     }
 
     fun updateTierForUser() {
