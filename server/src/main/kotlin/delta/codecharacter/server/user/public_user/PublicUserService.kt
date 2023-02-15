@@ -71,9 +71,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     fun resetRatingsAfterPracticePhase() {
         val users = publicUserRepository.findAll()
         users.forEach { user ->
-            publicUserRepository.save(
-                user.copy(rating = (1500).toDouble(), wins = 0, ties = 0, losses = 0)
-            )
+            publicUserRepository.save(user.copy(rating = 1500.0, wins = 0, ties = 0, losses = 0))
         }
     }
 
