@@ -59,7 +59,7 @@ class TestAttributes {
                 wins = 4,
                 losses = 2,
                 ties = 1,
-                tier = TierTypeDto.TIER1,
+                tier = TierTypeDto.TIER_PRACTICE,
                 score = 0.0,
                 dailyChallengeHistory = hashMapOf(0 to DailyChallengeHistory(0.0, dailyChallengeCode)),
                 tutorialLevel = 1

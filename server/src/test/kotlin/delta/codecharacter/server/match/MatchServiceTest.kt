@@ -8,6 +8,7 @@ import delta.codecharacter.dtos.DailyChallengeMatchRequestDto
 import delta.codecharacter.dtos.GameMapRevisionDto
 import delta.codecharacter.dtos.LanguageDto
 import delta.codecharacter.dtos.MatchModeDto
+import delta.codecharacter.dtos.TierTypeDto
 import delta.codecharacter.server.TestAttributes
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.code.code_revision.CodeRevisionService
@@ -286,7 +287,9 @@ internal class MatchServiceTest {
         val playerId = UUID.randomUUID()
         val opponentId = UUID.randomUUID()
         val opponentPublicUser =
-            TestAttributes.publicUser.copy(userId = opponentId, username = "opponent")
+            TestAttributes.publicUser.copy(
+                userId = opponentId, username = "opponent", tier = TierTypeDto.TIER1
+            )
         val userCode = Pair(LanguageEnum.CPP, "user-code")
         val opponentCode = Pair(LanguageEnum.PYTHON, "opponent-code")
         val userMap = "user-map"
