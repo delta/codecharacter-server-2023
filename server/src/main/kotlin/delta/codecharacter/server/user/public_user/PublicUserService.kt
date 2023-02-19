@@ -24,7 +24,8 @@ import java.util.UUID
 class PublicUserService(@Autowired private val publicUserRepository: PublicUserRepository) {
 
     @Value("\${environment.no-of-tutorial-level}") private lateinit var totalTutorialLevels: Number
-    @Value("\${environment.top-n-players}") private lateinit var topPlayers: Number
+    @Value("\${environment.tier-1-players}") private lateinit var tier1Players: Number
+    @Value("\${environment.top-players}") private lateinit var topPlayer: Number
     fun create(
         userId: UUID,
         username: String,
@@ -56,7 +57,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun updateTiers(publicUsers: List<PublicUserEntity>) {
         publicUsers.forEach { user ->
-            if (publicUsers.indexOf(user) < topPlayers.toInt()) {
+            if (publicUsers.indexOf(user) < tier1Players.toInt()) {
                 publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))
             } else {
                 publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))
@@ -77,6 +78,25 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun updateTierForUser() {
         updateTiers(publicUserRepository.findAll(Sort.by(Sort.Order.desc("rating"))))
+    }
+
+    fun promoteTiers() {
+        val topPlayersInTier2 =
+            publicUserRepository.findAllByTier(
+                TierTypeDto.TIER2,
+                PageRequest.of(0, topPlayer.toInt(), Sort.by(Sort.Order.desc("rating")))
+            )
+        val bottomPlayersInTier1 =
+            publicUserRepository.findAllByTier(
+                TierTypeDto.TIER1,
+                PageRequest.of(0, topPlayer.toInt(), Sort.by(Sort.Order.asc("rating")))
+            )
+        topPlayersInTier2.forEach { users ->
+            publicUserRepository.save(users.copy(tier = TierTypeDto.TIER1))
+        }
+        bottomPlayersInTier1.forEach { users ->
+            publicUserRepository.save(users.copy(tier = TierTypeDto.TIER2))
+        }
     }
 
     fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {

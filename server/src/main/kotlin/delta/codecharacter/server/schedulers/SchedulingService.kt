@@ -22,4 +22,9 @@ class SchedulingService(@Autowired private val publicUserService: PublicUserServ
     fun updateLeaderboard() {
         publicUserService.updateTierForUser()
     }
+
+    @Scheduled(cron = "\${environment.update-time}", zone = "GMT")
+    fun promoteAndDemoteUserTiers() {
+        publicUserService.promoteTiers()
+    }
 }
