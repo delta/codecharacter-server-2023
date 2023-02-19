@@ -379,14 +379,16 @@ class MatchService(
                 }
                 if (match.mode == MatchModeEnum.AUTO) {
                     if (autoMatchRepository.findAll().all { autoMatch ->
-                            matchRepository.findById(autoMatch.matchId).get().games.all { game ->
-                                game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR
-                            }
+                        matchRepository.findById(autoMatch.matchId).get().games.all { game ->
+                            game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR
                         }
+                    }
                     ) {
-                        val matches = matchRepository.findByIdIn(autoMatchRepository.findAll().map { it.matchId })
+                        val matches =
+                            matchRepository.findByIdIn(autoMatchRepository.findAll().map { it.matchId })
                         val userIds =
-                            matches.map { it.player1.userId }.toSet() + matches.map { it.player2.userId }.toSet()
+                            matches.map { it.player1.userId }.toSet() +
+                                matches.map { it.player2.userId }.toSet()
                         val newRatings =
                             ratingHistoryService.updateAndGetAutoMatchRatings(userIds.toList(), matches)
                         newRatings.forEach { (userId, newRating) ->
