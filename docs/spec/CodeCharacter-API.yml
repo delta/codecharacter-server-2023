@@ -1867,7 +1867,6 @@ components:
         - matchVerdict
         - createdAt
         - user1
-        - user2
     CreateMatchRequest:
       title: CreateMatchRequest
       type: object
@@ -2014,6 +2013,7 @@ components:
         - SELF
         - MANUAL
         - AUTO
+        - DAILYCHALLENGE
       description: Match Mode
     Verdict:
       type: string
@@ -2022,6 +2022,8 @@ components:
         - PLAYER1
         - PLAYER2
         - TIE
+        - SUCCESS
+        - FAILIURE
       description: Match/Game verdict
     GameStatus:
       title: GameStatus

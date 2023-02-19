@@ -22,10 +22,10 @@ class DailyChallengeService(
     @Autowired private val dailyChallengeScoreAlgorithm: DailyChallengeScoreAlgorithm
 ) {
 
-    @Value("\${environment.event-start-date}") val tempDate: String = ""
+    @Value("\${environment.event-start-date}") private lateinit var startDate: String
 
     fun findNumberOfDays(): Int {
-        val givenDateTime = Instant.parse(tempDate)
+        val givenDateTime = Instant.parse(startDate)
         val nowDateTime = Instant.now()
         val period: Duration = Duration.between(givenDateTime, nowDateTime)
         return period.toDays().toInt()
@@ -47,7 +47,7 @@ class DailyChallengeService(
             chall = dc.chall,
             challType = dc.challType,
             description = dc.description,
-            completionStatus = user.dailyChallengeHistory.containsKey(dc.id)
+            completionStatus = user.dailyChallengeHistory.containsKey(dc.day)
         )
     }
 
@@ -55,7 +55,7 @@ class DailyChallengeService(
         val (_, coinsUsed, destruction, _, _) = gameEntity
         if (gameEntity.status == GameStatusEnum.EXECUTE_ERROR)
             return DailyChallengeMatchVerdictEnum.FAILURE
-        val dc = dailyChallengeRepository.findByDay(findNumberOfDays()).get()
+        val dc = getDailyChallengeByDate()
         if ((dc.challType == ChallengeTypeDto.MAP && destruction > dc.toleratedDestruction) ||
             (dc.challType == ChallengeTypeDto.CODE && destruction < dc.toleratedDestruction)
         ) {
@@ -67,7 +67,7 @@ class DailyChallengeService(
                 )
             val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions + 1)
             dailyChallengeRepository.save(updatedDc)
-            publicUserService.updateDailyChallengeScore(userId, score, dc.id, dc.day)
+            publicUserService.updateDailyChallengeScore(userId, score, dc)
             return DailyChallengeMatchVerdictEnum.SUCCESS
         }
         return DailyChallengeMatchVerdictEnum.FAILURE

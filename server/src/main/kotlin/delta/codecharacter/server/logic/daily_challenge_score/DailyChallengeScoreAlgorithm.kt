@@ -3,6 +3,7 @@ package delta.codecharacter.server.logic.daily_challenge_score
 import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.server.config.GameConfiguration
 import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import java.time.Duration
 import java.time.Instant
@@ -10,10 +11,10 @@ import kotlin.math.exp
 
 class DailyChallengeScoreAlgorithm : ScoreAlgorithm {
 
-    @Value("\${environment.event-start-date}") val tempDate: String = ""
+    @Value("\${environment.event-start-date}") private lateinit var startDate: String
 
     override fun getHoursSinceDailyChallengeLaunched(): Double {
-        val givenDateTime = Instant.parse(tempDate)
+        val givenDateTime = Instant.parse(startDate)
         val nowDateTime = Instant.now()
         val period: Duration = Duration.between(givenDateTime, nowDateTime)
         // we need hours in decimal format so convert to seconds then take into hours

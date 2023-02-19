@@ -8,6 +8,7 @@ import delta.codecharacter.dtos.TierTypeDto
 import delta.codecharacter.dtos.TutorialUpdateTypeDto
 import delta.codecharacter.dtos.UpdateCurrentUserProfileDto
 import delta.codecharacter.dtos.UserStatsDto
+import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.leaderboard.LeaderBoardEnum
 import delta.codecharacter.server.match.MatchVerdictEnum
@@ -209,10 +210,10 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         return publicUserRepository.findByUsername(username).isEmpty
     }
 
-    fun updateDailyChallengeScore(userId: UUID, score: Double, dailyChallengeId: UUID, day: Int) {
+    fun updateDailyChallengeScore(userId: UUID, score: Double, dailyChallenge: DailyChallengeEntity) {
         val user = publicUserRepository.findById(userId).get()
         val current = user.dailyChallengeHistory
-        current[dailyChallengeId] = DailyChallengeHistory(score, day)
+        current[dailyChallenge.day] = DailyChallengeHistory(score, dailyChallenge)
         val updatedUser = user.copy(score = user.score + score, dailyChallengeHistory = current)
         publicUserRepository.save(updatedUser)
     }

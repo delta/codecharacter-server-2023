@@ -25,6 +25,7 @@ import delta.codecharacter.server.game.GameStatusEnum
 import delta.codecharacter.server.game_map.latest_map.LatestMapService
 import delta.codecharacter.server.game_map.locked_map.LockedMapService
 import delta.codecharacter.server.game_map.map_revision.MapRevisionService
+import delta.codecharacter.server.logic.validation.MapValidator
 import delta.codecharacter.server.logic.verdict.VerdictAlgorithm
 import delta.codecharacter.server.notifications.NotificationService
 import delta.codecharacter.server.user.public_user.PublicUserService
@@ -57,6 +58,7 @@ class MatchService(
     @Autowired private val dailyChallengeMatchRepository: DailyChallengeMatchRepository,
     @Autowired private val jackson2ObjectMapperBuilder: Jackson2ObjectMapperBuilder,
     @Autowired private val simpMessagingTemplate: SimpMessagingTemplate,
+    @Autowired private val mapValidator: MapValidator
 ) {
     private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()
 
@@ -148,7 +150,7 @@ class MatchService(
         val (value, _) = dailyChallengeMatchRequestDto
         if (completionStatus != null && completionStatus) {
             throw CustomException(
-                HttpStatus.BAD_REQUEST, "You have already completed your daily Challenge"
+                HttpStatus.BAD_REQUEST, "You have already completed your daily challenge"
             )
         }
         val language: LanguageEnum
@@ -156,6 +158,7 @@ class MatchService(
         val code: String
         when (challType) {
             ChallengeTypeDto.CODE -> { // code as question and map as answer
+                mapValidator.validateMap(value)
                 code = chall
                 language = LanguageEnum.CPP
                 map = value
@@ -191,6 +194,9 @@ class MatchService(
                     throw CustomException(HttpStatus.BAD_REQUEST, "Opponent ID is required")
                 }
                 createDualMatch(userId, createMatchRequestDto.opponentUsername!!)
+            }
+            else -> {
+                throw IllegalStateException("MatchMode Is Not Correct")
             }
         }
     }
@@ -236,6 +242,37 @@ class MatchService(
         }
     }
 
+    private fun mapDailyChallengeMatchEntitiesToDtos(
+        dailyChallengeMatchEntities: List<DailyChallengeMatchEntity>
+    ): List<MatchDto> {
+        return dailyChallengeMatchEntities.map { entity ->
+            MatchDto(
+                id = entity.id,
+                matchMode = MatchModeDto.valueOf("DAILYCHALLENGE"),
+                matchVerdict = VerdictDto.valueOf(entity.verdict.name),
+                createdAt = entity.createdAt,
+                games =
+                setOf(
+                    GameDto(
+                        id = entity.game.id,
+                        destruction = BigDecimal(entity.game.destruction),
+                        coinsUsed = entity.game.coinsUsed,
+                        status = GameStatusDto.valueOf(entity.game.status.name)
+                    )
+                ),
+                user1 =
+                PublicUserDto(
+                    username = entity.user.username,
+                    name = entity.user.name,
+                    tier = TierTypeDto.valueOf(entity.user.tier.name),
+                    country = entity.user.country,
+                    college = entity.user.college,
+                    avatarId = entity.user.avatarId,
+                ),
+            )
+        }
+    }
+
     fun getTopMatches(): List<MatchDto> {
         val matches = matchRepository.findTop10ByOrderByTotalPointsDesc()
         return mapMatchEntitiesToDtos(matches)
@@ -244,7 +281,8 @@ class MatchService(
     fun getUserMatches(userId: UUID): List<MatchDto> {
         val publicUser = publicUserService.getPublicUser(userId)
         val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
-        return mapMatchEntitiesToDtos(matches)
+        val dcMatches = dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser)
+        return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)
     }
 
     @RabbitListener(queues = ["gameStatusUpdateQueue"], ackMode = "AUTO")
@@ -339,9 +377,9 @@ class MatchService(
                     title = "Daily Challenge Results",
                     content =
                     when (updatedMatch.verdict) {
-                        DailyChallengeMatchVerdictEnum.SUCCESS -> "Successfully Completed Challenge"
+                        DailyChallengeMatchVerdictEnum.SUCCESS -> "Successfully completed challenge"
                         else -> {
-                            "Failed to Complete Challenge"
+                            "Failed to complete challenge"
                         }
                     }
                 )
