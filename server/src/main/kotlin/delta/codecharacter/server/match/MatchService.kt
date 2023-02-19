@@ -60,7 +60,9 @@ class MatchService(
     @Autowired private val dailyChallengeMatchRepository: DailyChallengeMatchRepository,
     @Autowired private val jackson2ObjectMapperBuilder: Jackson2ObjectMapperBuilder,
     @Autowired private val simpMessagingTemplate: SimpMessagingTemplate,
-    @Autowired private val mapValidator: MapValidator
+    @Autowired private val mapValidator: MapValidator,
+    @Autowired private val autoMatchRepository: AutoMatchRepository
+
 ) {
     private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()
 
@@ -108,7 +110,7 @@ class MatchService(
         gameService.sendGameRequest(game, code, LanguageEnum.valueOf(language.name), map)
     }
 
-    fun createDualMatch(userId: UUID, opponentUsername: String) {
+    fun createDualMatch(userId: UUID, opponentUsername: String): UUID {
         val publicUser = publicUserService.getPublicUser(userId)
         val publicOpponent = publicUserService.getPublicUserByUsername(opponentUsername)
         val opponentId = publicOpponent.userId
@@ -147,6 +149,8 @@ class MatchService(
 
         gameService.sendGameRequest(game1, userCode, userLanguage, opponentMap)
         gameService.sendGameRequest(game2, opponentCode, opponentLanguage, userMap)
+
+        return matchId
     }
 
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
@@ -217,7 +221,8 @@ class MatchService(
             run {
                 for (j in i + 1 until userIds.size) {
                     val opponentUsername = usernames[j]
-                    createDualMatch(userId, opponentUsername)
+                    val matchId = createDualMatch(userId, opponentUsername)
+                    autoMatchRepository.save(AutoMatchEntity(matchId))
                 }
             }
         }

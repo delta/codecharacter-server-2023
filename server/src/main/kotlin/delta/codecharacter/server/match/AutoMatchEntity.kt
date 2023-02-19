@@ -7,5 +7,4 @@ import java.util.UUID
 @Document(collection = "auto_match")
 data class AutoMatchEntity(
     @Id val matchId: UUID,
-    val tries: Int,
 )
