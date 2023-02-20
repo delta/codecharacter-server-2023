@@ -54,7 +54,7 @@ class DailyChallengeService(
     fun completeDailyChallenge(gameEntity: GameEntity, userId: UUID): DailyChallengeMatchVerdictEnum {
         val (_, coinsUsed, destruction, _, _) = gameEntity
         if (gameEntity.status == GameStatusEnum.EXECUTE_ERROR)
-            return DailyChallengeMatchVerdictEnum.FAILURE
+            return DailyChallengeMatchVerdictEnum.FAILIURE
         val dc = getDailyChallengeByDate()
         if ((dc.challType == ChallengeTypeDto.MAP && destruction > dc.toleratedDestruction) ||
             (dc.challType == ChallengeTypeDto.CODE && destruction < dc.toleratedDestruction)
@@ -70,6 +70,6 @@ class DailyChallengeService(
             publicUserService.updateDailyChallengeScore(userId, score, dc)
             return DailyChallengeMatchVerdictEnum.SUCCESS
         }
-        return DailyChallengeMatchVerdictEnum.FAILURE
+        return DailyChallengeMatchVerdictEnum.FAILIURE
     }
 }

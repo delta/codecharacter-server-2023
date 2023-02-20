@@ -1277,17 +1277,17 @@ paths:
       requestBody:
         required: true
         content:
-           application/json:
-              schema:
-                $ref: '#/components/schemas/DailyChallengeMatchRequest'
-              examples:
-                CodeExample:
-                  value:
-                    value : "#include<iostream>"
-                    language: CPP
-                MapExample:
-                  value:
-                    value: "[[0,0,0]]"
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DailyChallengeMatchRequest'
+            examples:
+              CodeExample:
+                value:
+                  value : "#include<iostream>"
+                  language: CPP
+              MapExample:
+                value:
+                  value: "[[0,0,0]]"
       tags:
         - Daily Challenges
 
@@ -1946,8 +1946,7 @@ components:
           type: string
           example: Daily Challenge description
         chall:
-          type: string
-          example: 'print("hello world");'
+          $ref: '#/components/schemas/DailyChallengeObject'
         challType:
           $ref: '#/components/schemas/ChallengeType'
         completionStatus:
@@ -1957,6 +1956,19 @@ components:
         - challName
         - chall
         - challType
+    DailyChallengeObject:
+      title: Daily Challenge Object
+      description: The object describing the challenge for the day
+      type: object
+      properties:
+        cpp:
+          type: string
+        java:
+          type: string
+        python:
+          type: string
+        image:
+          type: string
     DailyChallengeLeaderBoardResponse:
       title: DailyChallengeLeaderboardResponse
       description: Response model for daily challenge leaderboard

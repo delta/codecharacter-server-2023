@@ -37,6 +37,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.messaging.simp.SimpMessagingTemplate
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
@@ -159,7 +160,7 @@ class MatchService(
         when (challType) {
             ChallengeTypeDto.CODE -> { // code as question and map as answer
                 mapValidator.validateMap(value)
-                code = chall
+                code = chall.cpp.toString()
                 language = LanguageEnum.CPP
                 map = value
             }
@@ -281,7 +282,10 @@ class MatchService(
     fun getUserMatches(userId: UUID): List<MatchDto> {
         val publicUser = publicUserService.getPublicUser(userId)
         val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
-        val dcMatches = dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser)
+        val dcMatches =
+            dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
+                Duration.between(it.createdAt, Instant.now()).toHours() < 24
+            }
         return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)
     }
 

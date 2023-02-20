@@ -3,7 +3,6 @@ package delta.codecharacter.server.logic.daily_challenge_score
 import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.server.config.GameConfiguration
 import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import java.time.Duration
 import java.time.Instant

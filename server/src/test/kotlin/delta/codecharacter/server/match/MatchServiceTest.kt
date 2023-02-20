@@ -18,6 +18,7 @@ import delta.codecharacter.server.game.GameService
 import delta.codecharacter.server.game_map.latest_map.LatestMapService
 import delta.codecharacter.server.game_map.locked_map.LockedMapService
 import delta.codecharacter.server.game_map.map_revision.MapRevisionService
+import delta.codecharacter.server.logic.validation.MapValidator
 import delta.codecharacter.server.logic.verdict.VerdictAlgorithm
 import delta.codecharacter.server.notifications.NotificationService
 import delta.codecharacter.server.user.public_user.PublicUserService
@@ -54,7 +55,7 @@ internal class MatchServiceTest {
     private lateinit var dailyChallengeMatchRepository: DailyChallengeMatchRepository
     private lateinit var jackson2ObjectMapperBuilder: Jackson2ObjectMapperBuilder
     private lateinit var simpMessagingTemplate: SimpMessagingTemplate
-
+    private lateinit var mapValidator: MapValidator
     private lateinit var matchService: MatchService
 
     @BeforeEach
@@ -75,6 +76,7 @@ internal class MatchServiceTest {
         dailyChallengeMatchRepository = mockk(relaxed = true)
         jackson2ObjectMapperBuilder = Jackson2ObjectMapperBuilder()
         simpMessagingTemplate = mockk(relaxed = true)
+        mapValidator = mockk(relaxed = true)
 
         matchService =
             MatchService(
@@ -93,7 +95,8 @@ internal class MatchServiceTest {
                 dailyChallengeService,
                 dailyChallengeMatchRepository,
                 jackson2ObjectMapperBuilder,
-                simpMessagingTemplate
+                simpMessagingTemplate,
+                mapValidator
             )
     }
 
