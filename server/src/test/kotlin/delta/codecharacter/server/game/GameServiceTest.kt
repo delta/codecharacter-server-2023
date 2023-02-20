@@ -5,6 +5,7 @@ import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.config.GameConfiguration
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game.game_log.GameLogService
+import delta.codecharacter.server.game.queue.entities.GameCode
 import delta.codecharacter.server.game.queue.entities.GameRequestEntity
 import delta.codecharacter.server.game.queue.entities.GameResultEntity
 import delta.codecharacter.server.game.queue.entities.GameStatusUpdateEntity
@@ -93,8 +94,7 @@ internal class GameServiceTest {
         val expectedGameRequest =
             GameRequestEntity(
                 gameId = gameId,
-                sourceCode = "code",
-                language = LanguageEnum.CPP,
+                playerCode = GameCode(code = "code", language = LanguageEnum.CPP),
                 parameters = gameParameters,
                 map = "[[0]]"
             )

@@ -8,7 +8,8 @@ import java.util.UUID
 data class GameRequestEntity(
     @field:JsonProperty("game_id", required = true) val gameId: UUID,
     @field:JsonProperty("parameters", required = true) val parameters: GameParameters,
-    @field:JsonProperty("source_code", required = true) val sourceCode: String,
-    @field:JsonProperty("language", required = true) val language: LanguageEnum,
+    @field:JsonProperty("player_code", required = true) val playerCode:GameCode,
+//    @field:JsonProperty("source_code", required = true) val sourceCode: String,
+//    @field:JsonProperty("language", required = true) val language: LanguageEnum,
     @field:JsonProperty("map", required = true) val map: String,
 )

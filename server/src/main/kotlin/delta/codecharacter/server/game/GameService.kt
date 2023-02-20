@@ -8,7 +8,7 @@ import delta.codecharacter.server.game.game_log.GameLogService
 import delta.codecharacter.server.game.queue.entities.GamePvPRequestEntity
 import delta.codecharacter.server.game.queue.entities.GameRequestEntity
 import delta.codecharacter.server.game.queue.entities.GameStatusUpdateEntity
-import delta.codecharacter.server.game.queue.entities.PvpCode
+import delta.codecharacter.server.game.queue.entities.GameCode
 import delta.codecharacter.server.params.GameParameters
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
@@ -47,8 +47,7 @@ class GameService(
         val gameRequest =
             GameRequestEntity(
                 gameId = game.id,
-                sourceCode = sourceCode,
-                language = language,
+                playerCode = GameCode(code = sourceCode, language = language),
                 parameters = parameters,
                 map = map
             )
@@ -57,8 +56,8 @@ class GameService(
 
     fun sendPlayerVsPlayerGameRequest(
         game: GameEntity,
-        userCodeBase: PvpCode,
-        opponentCodeBase: PvpCode
+        userCodeBase: GameCode,
+        opponentCodeBase: GameCode
     ) {
         val gamePvpRequest =
             GamePvPRequestEntity(

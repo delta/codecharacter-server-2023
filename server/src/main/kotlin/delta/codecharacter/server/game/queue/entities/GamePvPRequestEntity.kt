@@ -6,7 +6,7 @@ import java.util.UUID
 
 data class GamePvPRequestEntity(
     @field:JsonProperty("game_id", required = true) val gameId: UUID,
-    @field:JsonProperty("playerUser", required = true) val playerUser: PvpCode,
-    @field:JsonProperty("playerOpponent", required = true) val playerOpponent: PvpCode,
+    @field:JsonProperty("player1", required = true) val playerUser: GameCode,
+    @field:JsonProperty("player2", required = true) val playerOpponent: GameCode,
     @field:JsonProperty("parameters", required = true) val parameters: GameParameters,
 )

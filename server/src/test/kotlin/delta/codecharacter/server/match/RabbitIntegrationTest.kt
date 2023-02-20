@@ -135,8 +135,8 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
         val gameRequestEntity = mapper.readValue(gameRequestEntityString, GameRequestEntity::class.java)
         assertThat(gameRequestEntity.gameId).isEqualTo(game.id)
         assertThat(gameRequestEntity.map).isEqualTo(mapRevision.map)
-        assertThat(gameRequestEntity.sourceCode).isEqualTo(codeRevision.code)
-        assertThat(gameRequestEntity.language).isEqualTo(codeRevision.language)
+        assertThat(gameRequestEntity.playerCode.code).isEqualTo(codeRevision.code)
+        assertThat(gameRequestEntity.playerCode.language).isEqualTo(codeRevision.language)
     }
 
     @Test
@@ -220,9 +220,9 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
             assertThat(gameRequestEntity1.gameId).isEqualTo(game1.id)
             assertThat(gameRequestEntity1.map)
                 .isEqualTo(opponentLockedMap.lockedMap[GameMapTypeDto.NORMAL]?.map.toString())
-            assertThat(gameRequestEntity1.sourceCode)
+            assertThat(gameRequestEntity1.playerCode.code)
                 .isEqualTo(userLockedCode.lockedCode[CodeTypeDto.NORMAL]?.code)
-            assertThat(gameRequestEntity1.language)
+            assertThat(gameRequestEntity1.playerCode.language)
                 .isEqualTo(userLockedCode.lockedCode[CodeTypeDto.NORMAL]?.language)
         }
         val gameRequestEntityString2 =
@@ -235,9 +235,9 @@ internal class RabbitIntegrationTest(@Autowired val mockMvc: MockMvc) {
             assertThat(gameRequestEntity2.gameId).isEqualTo(game2.id)
             assertThat(gameRequestEntity2.map)
                 .isEqualTo(userLockedMap.lockedMap[GameMapTypeDto.NORMAL]?.map)
-            assertThat(gameRequestEntity2.sourceCode)
+            assertThat(gameRequestEntity2.playerCode.code)
                 .isEqualTo(opponentLockedCode.lockedCode[CodeTypeDto.NORMAL]?.code)
-            assertThat(gameRequestEntity2.language)
+            assertThat(gameRequestEntity2.playerCode.language)
                 .isEqualTo(opponentLockedCode.lockedCode[CodeTypeDto.NORMAL]?.language)
         }
     }
