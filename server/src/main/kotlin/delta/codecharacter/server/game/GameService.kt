@@ -66,6 +66,7 @@ class GameService(
                 playerOpponent = opponentCodeBase,
                 parameters = parameters
             )
+        println(mapper.writeValueAsString(gamePvpRequest))
         rabbitTemplate.convertAndSend("gamePvpRequestQueue", mapper.writeValueAsString(gamePvpRequest))
     }
     fun updateGameStatus(gameStatusUpdateJson: String): GameEntity {
