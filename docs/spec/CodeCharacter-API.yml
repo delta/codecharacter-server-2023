@@ -2035,7 +2035,7 @@ components:
         - PLAYER2
         - TIE
         - SUCCESS
-        - FAILIURE
+        - FAILURE
       description: Match/Game verdict
     GameStatus:
       title: GameStatus

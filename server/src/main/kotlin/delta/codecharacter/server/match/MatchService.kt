@@ -284,7 +284,7 @@ class MatchService(
         val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
         val dcMatches =
             dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
-                Duration.between(it.createdAt, Instant.now()).toHours() < 24
+                Duration.between(it.createdAt, Instant.now()).toHours() < 24 && it.verdict!=DailyChallengeMatchVerdictEnum.STARTED
             }
         return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)
     }

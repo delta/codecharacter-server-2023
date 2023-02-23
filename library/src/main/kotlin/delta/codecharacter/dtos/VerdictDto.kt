@@ -9,7 +9,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 
 /**
 * Match/Game verdict
-* Values: PLAYER1,PLAYER2,TIE,SUCCESS,FAILIURE
+* Values: PLAYER1,PLAYER2,TIE,SUCCESS,FAILURE
 */
 enum class VerdictDto(val value: kotlin.String) {
 
@@ -17,6 +17,6 @@ enum class VerdictDto(val value: kotlin.String) {
     @JsonProperty("PLAYER2") PLAYER2("PLAYER2"),
     @JsonProperty("TIE") TIE("TIE"),
     @JsonProperty("SUCCESS") SUCCESS("SUCCESS"),
-    @JsonProperty("FAILIURE") FAILIURE("FAILIURE")
+    @JsonProperty("FAILURE") FAILURE("FAILURE")
 }
 
