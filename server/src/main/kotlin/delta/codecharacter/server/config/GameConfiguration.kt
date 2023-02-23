@@ -14,13 +14,13 @@ class GameConfiguration {
         return GameParameters(
             attackers =
             setOf(
-                Attacker(id = 1, hp = 10, range = 3, attackPower = 3, speed = 3, price = 1),
-                Attacker(id = 2, hp = 10, range = 3, attackPower = 3, speed = 3, price = 1),
+                Attacker(id = 1, hp = 10, range = 3, attackPower = 3, speed = 3, price = 1, aerial = 0),
+                Attacker(id = 2, hp = 10, range = 3, attackPower = 3, speed = 3, price = 1, aerial = 0),
             ),
             defenders =
             setOf(
-                Defender(id = 1, hp = 10, range = 4, attackPower = 5, price = 1),
-                Defender(id = 2, hp = 10, range = 6, attackPower = 5, price = 1),
+                Defender(id = 1, hp = 10, range = 4, attackPower = 5, price = 1, aerial = 0),
+                Defender(id = 2, hp = 10, range = 6, attackPower = 5, price = 1, aerial = 0),
             ),
             numberOfTurns = 500,
             numberOfCoins = 1000,

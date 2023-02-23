@@ -119,7 +119,7 @@ class MatchService(
 
         val game1 = gameService.createGame(matchId)
         val game2 = gameService.createGame(matchId)
-
+        val code =""
         val match =
             MatchEntity(
                 id = matchId,
