@@ -147,13 +147,13 @@ class MatchService(
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
         val (_, chall, challType, _, completionStatus) =
             dailyChallengeService.getDailyChallengeByDateForUser(userId)
-        val dc = dailyChallengeService.getDailyChallengeByDate()
-        val (value, _) = dailyChallengeMatchRequestDto
         if (completionStatus != null && completionStatus) {
             throw CustomException(
                 HttpStatus.BAD_REQUEST, "You have already completed your daily challenge"
             )
         }
+        val dc = dailyChallengeService.getDailyChallengeByDate()
+        val (value, _) = dailyChallengeMatchRequestDto
         val language: LanguageEnum
         val map: String
         val code: String
@@ -197,7 +197,7 @@ class MatchService(
                 createDualMatch(userId, createMatchRequestDto.opponentUsername!!)
             }
             else -> {
-                throw IllegalStateException("MatchMode Is Not Correct")
+                throw CustomException(HttpStatus.BAD_REQUEST, "MatchMode Is Not Correct")
             }
         }
     }
@@ -383,8 +383,9 @@ class MatchService(
                     content =
                     when (updatedMatch.verdict) {
                         DailyChallengeMatchVerdictEnum.SUCCESS -> "Successfully completed challenge"
+                        DailyChallengeMatchVerdictEnum.FAILURE -> "Failed to complete challenge"
                         else -> {
-                            "Failed to complete challenge"
+                            "Some error occurred. Try again!"
                         }
                     }
                 )

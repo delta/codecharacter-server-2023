@@ -10,6 +10,7 @@ import delta.codecharacter.server.logic.daily_challenge_score.DailyChallengeScor
 import delta.codecharacter.server.user.public_user.PublicUserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.Instant
@@ -32,22 +33,22 @@ class DailyChallengeService(
     }
 
     fun getDailyChallengeByDate(): DailyChallengeEntity {
-        val dc =
+        val currentDailyChallenge =
             dailyChallengeRepository.findByDay(findNumberOfDays()).orElseThrow {
-                throw CustomException(org.springframework.http.HttpStatus.BAD_REQUEST, "Invalid Request")
+                throw CustomException(HttpStatus.BAD_REQUEST, "Invalid Request")
             }
-        return dc
+        return currentDailyChallenge
     }
 
     fun getDailyChallengeByDateForUser(userId: UUID): DailyChallengeGetRequestDto {
         val user = publicUserService.getPublicUser(userId)
-        val dc = getDailyChallengeByDate()
+        val currentDailyChallenge = getDailyChallengeByDate()
         return DailyChallengeGetRequestDto(
-            challName = dc.challName,
-            chall = dc.chall,
-            challType = dc.challType,
-            description = dc.description,
-            completionStatus = user.dailyChallengeHistory.containsKey(dc.day)
+            challName = currentDailyChallenge.challName,
+            chall = currentDailyChallenge.chall,
+            challType = currentDailyChallenge.challType,
+            description = currentDailyChallenge.description,
+            completionStatus = user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)
         )
     }
 
@@ -55,19 +56,28 @@ class DailyChallengeService(
         val (_, coinsUsed, destruction, _, _) = gameEntity
         if (gameEntity.status == GameStatusEnum.EXECUTE_ERROR)
             return DailyChallengeMatchVerdictEnum.FAILURE
-        val dc = getDailyChallengeByDate()
-        if ((dc.challType == ChallengeTypeDto.MAP && destruction > dc.toleratedDestruction) ||
-            (dc.challType == ChallengeTypeDto.CODE && destruction < dc.toleratedDestruction)
+        val currentDailyChallenge = getDailyChallengeByDate()
+        if ((
+            currentDailyChallenge.challType == ChallengeTypeDto.MAP &&
+                destruction > currentDailyChallenge.toleratedDestruction
+            ) ||
+            (
+                currentDailyChallenge.challType == ChallengeTypeDto.CODE &&
+                    destruction < currentDailyChallenge.toleratedDestruction
+                )
         ) {
             val score =
                 dailyChallengeScoreAlgorithm.getDailyChallengeScore(
                     playerCoinsUsed = coinsUsed,
                     playerDestruction = destruction,
-                    dailyChallenge = dc,
+                    dailyChallenge = currentDailyChallenge,
                 )
-            val updatedDc = dc.copy(numberOfCompletions = dc.numberOfCompletions + 1)
-            dailyChallengeRepository.save(updatedDc)
-            publicUserService.updateDailyChallengeScore(userId, score, dc)
+            val updatedDailyChallenge =
+                currentDailyChallenge.copy(
+                    numberOfCompletions = currentDailyChallenge.numberOfCompletions + 1
+                )
+            dailyChallengeRepository.save(updatedDailyChallenge)
+            publicUserService.updateDailyChallengeScore(userId, score, currentDailyChallenge)
             return DailyChallengeMatchVerdictEnum.SUCCESS
         }
         return DailyChallengeMatchVerdictEnum.FAILURE

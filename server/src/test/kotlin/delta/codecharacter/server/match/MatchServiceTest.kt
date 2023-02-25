@@ -1,7 +1,10 @@
 package delta.codecharacter.server.match
 
+import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.dtos.CodeRevisionDto
 import delta.codecharacter.dtos.CreateMatchRequestDto
+import delta.codecharacter.dtos.DailyChallengeGetRequestDto
+import delta.codecharacter.dtos.DailyChallengeMatchRequestDto
 import delta.codecharacter.dtos.GameMapRevisionDto
 import delta.codecharacter.dtos.LanguageDto
 import delta.codecharacter.dtos.MatchModeDto
@@ -325,5 +328,59 @@ internal class MatchServiceTest {
         confirmVerified(
             codeRevisionService, mapRevisionService, gameService, matchRepository, gameService
         )
+    }
+
+    @Test
+    fun `should create dailyChallenge match`() {
+        val userId = UUID.randomUUID()
+        val dailyChallengeForUser =
+            DailyChallengeGetRequestDto(
+                challName = "challenge-name",
+                chall = TestAttributes.dailyChallengeCode.chall,
+                challType = ChallengeTypeDto.CODE,
+                description = "description",
+                completionStatus = false
+            )
+        val matchRequest = DailyChallengeMatchRequestDto(value = "[[0,0,0]]")
+        every { dailyChallengeService.getDailyChallengeByDateForUser(any()) } returns
+            dailyChallengeForUser
+        every { dailyChallengeMatchRepository.save(any()) } returns mockk()
+        every { publicUserService.getPublicUser(any()) } returns TestAttributes.publicUser
+        every { gameService.createGame(any()) } returns mockk()
+        every { dailyChallengeService.getDailyChallengeByDate() } returns mockk()
+        every {
+            gameService.sendGameRequest(
+                any(), dailyChallengeForUser.chall.cpp.toString(), LanguageEnum.CPP, matchRequest.value
+            )
+        } returns Unit
+
+        matchService.createDCMatch(userId, matchRequest)
+
+        verify {
+            dailyChallengeMatchRepository.save(any())
+            gameService.createGame(any())
+            gameService.sendGameRequest(
+                any(), dailyChallengeForUser.chall.cpp.toString(), LanguageEnum.CPP, matchRequest.value
+            )
+        }
+        confirmVerified(dailyChallengeMatchRepository, gameService)
+    }
+
+    @Test
+    @Throws(CustomException::class)
+    fun `should throw error if daily challenge is already completed`() {
+        val dailyChallengeForUser =
+            DailyChallengeGetRequestDto(
+                challName = "challenge-name",
+                chall = TestAttributes.dailyChallengeCode.chall,
+                challType = ChallengeTypeDto.CODE,
+                description = "description",
+                completionStatus = true
+            )
+        every { dailyChallengeService.getDailyChallengeByDateForUser(any()) } returns
+            dailyChallengeForUser
+        val exception = assertThrows<CustomException> { matchService.createDCMatch(mockk(), mockk()) }
+        assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)
+        assertThat(exception.message).isEqualTo("You have already completed your daily challenge")
     }
 }

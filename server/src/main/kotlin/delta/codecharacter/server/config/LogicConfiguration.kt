@@ -29,6 +29,6 @@ class LogicConfiguration {
 
     @Bean
     fun dailyChallengeScoreAlgorithm(): DailyChallengeScoreAlgorithm {
-        return DailyChallengeScoreAlgorithm()
+        return DailyChallengeScoreAlgorithm(gameConfiguration = GameConfiguration())
     }
 }

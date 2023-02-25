@@ -19,7 +19,7 @@ interface ScoreAlgorithm {
 
     fun getHoursSinceDailyChallengeLaunched(): Double
 
-    fun getTimeScore(
+    fun getPlayerTimeScore(
         perfectTimeScore: Double,
     ): Double
 }

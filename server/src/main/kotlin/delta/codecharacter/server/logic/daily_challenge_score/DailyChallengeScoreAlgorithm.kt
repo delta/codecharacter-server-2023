@@ -3,22 +3,29 @@ package delta.codecharacter.server.logic.daily_challenge_score
 import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.server.config.GameConfiguration
 import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import java.time.Duration
 import java.time.Instant
 import kotlin.math.exp
 
-class DailyChallengeScoreAlgorithm : ScoreAlgorithm {
+class DailyChallengeScoreAlgorithm(@Autowired private val gameConfiguration: GameConfiguration) :
+    ScoreAlgorithm {
 
     @Value("\${environment.event-start-date}") private lateinit var startDate: String
+    private val perfectBasePartConstant = 0.7
+    private val perfectTimePartConstant = 0.3
+    private val exponentialConstantForBasePart = 150
+    private val exponentialConstantForTimePart = 15
+    private val secondsInADay = 86400
+    private val secondsInAnHour = 3600
 
     override fun getHoursSinceDailyChallengeLaunched(): Double {
         val givenDateTime = Instant.parse(startDate)
         val nowDateTime = Instant.now()
         val period: Duration = Duration.between(givenDateTime, nowDateTime)
-        // we need hours in decimal format so convert to seconds then take into hours
 
-        return (period.toSeconds().toDouble().rem(86400)) / 3600.00
+        return (period.toSeconds().toDouble().rem(secondsInADay)) / secondsInAnHour
     }
 
     override fun getPlayerBaseScore(
@@ -32,9 +39,9 @@ class DailyChallengeScoreAlgorithm : ScoreAlgorithm {
         return (coinsLeftPercent + (2 * destructionPercent) + perfectBaseScore)
     }
 
-    override fun getTimeScore(perfectTimeScore: Double): Double {
+    override fun getPlayerTimeScore(perfectTimeScore: Double): Double {
         val hours = getHoursSinceDailyChallengeLaunched()
-        return perfectTimeScore * exp((-1) * (hours / 15))
+        return perfectTimeScore * exp((-1) * (hours / exponentialConstantForTimePart))
     }
 
     override fun getDailyChallengeScore(
@@ -42,18 +49,20 @@ class DailyChallengeScoreAlgorithm : ScoreAlgorithm {
         playerDestruction: Double,
         dailyChallenge: DailyChallengeEntity
     ): Double {
-        val gameConfiguration = GameConfiguration()
         val totalCoins = gameConfiguration.gameParameters().numberOfCoins
         val (_, _, _, challType, _, _, perfectScore, numberOfCompletions) = dailyChallenge
-        val perfectBasePart = 0.7 * perfectScore * exp(((-1) * (numberOfCompletions.toDouble() / 150)))
-        val perfectTimePart = 0.3 * perfectScore
+        val perfectBasePart =
+            perfectBasePartConstant *
+                perfectScore *
+                exp(((-1) * (numberOfCompletions.toDouble() / exponentialConstantForBasePart)))
+        val perfectTimePart = perfectTimePartConstant * perfectScore
         val coinsLeftPercentage = ((totalCoins - playerCoinsUsed.toDouble()) / totalCoins) * 100
         return (
             (
                 getPlayerBaseScore(
                     coinsLeftPercentage, playerDestruction, perfectBasePart, challType
                 ) +
-                    getTimeScore(perfectTimePart)
+                    getPlayerTimeScore(perfectTimePart)
                 ) * 100.0
             )
             .toInt() / 100.0
