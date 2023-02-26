@@ -19,6 +19,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
+import java.time.Instant
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -36,12 +37,12 @@ internal class DailyChallengeControllerIntegrationTest(@Autowired val mockMvc: M
         mapper = jackson2ObjectMapperBuilder.build()
         mongoTemplate.save<UserEntity>(TestAttributes.user)
         mongoTemplate.save<PublicUserEntity>(TestAttributes.publicUser)
-        ReflectionTestUtils.setField(dailyChallengeService, "startDate", "2023-02-24T20:00:00Z")
+        ReflectionTestUtils.setField(dailyChallengeService, "startDate", Instant.now().toString())
     }
 
     @Test
     @WithMockCustomUser
-    fun `should not allow daily challenge match submission`() {
+    fun `should not allow daily challenge match submission if already completed`() {
         mockMvc
             .post("/dc/submit") {
                 contentType = MediaType.APPLICATION_JSON
