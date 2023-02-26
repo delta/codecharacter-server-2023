@@ -61,6 +61,7 @@ internal class MatchServiceTest {
     private lateinit var simpMessagingTemplate: SimpMessagingTemplate
     private lateinit var mapValidator: MapValidator
     private lateinit var matchService: MatchService
+    private lateinit var autoMatchRepository: AutoMatchRepository
 
     @BeforeEach
     fun setUp() {
@@ -81,6 +82,7 @@ internal class MatchServiceTest {
         jackson2ObjectMapperBuilder = Jackson2ObjectMapperBuilder()
         simpMessagingTemplate = mockk(relaxed = true)
         mapValidator = mockk(relaxed = true)
+        autoMatchRepository = mockk(relaxed = true)
 
         matchService =
             MatchService(
@@ -100,7 +102,8 @@ internal class MatchServiceTest {
                 dailyChallengeMatchRepository,
                 jackson2ObjectMapperBuilder,
                 simpMessagingTemplate,
-                mapValidator
+                mapValidator,
+                autoMatchRepository
             )
     }
 

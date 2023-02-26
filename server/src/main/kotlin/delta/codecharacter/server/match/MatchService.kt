@@ -62,7 +62,6 @@ class MatchService(
     @Autowired private val simpMessagingTemplate: SimpMessagingTemplate,
     @Autowired private val mapValidator: MapValidator,
     @Autowired private val autoMatchRepository: AutoMatchRepository
-
 ) {
     private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()
 
@@ -110,7 +109,7 @@ class MatchService(
         gameService.sendGameRequest(game, code, LanguageEnum.valueOf(language.name), map)
     }
 
-    fun createDualMatch(userId: UUID, opponentUsername: String): UUID {
+    fun createDualMatch(userId: UUID, opponentUsername: String, mode: MatchModeEnum): UUID {
         val publicUser = publicUserService.getPublicUser(userId)
         val publicOpponent = publicUserService.getPublicUserByUsername(opponentUsername)
         val opponentId = publicOpponent.userId
@@ -138,7 +137,7 @@ class MatchService(
             MatchEntity(
                 id = matchId,
                 games = listOf(game1, game2),
-                mode = MatchModeEnum.MANUAL,
+                mode = mode,
                 verdict = MatchVerdictEnum.TIE,
                 createdAt = Instant.now(),
                 totalPoints = 0,
@@ -203,7 +202,7 @@ class MatchService(
                 if (createMatchRequestDto.opponentUsername == null) {
                     throw CustomException(HttpStatus.BAD_REQUEST, "Opponent ID is required")
                 }
-                createDualMatch(userId, createMatchRequestDto.opponentUsername!!)
+                createDualMatch(userId, createMatchRequestDto.opponentUsername!!, MatchModeEnum.MANUAL)
             }
             else -> {
                 throw CustomException(HttpStatus.BAD_REQUEST, "MatchMode Is Not Correct")
@@ -221,7 +220,7 @@ class MatchService(
             run {
                 for (j in i + 1 until userIds.size) {
                     val opponentUsername = usernames[j]
-                    val matchId = createDualMatch(userId, opponentUsername)
+                    val matchId = createDualMatch(userId, opponentUsername, MatchModeEnum.AUTO)
                     autoMatchRepository.save(AutoMatchEntity(matchId))
                 }
             }
