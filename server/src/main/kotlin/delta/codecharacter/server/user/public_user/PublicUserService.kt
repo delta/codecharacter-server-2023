@@ -24,8 +24,8 @@ import java.util.UUID
 class PublicUserService(@Autowired private val publicUserRepository: PublicUserRepository) {
 
     @Value("\${environment.no-of-tutorial-level}") private lateinit var totalTutorialLevels: Number
-    @Value("\${environment.tier-1-players}") private lateinit var tier1Players: Number
-    @Value("\${environment.top-players}") private lateinit var topPlayer: Number
+    @Value("\${environment.tier-1-players}") private var tier1Players: Number = 1
+    @Value("\${environment.top-players}") private var topPlayer: Number = 1
     fun create(
         userId: UUID,
         username: String,
