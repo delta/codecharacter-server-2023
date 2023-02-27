@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.test.context.support.WithSecurityContext
 import org.springframework.security.test.context.support.WithSecurityContextFactory
-import java.util.*
+import java.util.UUID
 
 class TestAttributes {
     companion object {
