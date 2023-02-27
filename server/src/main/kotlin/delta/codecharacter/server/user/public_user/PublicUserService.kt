@@ -96,6 +96,17 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
 
     fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
         val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Order.desc("rating")))
+        if ((
+            tier == TierTypeDto.TIER2 &&
+                publicUserRepository.findAllByTier(TierTypeDto.TIER1, pageRequest).size == 0
+            ) ||
+            (
+                tier == TierTypeDto.TIER1 &&
+                    publicUserRepository.findAllByTier(TierTypeDto.TIER2, pageRequest).size == 0
+                )
+        ) {
+            return listOf<LeaderboardEntryDto>()
+        }
         return publicUserRepository.findAllByTier(tier, pageRequest).map {
             LeaderboardEntryDto(
                 user =
