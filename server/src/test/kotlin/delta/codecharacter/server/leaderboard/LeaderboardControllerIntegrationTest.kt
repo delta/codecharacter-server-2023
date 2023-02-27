@@ -21,7 +21,6 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import java.math.BigDecimal
-import java.util.UUID
 
 @AutoConfigureMockMvc
 @SpringBootTest
@@ -40,62 +39,85 @@ internal class LeaderboardControllerIntegrationTest(@Autowired val mockMvc: Mock
 
     @Test
     @WithMockCustomUser
-    fun `should get leaderboard`() {
-        val publicUserEntity =
-            TestAttributes.publicUser.copy(userId = UUID.randomUUID(), username = "opponent")
-        mongoTemplate.save<PublicUserEntity>(publicUserEntity)
-
-        val leaderboardEntryDto =
-            LeaderboardEntryDto(
-                user =
-                PublicUserDto(
-                    username = "TestUser",
-                    name = "Test User",
-                    country = "Test Country",
-                    college = "Test College",
-                    avatarId = 1,
-                    tier = TierTypeDto.TIER_PRACTICE
-                ),
-                stats =
-                UserStatsDto(
-                    rating = BigDecimal.valueOf(1000.0),
-                    wins = 4,
-                    losses = 2,
-                    ties = 1,
-                ),
+    fun `should get leaderboard when tier type is either TIER_PRACTICE , TIER1 and TIER2`() {
+        val testUser = TestAttributes.publicUser.copy(tier = TierTypeDto.TIER1)
+        mongoTemplate.save<PublicUserEntity>(testUser)
+        val expectedDto =
+            listOf(
+                LeaderboardEntryDto(
+                    user =
+                    PublicUserDto(
+                        username = testUser.username,
+                        name = testUser.name,
+                        tier = TierTypeDto.valueOf(testUser.tier.name),
+                        country = testUser.country,
+                        college = testUser.college,
+                        avatarId = testUser.avatarId,
+                    ),
+                    stats =
+                    UserStatsDto(
+                        rating = BigDecimal(testUser.rating),
+                        wins = testUser.wins,
+                        losses = testUser.losses,
+                        ties = testUser.ties
+                    ),
+                )
             )
-        mockMvc.get("/leaderboard") { contentType = MediaType.APPLICATION_JSON }.andExpect {
-            status { is2xxSuccessful() }
-            content { contentType(MediaType.APPLICATION_JSON) }
-            content { listOf(leaderboardEntryDto) }
-        }
+        mockMvc
+            .get("/leaderboard?page=0&size=2&tier=TIER1") { contentType = MediaType.APPLICATION_JSON }
+            .andExpect {
+                status { is2xxSuccessful() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content { json(mapper.writeValueAsString(expectedDto)) }
+            }
     }
 
     @Test
     @WithMockCustomUser
-    fun `should return empty list when leaderboard not found`() {
-        mockMvc.get("/leaderboard") { contentType = MediaType.APPLICATION_JSON }.andExpect {
-            status { is2xxSuccessful() }
-            content { contentType(MediaType.APPLICATION_JSON) }
-            content { listOf<LeaderboardEntryDto>() }
-        }
+    fun `should get empty array for invalid tier type when leaderboard contains tier of different type`() {
+        val testUser = TestAttributes.publicUser.copy(tier = TierTypeDto.TIER1)
+        mongoTemplate.save<PublicUserEntity>(testUser)
+        val expectedDto = listOf<LeaderboardEntryDto>()
+        mockMvc
+            .get("/leaderboard?page=0&size=2&tier=TIER2") { contentType = MediaType.APPLICATION_JSON }
+            .andExpect {
+                status { is2xxSuccessful() }
+                content { contentType(MediaType.APPLICATION_JSON) }
+                content { json(mapper.writeValueAsString(expectedDto)) }
+            }
     }
 
     @Test
     @WithMockCustomUser
-    fun `should return empty list if all players belong to tier 1`() {
-        val publicUserEntity =
-            TestAttributes.publicUser.copy(
-                userId = UUID.randomUUID(), username = "opponent", tier = TierTypeDto.TIER1
+    fun `should return all entries when tier not found`() {
+        val testUser = TestAttributes.publicUser
+        val expectedDto =
+            listOf(
+                LeaderboardEntryDto(
+                    user =
+                    PublicUserDto(
+                        username = testUser.username,
+                        name = testUser.name,
+                        tier = TierTypeDto.valueOf(testUser.tier.name),
+                        country = testUser.country,
+                        college = testUser.college,
+                        avatarId = testUser.avatarId,
+                    ),
+                    stats =
+                    UserStatsDto(
+                        rating = BigDecimal(testUser.rating),
+                        wins = testUser.wins,
+                        losses = testUser.losses,
+                        ties = testUser.ties
+                    ),
+                )
             )
-        mongoTemplate.save<PublicUserEntity>(publicUserEntity)
         mockMvc.get("/leaderboard") { contentType = MediaType.APPLICATION_JSON }.andExpect {
             status { is2xxSuccessful() }
             content { contentType(MediaType.APPLICATION_JSON) }
-            content { listOf<LeaderboardEntryDto>() }
+            content { json(mapper.writeValueAsString(expectedDto)) }
         }
     }
-
     @AfterEach
     fun tearDown() {
         mongoTemplate.dropCollection<PublicUserEntity>()

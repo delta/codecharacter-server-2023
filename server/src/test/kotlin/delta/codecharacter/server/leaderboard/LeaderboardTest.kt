@@ -10,6 +10,7 @@ import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
@@ -112,11 +113,15 @@ internal class LeaderboardTest {
             listOf(user3, user4)
 
         publicUserService.getLeaderboard(0, 10, TierTypeDto.TIER1).forEach { user ->
-            assert(user.user.tier == TierTypeDto.TIER1)
+            assertThat(user.user.tier).isEqualTo(TierTypeDto.TIER1)
         }
         publicUserService.getLeaderboard(0, 10, TierTypeDto.TIER2).forEach { user ->
-            assert(user.user.tier == TierTypeDto.TIER2)
+            assertThat(user.user.tier).isEqualTo(TierTypeDto.TIER2)
         }
+
+        verify { publicUserRepository.findAllByTier(TierTypeDto.TIER1, any()) }
+        verify { publicUserRepository.findAllByTier(TierTypeDto.TIER2, any()) }
+        confirmVerified(publicUserRepository)
     }
 
     @Test
