@@ -48,7 +48,6 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 ties = 0,
                 score = 0.0,
                 tier = TierTypeDto.TIER_PRACTICE,
-                isDailyChallengeCompleted = false,
                 tutorialLevel = 1,
                 dailyChallengeHistory = HashMap()
             )

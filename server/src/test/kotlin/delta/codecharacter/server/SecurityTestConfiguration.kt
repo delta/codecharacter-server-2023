@@ -2,9 +2,8 @@ package delta.codecharacter.server
 
 import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.dtos.DailyChallengeObjectDto
-import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
-import delta.codecharacter.server.leaderboard.LeaderBoardEnum
 import delta.codecharacter.dtos.TierTypeDto
+import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
 import delta.codecharacter.server.user.LoginType
 import delta.codecharacter.server.user.UserEntity
 import delta.codecharacter.server.user.public_user.DailyChallengeHistory
@@ -19,7 +18,7 @@ import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.test.context.support.WithSecurityContext
 import org.springframework.security.test.context.support.WithSecurityContextFactory
-import java.util.UUID
+import java.util.*
 
 class TestAttributes {
     companion object {

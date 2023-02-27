@@ -1,6 +1,8 @@
 package delta.codecharacter.server.leaderboard
 
 import delta.codecharacter.dtos.TierTypeDto
+import delta.codecharacter.server.TestAttributes
+import delta.codecharacter.server.user.public_user.DailyChallengeHistory
 import delta.codecharacter.server.user.public_user.PublicUserEntity
 import delta.codecharacter.server.user.public_user.PublicUserRepository
 import delta.codecharacter.server.user.public_user.PublicUserService
@@ -34,7 +36,8 @@ internal class leaderboardTest {
             ties = 0,
             isActivated = true,
             score = 0.0,
-            isDailyChallengeCompleted = false
+            dailyChallengeHistory =
+            hashMapOf(0 to DailyChallengeHistory(0.0, TestAttributes.dailyChallengeCode)),
         )
     private var user2 =
         PublicUserEntity(
@@ -52,7 +55,8 @@ internal class leaderboardTest {
             ties = 0,
             isActivated = true,
             score = 0.0,
-            isDailyChallengeCompleted = false
+            dailyChallengeHistory =
+            hashMapOf(0 to DailyChallengeHistory(0.0, TestAttributes.dailyChallengeCode)),
         )
     private var user3 =
         PublicUserEntity(
@@ -70,7 +74,8 @@ internal class leaderboardTest {
             ties = 0,
             isActivated = true,
             score = 0.0,
-            isDailyChallengeCompleted = false
+            dailyChallengeHistory =
+            hashMapOf(0 to DailyChallengeHistory(0.0, TestAttributes.dailyChallengeCode)),
         )
     private var user4 =
         PublicUserEntity(
@@ -88,7 +93,8 @@ internal class leaderboardTest {
             ties = 0,
             isActivated = true,
             score = 0.0,
-            isDailyChallengeCompleted = false
+            dailyChallengeHistory =
+            hashMapOf(0 to DailyChallengeHistory(0.0, TestAttributes.dailyChallengeCode)),
         )
 
     @BeforeEach
