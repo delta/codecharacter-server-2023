@@ -14,11 +14,6 @@ class SchedulingService(@Autowired private val publicUserService: PublicUserServ
         publicUserService.updateLeaderboardAfterPracticePhase()
     }
 
-    @Scheduled(cron = "\${environment.game-start-time}", zone = "GMT")
-    fun updateLeaderboard() {
-        publicUserService.updateTierForUser()
-    }
-
     @Scheduled(cron = "\${environment.update-time}", zone = "GMT")
     fun promoteAndDemoteUserTiers() {
         publicUserService.promoteTiers()

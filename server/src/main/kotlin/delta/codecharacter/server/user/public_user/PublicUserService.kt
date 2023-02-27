@@ -75,10 +75,6 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         }
     }
 
-    fun updateTierForUser() {
-        updateTiers(publicUserRepository.findAll(Sort.by(Sort.Order.desc("rating"))))
-    }
-
     fun promoteTiers() {
         val topPlayersInTier2 =
             publicUserRepository.findAllByTier(

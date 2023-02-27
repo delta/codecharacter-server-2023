@@ -14,7 +14,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.UUID
 
-internal class leaderboardTest {
+internal class LeaderboardTest {
 
     private lateinit var publicUserRepository: PublicUserRepository
     private lateinit var publicUserService: PublicUserService
@@ -129,14 +129,6 @@ internal class leaderboardTest {
         publicUserService.promoteTiers()
         verify { publicUserRepository.save(any()) }
         verify { publicUserRepository.findAllByTier(any(), any()) }
-        confirmVerified(publicUserRepository)
-    }
-
-    @Test
-    fun `should categorise leaderboard into tiers`() {
-        every { publicUserRepository.save(any()) } returns publicUserEntity
-        publicUserService.updateTiers(listOf(user1, user2, user3, user4))
-        verify { publicUserRepository.save(any()) }
         confirmVerified(publicUserRepository)
     }
 }
