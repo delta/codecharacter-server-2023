@@ -21,13 +21,13 @@ class SchedulingService(
         publicUserService.resetRatingsAfterPracticePhase()
         publicUserService.updateLeaderboardAfterPracticePhase()
     }
-    @Scheduled(cron = "\${environment.update-time}", zone = "GMT+5:30")
+    @Scheduled(cron = "\${environment.promote-demote-time}", zone = "GMT+5:30")
     fun promoteAndDemoteUserTiers() {
         logger.info("LeaderBoard Tier Promotion and Demotion started")
         publicUserService.promoteTiers()
     }
 
-    @Scheduled(cron = "\${environment.update-time}", zone = "GMT+5:30")
+    @Scheduled(cron = "\${environment.promote-demote-time}", zone = "GMT+5:30")
     fun createAutoMatch() {
         matchService.createAutoMatch()
     }
