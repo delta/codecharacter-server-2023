@@ -352,7 +352,6 @@ class MatchService(
                 val (newUserRating, newOpponentRating) =
                     ratingHistoryService.updateRating(match.player1.userId, match.player2.userId, verdict)
                 if (!(match.mode == MatchModeEnum.MANUAL && (match.player1.tier == TierTypeDto.TIER1))) {
-
                     publicUserService.updatePublicRating(
                         userId = match.player1.userId,
                         isInitiator = true,
@@ -386,20 +385,22 @@ class MatchService(
                         }
                     }
                     ) {
-                        val matches =
-                            matchRepository.findByIdIn(autoMatchRepository.findAll().map { it.matchId })
-                        val userIds =
-                            matches.map { it.player1.userId }.toSet() +
-                                matches.map { it.player2.userId }.toSet()
-                        val newRatings =
-                            ratingHistoryService.updateAndGetAutoMatchRatings(userIds.toList(), matches)
-                        newRatings.forEach { (userId, newRating) ->
-                            publicUserService.updatePublicRating(
-                                userId = userId,
-                                isInitiator = true,
-                                verdict = verdict,
-                                newRating = newRating.rating
-                            )
+                        if (match.player1.tier == match.player2.tier) {
+                            val matches =
+                                matchRepository.findByIdIn(autoMatchRepository.findAll().map { it.matchId })
+                            val userIds =
+                                matches.map { it.player1.userId }.toSet() +
+                                    matches.map { it.player2.userId }.toSet()
+                            val newRatings =
+                                ratingHistoryService.updateAndGetAutoMatchRatings(userIds.toList(), matches)
+                            newRatings.forEach { (userId, newRating) ->
+                                publicUserService.updatePublicRating(
+                                    userId = userId,
+                                    isInitiator = true,
+                                    verdict = verdict,
+                                    newRating = newRating.rating
+                                )
+                            }
                         }
                     } else if (autoMatchRepository.findAll().all { autoMatch ->
                         matchRepository.findById(autoMatch.matchId).get().games.all { game ->
