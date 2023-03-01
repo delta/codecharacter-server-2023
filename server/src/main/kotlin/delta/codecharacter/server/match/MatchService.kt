@@ -30,6 +30,8 @@ import delta.codecharacter.server.logic.verdict.VerdictAlgorithm
 import delta.codecharacter.server.notifications.NotificationService
 import delta.codecharacter.server.user.public_user.PublicUserService
 import delta.codecharacter.server.user.rating_history.RatingHistoryService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -63,6 +65,7 @@ class MatchService(
     @Autowired private val autoMatchRepository: AutoMatchRepository
 ) {
     private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()
+    private val logger: Logger = LoggerFactory.getLogger(MatchService::class.java)
 
     private fun createSelfMatch(userId: UUID, codeRevisionId: UUID?, mapRevisionId: UUID?) {
         val code: String
@@ -337,6 +340,20 @@ class MatchService(
                     game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR
                 }
             ) {
+
+                if (match.mode == MatchModeEnum.AUTO) {
+                    if (match.games.any { game -> game.status == GameStatusEnum.EXECUTE_ERROR }) {
+                        val autoMatch = autoMatchRepository.findById(match.id).get()
+                        if (autoMatch.tries < 2) {
+                            autoMatchRepository.delete(autoMatch)
+                            val newMatchId =
+                                createDualMatch(match.player1.userId, match.player2.username, MatchModeEnum.AUTO)
+                            autoMatchRepository.save(AutoMatchEntity(newMatchId, autoMatch.tries + 1))
+                            return
+                        }
+                    }
+                }
+
                 val player1Game = match.games.first()
                 val player2Game = match.games.last()
                 val verdict =
@@ -378,10 +395,13 @@ class MatchService(
                         } against ${match.player2.username}",
                     )
                 }
+
+                matchRepository.save(finishedMatch)
+
                 if (match.mode == MatchModeEnum.AUTO) {
                     if (autoMatchRepository.findAll().all { autoMatch ->
                         matchRepository.findById(autoMatch.matchId).get().games.all { game ->
-                            game.status == GameStatusEnum.EXECUTED
+                            game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR
                         }
                     }
                     ) {
@@ -402,26 +422,9 @@ class MatchService(
                                 )
                             }
                         }
-                    } else if (autoMatchRepository.findAll().all { autoMatch ->
-                        matchRepository.findById(autoMatch.matchId).get().games.all { game ->
-                            game.status == GameStatusEnum.EXECUTE_ERROR
-                        }
-                    }
-                    ) {
-                        if (match.games.any { game -> game.status == GameStatusEnum.EXECUTE_ERROR }) {
-                            val autoMatch = autoMatchRepository.findById(match.id).get()
-                            if (autoMatch.tries < 2) {
-                                autoMatchRepository.delete(autoMatch)
-                                val newMatchId =
-                                    createDualMatch(
-                                        match.player1.userId, match.player2.username, MatchModeEnum.AUTO
-                                    )
-                                autoMatchRepository.save(AutoMatchEntity(newMatchId, autoMatch.tries + 1))
-                            }
-                        }
                     }
                 }
-                matchRepository.save(finishedMatch)
+                logger.info(finishedMatch.verdict.toString())
             }
         } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {
             val match = dailyChallengeMatchRepository.findById(matchId).get()
