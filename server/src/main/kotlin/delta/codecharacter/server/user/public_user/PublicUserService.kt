@@ -142,10 +142,6 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         }
     }
 
-    fun getLeaderboardSize(): Long {
-        return publicUserRepository.count()
-    }
-
     fun getDailyChallengeLeaderboard(
         page: Int?,
         size: Int?
@@ -287,7 +283,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         publicUserRepository.save(updatedUser)
     }
 
-    fun getTop20(): List<PublicUserEntity> {
-        return publicUserRepository.findTop20ByOrderByRatingDesc()
+    fun getTopN(): List<PublicUserEntity> {
+        return publicUserRepository.findTopNByOrderByRatingDesc(tier1Players.toInt())
     }
 }

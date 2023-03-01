@@ -35,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.messaging.simp.SimpMessagingTemplate
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.time.Duration
@@ -210,18 +209,17 @@ class MatchService(
         }
     }
 
-    @Scheduled(cron = "* */6 * * * *")
     fun createAutoMatch() {
-        val top20Users = publicUserService.getTop20()
-        val userIds = top20Users.map { it.userId }
-        val usernames = top20Users.map { it.username }
+        val topNUsers = publicUserService.getTopN()
+        val userIds = topNUsers.map { it.userId }
+        val usernames = topNUsers.map { it.username }
         autoMatchRepository.deleteAll()
         userIds.forEachIndexed { i, userId ->
             run {
                 for (j in i + 1 until userIds.size) {
                     val opponentUsername = usernames[j]
                     val matchId = createDualMatch(userId, opponentUsername, MatchModeEnum.AUTO)
-                    autoMatchRepository.save(AutoMatchEntity(matchId))
+                    autoMatchRepository.save(AutoMatchEntity(matchId, 0))
                 }
             }
         }
@@ -384,7 +382,7 @@ class MatchService(
                 if (match.mode == MatchModeEnum.AUTO) {
                     if (autoMatchRepository.findAll().all { autoMatch ->
                         matchRepository.findById(autoMatch.matchId).get().games.all { game ->
-                            game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR
+                            game.status == GameStatusEnum.EXECUTED
                         }
                     }
                     ) {
@@ -402,6 +400,23 @@ class MatchService(
                                 verdict = verdict,
                                 newRating = newRating.rating
                             )
+                        }
+                    } else if (autoMatchRepository.findAll().all { autoMatch ->
+                        matchRepository.findById(autoMatch.matchId).get().games.all { game ->
+                            game.status == GameStatusEnum.EXECUTE_ERROR
+                        }
+                    }
+                    ) {
+                        if (match.games.any { game -> game.status == GameStatusEnum.EXECUTE_ERROR }) {
+                            val autoMatch = autoMatchRepository.findById(match.id).get()
+                            if (autoMatch.tries < 2) {
+                                autoMatchRepository.delete(autoMatch)
+                                val newMatchId =
+                                    createDualMatch(
+                                        match.player1.userId, match.player2.username, MatchModeEnum.AUTO
+                                    )
+                                autoMatchRepository.save(AutoMatchEntity(newMatchId, autoMatch.tries + 1))
+                            }
                         }
                     }
                 }

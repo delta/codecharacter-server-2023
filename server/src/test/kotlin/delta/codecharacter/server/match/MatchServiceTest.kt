@@ -313,7 +313,7 @@ internal class MatchServiceTest {
 
         val exception =
             assertThrows<CustomException> {
-                matchService.createDualMatch(playerId, opponentPublicUser.username)
+                matchService.createDualMatch(playerId, opponentPublicUser.username, MatchModeEnum.MANUAL)
             }
 
         assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)
