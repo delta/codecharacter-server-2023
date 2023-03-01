@@ -210,7 +210,7 @@ class MatchService(
     }
 
     fun createAutoMatch() {
-        val topNUsers = publicUserService.getTopN()
+        val topNUsers = publicUserService.getTopNUsers()
         val userIds = topNUsers.map { it.userId }
         val usernames = topNUsers.map { it.username }
         autoMatchRepository.deleteAll()

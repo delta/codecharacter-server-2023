@@ -283,7 +283,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         publicUserRepository.save(updatedUser)
     }
 
-    fun getTopN(): List<PublicUserEntity> {
+    fun getTopNUsers(): List<PublicUserEntity> {
         return publicUserRepository.findTopNByOrderByRatingDesc(tier1Players.toInt())
     }
 }
