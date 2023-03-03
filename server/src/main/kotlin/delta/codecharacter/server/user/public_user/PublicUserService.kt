@@ -284,6 +284,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     }
 
     fun getTopNUsers(): List<PublicUserEntity> {
-        return publicUserRepository.findTopNByOrderByRatingDesc(tier1Players.toInt())
+        val pageRequest = PageRequest.of(0, tier1Players.toInt(), Sort.by("rating"))
+        return publicUserRepository.findTopnByOrderByRatingDesc(pageRequest)
     }
 }
