@@ -306,7 +306,10 @@ class MatchService(
 
     fun getUserMatches(userId: UUID): List<MatchDto> {
         val publicUser = publicUserService.getPublicUser(userId)
-        val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
+        val matches =
+            matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser).filter { match ->
+                match.mode != MatchModeEnum.AUTO
+            }
         val dcMatches =
             dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
                 Duration.between(it.createdAt, Instant.now()).toHours() < 24 &&
@@ -418,11 +421,11 @@ class MatchService(
                                 newRating = newRating.rating
                             )
                         }
+                        logger.info(
+                            "Match between ${match.player1.username} and ${match.player2.username} completed with verdict $verdict"
+                        )
                     }
                 }
-                logger.info(
-                    "Match between ${match.player1.username} and ${match.player2.username} completed with verdict $verdict"
-                )
             }
         } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {
             val match = dailyChallengeMatchRepository.findById(matchId).get()
