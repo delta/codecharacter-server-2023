@@ -421,10 +421,12 @@ class MatchService(
                                 newRating = newRating.rating
                             )
                         }
-                        logger.info(
-                            "Match between ${match.player1.username} and ${match.player2.username} completed with verdict $verdict"
-                        )
+                        logger.info("LeaderBoard Tier Promotion and Demotion started")
+                        publicUserService.promoteTiers()
                     }
+                    logger.info(
+                        "Match between ${match.player1.username} and ${match.player2.username} completed with verdict $verdict"
+                    )
                 }
             }
         } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {
