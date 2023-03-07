@@ -229,6 +229,8 @@ class MatchService(
 
     private fun mapMatchEntitiesToDtos(matchEntities: List<MatchEntity>): List<MatchDto> {
         return matchEntities.map { matchEntity ->
+            println(matchEntity.player2.avatarId)
+            println(matchEntity.player1.avatarId)
             MatchDto(
                 id = matchEntity.id,
                 matchMode = MatchModeDto.valueOf(matchEntity.mode.name),
@@ -371,7 +373,15 @@ class MatchService(
                 val (newUserRating, newOpponentRating) =
                     ratingHistoryService.updateRating(match.player1.userId, match.player2.userId, verdict)
                 if (match.mode == MatchModeEnum.MANUAL) {
-                    if (match.player1.tier == TierTypeDto.TIER2 && match.player2.tier == TierTypeDto.TIER2) {
+                    if ((
+                        match.player1.tier == TierTypeDto.TIER2 &&
+                            match.player2.tier == TierTypeDto.TIER2
+                        ) ||
+                        (
+                            match.player1.tier == TierTypeDto.TIER_PRACTICE &&
+                                match.player2.tier == TierTypeDto.TIER_PRACTICE
+                            )
+                    ) {
                         publicUserService.updatePublicRating(
                             userId = match.player1.userId,
                             isInitiator = true,
