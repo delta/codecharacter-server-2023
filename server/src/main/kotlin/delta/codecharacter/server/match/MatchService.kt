@@ -229,8 +229,6 @@ class MatchService(
 
     private fun mapMatchEntitiesToDtos(matchEntities: List<MatchEntity>): List<MatchDto> {
         return matchEntities.map { matchEntity ->
-            println(matchEntity.player2.avatarId)
-            println(matchEntity.player1.avatarId)
             MatchDto(
                 id = matchEntity.id,
                 matchMode = MatchModeDto.valueOf(matchEntity.mode.name),
