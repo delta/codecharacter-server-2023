@@ -12,7 +12,7 @@ class MapValidator {
     private val mapper = ObjectMapper().registerKotlinModule()
     private val gameParameters = GameConfiguration().gameParameters()
     private val invalidMapMessage = "Map is not valid"
-    @Value("\${environment.maximum-limit}") private var maximumCost = 1
+    @Value("\${environment.max-limit-for-towers}") private var maxTowerLimit = 1000
 
     @Throws(CustomException::class)
     fun validateMap(mapJson: String) {
@@ -32,23 +32,15 @@ class MapValidator {
         if (map.any { row -> row.any { cell -> cell !in validDefenderIds && cell != 0 } }) {
             throw CustomException(HttpStatus.BAD_REQUEST, invalidMapMessage)
         }
-        var totalCost = 0
+        var coinsUsedForMapTowers = 0
         map.forEach { row ->
             row.forEach { cell ->
-                when (cell) {
-                    validDefenderIds[cell] -> {
-                        totalCost += validDefenderPrice[cell]
-                    }
-                    validDefenderIds[cell] -> {
-                        totalCost += validDefenderPrice[cell]
-                    }
-                    validDefenderIds[cell] -> {
-                        totalCost += validDefenderPrice[cell]
-                    }
+                if (cell != 0 && cell in validDefenderIds) {
+                    coinsUsedForMapTowers += validDefenderPrice[cell - 1]
                 }
             }
         }
-        if (totalCost > maximumCost) {
+        if (coinsUsedForMapTowers > maxTowerLimit) {
             throw CustomException(HttpStatus.BAD_REQUEST, invalidMapMessage)
         }
 

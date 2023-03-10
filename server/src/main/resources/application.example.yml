@@ -32,7 +32,7 @@ environment:
   no-of-tier-1-players: 20
   no-of-players-for-promotion: 5
   promote-demote-time: "* * */6 * * *"
-  maximum-limit: 100000
+  max-limit-for-towers: 100000
 
 server:
   compression:
