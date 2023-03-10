@@ -9,7 +9,7 @@ import delta.codecharacter.server.logic.validation.MapValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /** Service for handling the latest map. */
 @Service
