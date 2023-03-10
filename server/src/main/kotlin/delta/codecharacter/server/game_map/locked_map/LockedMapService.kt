@@ -28,6 +28,10 @@ class LockedMapService(
             ?: defaultCodeMapConfiguration.defaultMap
     }
 
+    fun resetLockedMapAfterPracticePhase() {
+        lockedMapRepository.deleteAll()
+    }
+
     fun updateLockedMap(userId: UUID, updateLatestMapRequestDto: UpdateLatestMapRequestDto) {
         mapValidator.validateMap(updateLatestMapRequestDto.map)
         val lockedMap = HashMap<GameMapTypeDto, GameMap>()

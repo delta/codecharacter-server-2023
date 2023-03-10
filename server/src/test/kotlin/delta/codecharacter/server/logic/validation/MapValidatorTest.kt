@@ -48,6 +48,16 @@ internal class MapValidatorTest {
 
     @Test
     @Throws(CustomException::class)
+    fun `should throw exception when total coins used is greater than maximum available`() {
+        val testList = MutableList(64) { MutableList(64) { 1 } }
+        val json = mapper.writeValueAsString(testList)
+        val mapValidator = MapValidator()
+        val exception = assertThrows(CustomException::class.java) { mapValidator.validateMap(json) }
+        assertThat(exception.message).isEqualTo("Map is not valid")
+    }
+
+    @Test
+    @Throws(CustomException::class)
     fun `should throw exception with 2D list with defenders in attacker spawn positions`() {
         val testList = MutableList(64) { MutableList(64) { 0 } }
         testList[0][0] = 1

@@ -9,7 +9,7 @@ import delta.codecharacter.server.logic.validation.MapValidator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import java.time.Instant
-import java.util.UUID
+import java.util.*
 
 /** Service for handling the latest map. */
 @Service
@@ -38,6 +38,10 @@ class LatestMapService(
                     lastSavedAt = latestMap.latestMap[mapType]?.lastSavedAt ?: Instant.MIN
                 )
             }
+    }
+
+    fun resetLatestMapAfterPracticePhase() {
+        latestMapRepository.deleteAll()
     }
 
     fun updateLatestMap(userId: UUID, updateLatestMapDto: UpdateLatestMapRequestDto) {

@@ -45,7 +45,9 @@ class LatestCodeService(
 
         return code
     }
-
+    fun resetLatestCodeAfterPracticePhase() {
+        latestCodeRepository.deleteAll()
+    }
     fun updateLatestCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
         val latestCode = HashMap<CodeTypeDto, Code>()
         latestCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =
