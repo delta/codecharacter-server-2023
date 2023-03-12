@@ -306,10 +306,7 @@ class MatchService(
 
     fun getUserMatches(userId: UUID): List<MatchDto> {
         val publicUser = publicUserService.getPublicUser(userId)
-        val matches =
-            matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser).filter { match ->
-                match.mode != MatchModeEnum.AUTO
-            }
+        val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
         val dcMatches =
             dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
                 Duration.between(it.createdAt, Instant.now()).toHours() < 24 &&
@@ -432,6 +429,17 @@ class MatchService(
                         logger.info("LeaderBoard Tier Promotion and Demotion started")
                         publicUserService.promoteTiers()
                     }
+                    notificationService.sendNotification(
+                        match.player1.userId,
+                        "Auto Match Result",
+                        "${
+                        when (verdict) {
+                            MatchVerdictEnum.PLAYER1 -> "Won"
+                            MatchVerdictEnum.PLAYER2 -> "Lost"
+                            MatchVerdictEnum.TIE -> "Tied"
+                        }
+                        } against ${match.player2.username}",
+                    )
                     logger.info(
                         "Match between ${match.player1.username} and ${match.player2.username} completed with verdict $verdict"
                     )
