@@ -114,7 +114,12 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     }
 
     fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List<LeaderboardEntryDto> {
-        val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Order.desc("rating")))
+        val pageRequest =
+            PageRequest.of(
+                page ?: 0,
+                size ?: 10,
+                Sort.by(Sort.Order.desc("rating"), Sort.Order.desc("wins"), Sort.Order.asc("username"))
+            )
         val publicUsers =
             if (tier == null) {
                 publicUserRepository.findAll(pageRequest).content
