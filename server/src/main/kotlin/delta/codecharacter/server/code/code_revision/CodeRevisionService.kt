@@ -36,6 +36,10 @@ class CodeRevisionService(@Autowired private val codeRevisionRepository: CodeRev
         )
     }
 
+    fun resetCodeRevisionAfterPracticePhase() {
+        codeRevisionRepository.deleteAll()
+    }
+
     fun getCodeRevisions(
         userId: UUID,
         codeTypeDto: CodeTypeDto = CodeTypeDto.NORMAL

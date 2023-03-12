@@ -38,6 +38,10 @@ class LockedCodeService(
             }
     }
 
+    fun resetLockedCodeAfterPracticePhase() {
+        lockedCodeRepository.deleteAll()
+    }
+
     fun updateLockedCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
         val lockedCode = HashMap<CodeTypeDto, Code>()
         lockedCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =

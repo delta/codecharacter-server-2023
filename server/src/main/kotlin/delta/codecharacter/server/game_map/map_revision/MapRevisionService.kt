@@ -42,6 +42,10 @@ class MapRevisionService(
         )
     }
 
+    fun resetMapRevisionAfterPracticePhase() {
+        mapRevisionRepository.deleteAll()
+    }
+
     fun getMapRevisions(
         userId: UUID,
         mapType: GameMapTypeDto? = GameMapTypeDto.NORMAL

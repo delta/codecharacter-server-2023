@@ -40,6 +40,10 @@ class LatestMapService(
             }
     }
 
+    fun resetLatestMapAfterPracticePhase() {
+        latestMapRepository.deleteAll()
+    }
+
     fun updateLatestMap(userId: UUID, updateLatestMapDto: UpdateLatestMapRequestDto) {
         mapValidator.validateMap(updateLatestMapDto.map)
         val latestMap = HashMap<GameMapTypeDto, GameMap>()

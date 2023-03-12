@@ -51,7 +51,9 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
                 losses = 0,
                 ties = 0,
                 score = 0.0,
-                tier = TierTypeDto.TIER_PRACTICE,
+                // tier = TierTypeDto.TIER_PRACTICE, TODO: Automatically assign tier2 to players
+                // registering after practice phase
+                tier = TierTypeDto.TIER2,
                 tutorialLevel = 1,
                 dailyChallengeHistory = HashMap()
             )
@@ -71,12 +73,11 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     }
 
     fun resetRatingsAfterPracticePhase() {
-        logger.info("Reset ratings after practice phase starts")
         val users = publicUserRepository.findAll()
         users.forEach { user ->
             publicUserRepository.save(user.copy(rating = 1500.0, wins = 0, ties = 0, losses = 0))
         }
-        logger.info("Reset ratings after practice phase has ended")
+        logger.info("Ratings reset after practice phase done")
     }
 
     fun promoteTiers() {
