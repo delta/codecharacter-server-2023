@@ -11,6 +11,5 @@ interface PublicUserRepository : MongoRepository<PublicUserEntity, UUID> {
 
     fun findAllByTier(tier: TierTypeDto?, pageRequest: PageRequest): List<PublicUserEntity>
 
-    fun findAllByTier(tier: TierTypeDto?):List<PublicUserEntity>
-
+    fun findAllByTier(tier: TierTypeDto?): List<PublicUserEntity>
 }

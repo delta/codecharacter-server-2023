@@ -317,7 +317,8 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     }
 
     fun getTopNUsers(): List<PublicUserEntity> {
-        val topPlayers= publicUserRepository.findAllByTier(TierTypeDto.TIER1).sortedByDescending { it.rating }
+        val topPlayers =
+            publicUserRepository.findAllByTier(TierTypeDto.TIER1).sortedByDescending { it.rating }
         logger.info("Logging topPlayers $topPlayers")
         return topPlayers
     }
