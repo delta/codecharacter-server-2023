@@ -416,15 +416,17 @@ class MatchService(
                         val userIds =
                             matches.map { it.player1.userId }.toSet() +
                                 matches.map { it.player2.userId }.toSet()
+                        val (userIdWinMap, userIdLossMap, userIdTieMap) =
+                            ratingHistoryService.updateTotalWinsTiesLosses(
+                                userIds = userIds.toList(), matches = matches
+                            )
+                        publicUserService.updateAutoMatchWinsLosses(
+                            userIds.toList(), userIdWinMap, userIdLossMap, userIdTieMap
+                        )
                         val newRatings =
                             ratingHistoryService.updateAndGetAutoMatchRatings(userIds.toList(), matches)
                         newRatings.forEach { (userId, newRating) ->
-                            publicUserService.updatePublicRating(
-                                userId = userId,
-                                isInitiator = true,
-                                verdict = verdict,
-                                newRating = newRating.rating
-                            )
+                            publicUserService.updateAutoMatchRating(userId = userId, newRating = newRating.rating)
                         }
                         logger.info("LeaderBoard Tier Promotion and Demotion started")
                         publicUserService.promoteTiers()

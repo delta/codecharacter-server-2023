@@ -136,7 +136,31 @@ class RatingHistoryService(
             verdicts
         )
     }
-
+    fun updateTotalWinsTiesLosses(
+        userIds: List<UUID>,
+        matches: List<MatchEntity>
+    ): Triple<Map<UUID, Int>, Map<UUID, Int>, Map<UUID, Int>> {
+        val userIdWinMap = userIds.associateWith { 0 }.toMutableMap()
+        val userIdLossMap = userIds.associateWith { 0 }.toMutableMap()
+        val userIdTieMap = userIds.associateWith { 0 }.toMutableMap()
+        matches.forEach { match ->
+            when (match.verdict) {
+                MatchVerdictEnum.PLAYER1 -> {
+                    userIdWinMap[match.player1.userId] = userIdWinMap[match.player1.userId]!! + 1
+                    userIdLossMap[match.player2.userId] = userIdLossMap[match.player2.userId]!! + 1
+                }
+                MatchVerdictEnum.PLAYER2 -> {
+                    userIdWinMap[match.player2.userId] = userIdWinMap[match.player2.userId]!! + 1
+                    userIdLossMap[match.player1.userId] = userIdLossMap[match.player1.userId]!! + 1
+                }
+                MatchVerdictEnum.TIE -> {
+                    userIdTieMap[match.player1.userId] = userIdTieMap[match.player1.userId]!! + 1
+                    userIdTieMap[match.player2.userId] = userIdTieMap[match.player2.userId]!! + 1
+                }
+            }
+        }
+        return Triple(userIdWinMap.toMap(), userIdLossMap.toMap(), userIdTieMap.toMap())
+    }
     fun updateAndGetAutoMatchRatings(
         userIds: List<UUID>,
         matches: List<MatchEntity>
