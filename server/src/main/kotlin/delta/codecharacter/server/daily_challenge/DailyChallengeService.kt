@@ -80,7 +80,7 @@ class DailyChallengeService(
             publicUserService.updateDailyChallengeScore(userId, score, currentDailyChallenge)
             val user = publicUserService.getPublicUser(userId)
             if (user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)) {
-                return DailyChallengeMatchVerdictEnum.FAILURE
+                return DailyChallengeMatchVerdictEnum.STARTED
             }
             return DailyChallengeMatchVerdictEnum.SUCCESS
         }
