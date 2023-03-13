@@ -78,6 +78,10 @@ class DailyChallengeService(
                 )
             dailyChallengeRepository.save(updatedDailyChallenge)
             publicUserService.updateDailyChallengeScore(userId, score, currentDailyChallenge)
+            val user = publicUserService.getPublicUser(userId)
+            if (user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)) {
+                return DailyChallengeMatchVerdictEnum.FAILURE
+            }
             return DailyChallengeMatchVerdictEnum.SUCCESS
         }
         return DailyChallengeMatchVerdictEnum.FAILURE
