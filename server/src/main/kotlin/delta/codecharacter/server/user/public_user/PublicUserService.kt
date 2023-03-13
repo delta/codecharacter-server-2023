@@ -270,6 +270,28 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         publicUserRepository.save(updatedUser)
     }
 
+    fun updateAutoMatchRating(userId: UUID, newRating: Double) {
+        val user = publicUserRepository.findById(userId).get()
+        val updatedUser = user.copy(rating = newRating)
+        publicUserRepository.save(updatedUser)
+    }
+    fun updateAutoMatchWinsLosses(
+        userIds: List<UUID>,
+        userIdWinsMap: Map<UUID, Int>,
+        userIdLoss: Map<UUID, Int>,
+        userIdTies: Map<UUID, Int>
+    ) {
+        userIds.forEach {
+            val user = publicUserRepository.findById(it).get()
+            val updatedUser =
+                user.copy(
+                    wins = user.wins + userIdWinsMap[it]!!,
+                    losses = user.losses + userIdLoss[it]!!,
+                    ties = user.ties + userIdTies[it]!!
+                )
+            publicUserRepository.save(updatedUser)
+        }
+    }
     fun getPublicUser(userId: UUID): PublicUserEntity {
         return publicUserRepository.findById(userId).get()
     }
