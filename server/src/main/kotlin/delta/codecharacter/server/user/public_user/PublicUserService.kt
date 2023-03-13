@@ -274,6 +274,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         val user = publicUserRepository.findById(userId).get()
         val updatedUser = user.copy(rating = newRating)
         publicUserRepository.save(updatedUser)
+        logger.info("Ratings updated for ${user.username}")
     }
     fun updateAutoMatchWinsLosses(
         userIds: List<UUID>,
@@ -281,6 +282,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
         userIdLoss: Map<UUID, Int>,
         userIdTies: Map<UUID, Int>
     ) {
+        logger.info("Updating wins and losses for $userIds")
         userIds.forEach {
             val user = publicUserRepository.findById(it).get()
             val updatedUser =
@@ -315,7 +317,7 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     }
 
     fun getTopNUsers(): List<PublicUserEntity> {
-        val pageRequest = PageRequest.of(0, tier1Players.toInt(), Sort.by("rating"))
+        val pageRequest = PageRequest.of(0, tier1Players.toInt(), Sort.by(Sort.Order.asc("tier"),Sort.Order.desc("rating"),Sort.Order.asc("username")))
         return publicUserRepository.findTopnByOrderByRatingDesc(pageRequest)
     }
 }
