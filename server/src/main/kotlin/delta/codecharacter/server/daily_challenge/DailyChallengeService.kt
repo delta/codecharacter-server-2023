@@ -66,6 +66,10 @@ class DailyChallengeService(
                     destruction < currentDailyChallenge.toleratedDestruction
                 )
         ) {
+            val user = publicUserService.getPublicUser(userId)
+            if (user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)) {
+                DailyChallengeMatchVerdictEnum.FAILURE
+            }
             val score =
                 dailyChallengeScoreAlgorithm.getDailyChallengeScore(
                     playerCoinsUsed = coinsUsed,
