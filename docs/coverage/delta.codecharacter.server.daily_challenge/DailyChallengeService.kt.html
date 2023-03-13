@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DailyChallengeService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.daily_challenge</a> &gt; <span class="el_source">DailyChallengeService.kt</span></div><h1>DailyChallengeService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.daily_challenge
+
+import delta.codecharacter.dtos.ChallengeTypeDto
+import delta.codecharacter.dtos.DailyChallengeGetRequestDto
+import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchVerdictEnum
+import delta.codecharacter.server.exception.CustomException
+import delta.codecharacter.server.game.GameEntity
+import delta.codecharacter.server.game.GameStatusEnum
+import delta.codecharacter.server.logic.daily_challenge_score.DailyChallengeScoreAlgorithm
+import delta.codecharacter.server.user.public_user.PublicUserService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Service
+import java.time.Duration
+import java.time.Instant
+import java.util.UUID
+
+<span class="fc" id="L19">@Service</span>
+<span class="fc" id="L20">class DailyChallengeService(</span>
+<span class="fc" id="L21">    @Autowired private val dailyChallengeRepository: DailyChallengeRepository,</span>
+<span class="fc" id="L22">    @Autowired private val publicUserService: PublicUserService,</span>
+<span class="fc" id="L23">    @Autowired private val dailyChallengeScoreAlgorithm: DailyChallengeScoreAlgorithm</span>
+) {
+
+    @Value(&quot;\${environment.event-start-date}&quot;) private lateinit var startDate: String
+
+    fun findNumberOfDays(): Int {
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        val givenDateTime = Instant.parse(startDate)</span>
+<span class="fc" id="L30">        val nowDateTime = Instant.now()</span>
+<span class="fc" id="L31">        val period: Duration = Duration.between(givenDateTime, nowDateTime)</span>
+<span class="fc" id="L32">        return period.toDays().toInt()</span>
+    }
+
+    fun getDailyChallengeByDate(): DailyChallengeEntity {
+<span class="fc" id="L36">        val currentDailyChallenge =</span>
+<span class="fc" id="L37">            dailyChallengeRepository.findByDay(findNumberOfDays()).orElseThrow {</span>
+<span class="fc" id="L38">                throw CustomException(HttpStatus.BAD_REQUEST, &quot;Invalid Request&quot;)</span>
+            }
+<span class="fc" id="L40">        return currentDailyChallenge</span>
+    }
+
+    fun getDailyChallengeByDateForUser(userId: UUID): DailyChallengeGetRequestDto {
+<span class="fc" id="L44">        val user = publicUserService.getPublicUser(userId)</span>
+<span class="fc" id="L45">        val currentDailyChallenge = getDailyChallengeByDate()</span>
+<span class="fc" id="L46">        return DailyChallengeGetRequestDto(</span>
+<span class="fc" id="L47">            challName = currentDailyChallenge.challName,</span>
+<span class="fc" id="L48">            chall = currentDailyChallenge.chall,</span>
+<span class="fc" id="L49">            challType = currentDailyChallenge.challType,</span>
+<span class="fc" id="L50">            description = currentDailyChallenge.description,</span>
+<span class="fc" id="L51">            completionStatus = user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)</span>
+        )
+    }
+
+    fun completeDailyChallenge(gameEntity: GameEntity, userId: UUID): DailyChallengeMatchVerdictEnum {
+<span class="fc" id="L56">        val (_, coinsUsed, destruction, _, _) = gameEntity</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (gameEntity.status == GameStatusEnum.EXECUTE_ERROR)</span>
+<span class="fc" id="L58">            return DailyChallengeMatchVerdictEnum.FAILURE</span>
+<span class="fc" id="L59">        val currentDailyChallenge = getDailyChallengeByDate()</span>
+        if ((
+<span class="pc bpc" id="L61" title="1 of 2 branches missed.">            currentDailyChallenge.challType == ChallengeTypeDto.MAP &amp;&amp;</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">                destruction &gt; currentDailyChallenge.toleratedDestruction</span>
+            ) ||
+            (
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">                currentDailyChallenge.challType == ChallengeTypeDto.CODE &amp;&amp;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">                    destruction &lt; currentDailyChallenge.toleratedDestruction</span>
+                )
+        ) {
+<span class="fc" id="L69">            val score =</span>
+<span class="fc" id="L70">                dailyChallengeScoreAlgorithm.getDailyChallengeScore(</span>
+<span class="fc" id="L71">                    playerCoinsUsed = coinsUsed,</span>
+<span class="fc" id="L72">                    playerDestruction = destruction,</span>
+<span class="fc" id="L73">                    dailyChallenge = currentDailyChallenge,</span>
+                )
+<span class="fc" id="L75">            val updatedDailyChallenge =</span>
+<span class="fc" id="L76">                currentDailyChallenge.copy(</span>
+<span class="fc" id="L77">                    numberOfCompletions = currentDailyChallenge.numberOfCompletions + 1</span>
+                )
+<span class="fc" id="L79">            dailyChallengeRepository.save(updatedDailyChallenge)</span>
+<span class="fc" id="L80">            publicUserService.updateDailyChallengeScore(userId, score, currentDailyChallenge)</span>
+<span class="fc" id="L81">            val user = publicUserService.getPublicUser(userId)</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">            if (user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)) {</span>
+<span class="nc" id="L83">                return DailyChallengeMatchVerdictEnum.FAILURE</span>
+            }
+<span class="fc" id="L85">            return DailyChallengeMatchVerdictEnum.SUCCESS</span>
+        }
+<span class="nc" id="L87">        return DailyChallengeMatchVerdictEnum.FAILURE</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

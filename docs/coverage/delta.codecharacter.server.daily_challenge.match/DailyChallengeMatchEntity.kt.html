@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DailyChallengeMatchEntity.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.daily_challenge.match</a> &gt; <span class="el_source">DailyChallengeMatchEntity.kt</span></div><h1>DailyChallengeMatchEntity.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.daily_challenge.match
+
+import delta.codecharacter.server.game.GameEntity
+import delta.codecharacter.server.user.public_user.PublicUserEntity
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
+import org.springframework.data.mongodb.core.mapping.DocumentReference
+import java.time.Instant
+import java.util.UUID
+
+<span class="fc" id="L11">@Document(collection = &quot;daily_challenge_match&quot;)</span>
+<span class="fc" id="L12">data class DailyChallengeMatchEntity(</span>
+<span class="fc" id="L13">    @Id val id: UUID,</span>
+<span class="fc" id="L14">    @DocumentReference(lazy = true) val game: GameEntity,</span>
+<span class="fc" id="L15">    val verdict: DailyChallengeMatchVerdictEnum,</span>
+<span class="fc" id="L16">    @DocumentReference(lazy = true) val user: PublicUserEntity,</span>
+<span class="fc" id="L17">    val createdAt: Instant</span>
+)
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

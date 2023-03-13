@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LockedMapService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.game_map.locked_map</a> &gt; <span class="el_source">LockedMapService.kt</span></div><h1>LockedMapService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.game_map.locked_map
+
+import delta.codecharacter.dtos.GameMapTypeDto
+import delta.codecharacter.dtos.UpdateLatestMapRequestDto
+import delta.codecharacter.server.config.DefaultCodeMapConfiguration
+import delta.codecharacter.server.game_map.GameMap
+import delta.codecharacter.server.logic.validation.MapValidator
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import java.util.UUID
+
+/** Service for locked map. */
+<span class="fc" id="L13">@Service</span>
+<span class="fc" id="L14">class LockedMapService(</span>
+<span class="fc" id="L15">    @Autowired private val lockedMapRepository: LockedMapRepository,</span>
+<span class="fc" id="L16">    @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,</span>
+<span class="fc" id="L17">    @Autowired private val mapValidator: MapValidator,</span>
+) {
+
+<span class="fc" id="L20">    fun getLockedMap(userId: UUID, mapType: GameMapTypeDto? = GameMapTypeDto.NORMAL): String {</span>
+<span class="fc" id="L21">        val defaultMap = HashMap&lt;GameMapTypeDto, GameMap&gt;()</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        defaultMap[mapType ?: GameMapTypeDto.NORMAL] = defaultCodeMapConfiguration.defaultLockedGameMap</span>
+<span class="pc bpc" id="L23" title="2 of 4 branches missed.">        return lockedMapRepository</span>
+<span class="fc" id="L24">            .findById(userId)</span>
+<span class="fc" id="L25">            .orElse(LockedMapEntity(userId = userId, lockedMap = defaultMap))</span>
+<span class="fc" id="L26">            .lockedMap[mapType]</span>
+<span class="pc" id="L27">            ?.map</span>
+<span class="nc" id="L28">            ?: defaultCodeMapConfiguration.defaultMap</span>
+    }
+
+    fun resetLockedMapAfterPracticePhase() {
+<span class="fc" id="L32">        lockedMapRepository.deleteAll()</span>
+<span class="fc" id="L33">    }</span>
+
+    fun updateLockedMap(userId: UUID, updateLatestMapRequestDto: UpdateLatestMapRequestDto) {
+<span class="fc" id="L36">        mapValidator.validateMap(updateLatestMapRequestDto.map)</span>
+<span class="fc" id="L37">        val lockedMap = HashMap&lt;GameMapTypeDto, GameMap&gt;()</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        lockedMap[updateLatestMapRequestDto.mapType ?: GameMapTypeDto.NORMAL] =</span>
+<span class="fc" id="L39">            GameMap(mapImage = updateLatestMapRequestDto.mapImage, map = updateLatestMapRequestDto.map)</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (lockedMapRepository.findById(userId).isEmpty) {</span>
+<span class="fc" id="L41">            lockedMapRepository.save(</span>
+<span class="fc" id="L42">                LockedMapEntity(</span>
+<span class="fc" id="L43">                    userId = userId,</span>
+<span class="fc" id="L44">                    lockedMap = lockedMap,</span>
+                )
+            )
+        } else {
+<span class="fc" id="L48">            val map = lockedMapRepository.findById(userId).get()</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            map.lockedMap[updateLatestMapRequestDto.mapType ?: GameMapTypeDto.NORMAL] =</span>
+<span class="fc" id="L50">                GameMap(</span>
+<span class="fc" id="L51">                    mapImage = updateLatestMapRequestDto.mapImage, map = updateLatestMapRequestDto.map</span>
+                )
+<span class="fc" id="L53">            val updatedMap = map.copy(lockedMap = map.lockedMap)</span>
+<span class="fc" id="L54">            lockedMapRepository.save(updatedMap)</span>
+        }
+<span class="fc" id="L56">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

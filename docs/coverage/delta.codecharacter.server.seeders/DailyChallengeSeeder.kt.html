@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DailyChallengeSeeder.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.seeders</a> &gt; <span class="el_source">DailyChallengeSeeder.kt</span></div><h1>DailyChallengeSeeder.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.seeders
+
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
+import delta.codecharacter.server.daily_challenge.DailyChallengeRepository
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.context.event.ApplicationReadyEvent
+import org.springframework.context.event.EventListener
+import org.springframework.stereotype.Component
+import java.util.UUID
+
+<span class="fc" id="L15">@Component</span>
+<span class="fc" id="L16">class DailyChallengeSeeder {</span>
+
+    @Autowired private lateinit var dailyChallengeRepository: DailyChallengeRepository
+
+<span class="fc" id="L20">    private val logger: Logger = LoggerFactory.getLogger(DailyChallengeSeeder::class.java)</span>
+    @EventListener(ApplicationReadyEvent::class)
+    fun seedDailyChallenges() {
+
+<span class="pc bpc" id="L24" title="2 of 4 branches missed.">        if (dailyChallengeRepository.findAll().isEmpty()) {</span>
+<span class="fc" id="L25">            logger.info(&quot;Seeding daily_challenges&quot;)</span>
+
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">            val jsonString = this::class.java.classLoader.getResource(&quot;dcConstants.json&quot;)?.readText()</span>
+<span class="pc bpc" id="L28" title="4 of 6 branches missed.">            if (!jsonString.isNullOrEmpty()) {</span>
+<span class="nc" id="L29">                val objectMapper = jacksonObjectMapper()</span>
+<span class="nc" id="L30">                val dcs: List&lt;DailyChallengeObject&gt; = objectMapper.readValue(jsonString)</span>
+<span class="nc" id="L31">                var dcEntities: List&lt;DailyChallengeEntity&gt; = listOf()</span>
+<span class="nc" id="L32">                dcs.forEach {</span>
+<span class="nc" id="L33">                    val id = UUID.randomUUID()</span>
+<span class="nc" id="L34">                    dcEntities =</span>
+<span class="nc" id="L35">                        dcEntities.plus(</span>
+<span class="nc" id="L36">                            DailyChallengeEntity(</span>
+<span class="nc" id="L37">                                id = id,</span>
+<span class="nc" id="L38">                                day = it.day,</span>
+<span class="nc" id="L39">                                chall = it.chall,</span>
+<span class="nc" id="L40">                                challName = it.challName,</span>
+<span class="nc" id="L41">                                challType = it.challType,</span>
+<span class="nc" id="L42">                                description = it.description,</span>
+<span class="nc" id="L43">                                perfectScore = it.perfectScore,</span>
+<span class="nc" id="L44">                                numberOfCompletions = it.numberOfCompletions,</span>
+<span class="nc" id="L45">                                toleratedDestruction = it.toleratedDestruction,</span>
+<span class="nc" id="L46">                                map = it.map,</span>
+                            )
+                        )
+<span class="nc" id="L49">                }</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">                dailyChallengeRepository.saveAll(dcEntities)</span>
+<span class="nc" id="L51">                logger.info(&quot;Seeding Daily-Challenges Completed&quot;)</span>
+            } else {
+<span class="fc" id="L53">                logger.error(&quot;dcConstants.json is empty or doesn't exist&quot;)</span>
+            }
+        } else {
+<span class="nc" id="L56">            logger.info(&quot;Daily Challenges seeded already&quot;)</span>
+        }
+<span class="fc" id="L58">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

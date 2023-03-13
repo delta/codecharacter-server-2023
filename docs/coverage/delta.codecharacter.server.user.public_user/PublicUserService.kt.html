@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PublicUserService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.user.public_user</a> &gt; <span class="el_source">PublicUserService.kt</span></div><h1>PublicUserService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.user.public_user
+
+import delta.codecharacter.dtos.CurrentUserProfileDto
+import delta.codecharacter.dtos.DailyChallengeLeaderBoardResponseDto
+import delta.codecharacter.dtos.LeaderboardEntryDto
+import delta.codecharacter.dtos.PublicUserDto
+import delta.codecharacter.dtos.TierTypeDto
+import delta.codecharacter.dtos.TutorialUpdateTypeDto
+import delta.codecharacter.dtos.UpdateCurrentUserProfileDto
+import delta.codecharacter.dtos.UserStatsDto
+import delta.codecharacter.server.daily_challenge.DailyChallengeEntity
+import delta.codecharacter.server.exception.CustomException
+import delta.codecharacter.server.match.MatchVerdictEnum
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.util.UUID
+
+<span class="fc" id="L25">@Service</span>
+<span class="fc" id="L26">class PublicUserService(@Autowired private val publicUserRepository: PublicUserRepository) {</span>
+
+    @Value(&quot;\${environment.no-of-tutorial-level}&quot;) private lateinit var totalTutorialLevels: Number
+<span class="fc" id="L29">    @Value(&quot;\${environment.no-of-tier-1-players}&quot;) private var tier1Players: Number = 1</span>
+<span class="fc" id="L30">    @Value(&quot;\${environment.no-of-players-for-promotion}&quot;) private var topPlayer: Number = 1</span>
+<span class="fc" id="L31">    private val logger: Logger = LoggerFactory.getLogger(PublicUserService::class.java)</span>
+
+    fun create(
+        userId: UUID,
+        username: String,
+        name: String,
+        country: String,
+        college: String,
+        avatarId: Int
+    ) {
+<span class="nc" id="L41">        val publicUser =</span>
+<span class="nc" id="L42">            PublicUserEntity(</span>
+<span class="nc" id="L43">                userId = userId,</span>
+<span class="nc" id="L44">                username = username,</span>
+<span class="nc" id="L45">                name = name,</span>
+<span class="nc" id="L46">                country = country,</span>
+<span class="nc" id="L47">                college = college,</span>
+<span class="nc" id="L48">                avatarId = avatarId,</span>
+<span class="nc" id="L49">                rating = 1500.0,</span>
+<span class="nc" id="L50">                wins = 0,</span>
+<span class="nc" id="L51">                losses = 0,</span>
+<span class="nc" id="L52">                ties = 0,</span>
+<span class="nc" id="L53">                score = 0.0,</span>
+                // tier = TierTypeDto.TIER_PRACTICE, TODO: Automatically assign tier2 to players
+                // registering after practice phase
+<span class="nc" id="L56">                tier = TierTypeDto.TIER2,</span>
+<span class="nc" id="L57">                tutorialLevel = 1,</span>
+<span class="nc" id="L58">                dailyChallengeHistory = HashMap()</span>
+            )
+<span class="nc" id="L60">        publicUserRepository.save(publicUser)</span>
+<span class="nc" id="L61">    }</span>
+
+    fun updateLeaderboardAfterPracticePhase() {
+<span class="fc" id="L64">        val publicUsers = publicUserRepository.findAll()</span>
+<span class="fc" id="L65">        publicUsers.forEachIndexed { index, user -&gt;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">            if (index &lt; tier1Players.toInt()) {</span>
+<span class="fc" id="L67">                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER1))</span>
+            } else {
+<span class="nc" id="L69">                publicUserRepository.save(user.copy(tier = TierTypeDto.TIER2))</span>
+            }
+<span class="fc" id="L71">        }</span>
+<span class="fc" id="L72">        logger.info(&quot;Leaderboard tier set during the start of game phase&quot;)</span>
+<span class="fc" id="L73">    }</span>
+
+    fun resetRatingsAfterPracticePhase() {
+<span class="fc" id="L76">        val users = publicUserRepository.findAll()</span>
+<span class="fc" id="L77">        users.forEach { user -&gt;</span>
+<span class="fc" id="L78">            publicUserRepository.save(user.copy(rating = 1500.0, wins = 0, ties = 0, losses = 0))</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">        logger.info(&quot;Ratings reset after practice phase done&quot;)</span>
+<span class="fc" id="L81">    }</span>
+
+    fun promoteTiers() {
+<span class="fc" id="L84">        val topPlayersInTier2 =</span>
+<span class="fc" id="L85">            publicUserRepository.findAllByTier(</span>
+<span class="fc" id="L86">                TierTypeDto.TIER2,</span>
+<span class="fc" id="L87">                PageRequest.of(0, topPlayer.toInt(), Sort.by(Sort.Order.desc(&quot;rating&quot;)))</span>
+            )
+<span class="fc" id="L89">        val bottomPlayersInTier1 =</span>
+<span class="fc" id="L90">            publicUserRepository.findAllByTier(</span>
+<span class="fc" id="L91">                TierTypeDto.TIER1,</span>
+<span class="fc" id="L92">                PageRequest.of(0, topPlayer.toInt(), Sort.by(Sort.Order.asc(&quot;rating&quot;)))</span>
+            )
+<span class="fc" id="L94">        topPlayersInTier2.forEach { users -&gt;</span>
+<span class="fc" id="L95">            val updatedToTier1User = publicUserRepository.save(users.copy(tier = TierTypeDto.TIER1))</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">            if (updatedToTier1User.tier == TierTypeDto.TIER1) {</span>
+<span class="nc" id="L97">                logger.info(&quot;UserName ${updatedToTier1User.username} got promoted to TIER1&quot;)</span>
+            } else {
+<span class="fc" id="L99">                logger.error(</span>
+<span class="fc" id="L100">                    &quot;Error occurred while updating ${updatedToTier1User.username} (UserName) to TIER1&quot;</span>
+                )
+            }
+<span class="fc" id="L103">        }</span>
+<span class="fc" id="L104">        bottomPlayersInTier1.forEach { users -&gt;</span>
+<span class="fc" id="L105">            val updateToTier2User = publicUserRepository.save(users.copy(tier = TierTypeDto.TIER2))</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">            if (updateToTier2User.tier == TierTypeDto.TIER2) {</span>
+<span class="nc" id="L107">                logger.info(&quot;UserName ${updateToTier2User.username} got demoted to TIER2&quot;)</span>
+            } else {
+<span class="fc" id="L109">                logger.error(</span>
+<span class="fc" id="L110">                    &quot;Error occurred while updating ${updateToTier2User.username} (UserName) to TIER2&quot;</span>
+                )
+            }
+<span class="fc" id="L113">        }</span>
+<span class="fc" id="L114">    }</span>
+
+    fun getLeaderboard(page: Int?, size: Int?, tier: TierTypeDto?): List&lt;LeaderboardEntryDto&gt; {
+<span class="fc" id="L117">        val pageRequest =</span>
+<span class="fc" id="L118">            PageRequest.of(</span>
+<span class="fc bfc" id="L119" title="All 2 branches covered.">                page ?: 0,</span>
+<span class="fc bfc" id="L120" title="All 2 branches covered.">                size ?: 10,</span>
+<span class="fc" id="L121">                Sort.by(Sort.Order.desc(&quot;rating&quot;), Sort.Order.desc(&quot;wins&quot;), Sort.Order.asc(&quot;username&quot;))</span>
+            )
+<span class="fc" id="L123">        val publicUsers =</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">            if (tier == null) {</span>
+<span class="fc" id="L125">                publicUserRepository.findAll(pageRequest).content</span>
+            } else {
+<span class="fc" id="L127">                publicUserRepository.findAllByTier(tier, pageRequest)</span>
+            }
+<span class="fc" id="L129">        return publicUsers.map {</span>
+<span class="fc" id="L130">            LeaderboardEntryDto(</span>
+                user =
+<span class="fc" id="L132">                PublicUserDto(</span>
+<span class="fc" id="L133">                    username = it.username,</span>
+<span class="fc" id="L134">                    name = it.name,</span>
+<span class="fc" id="L135">                    tier = TierTypeDto.valueOf(it.tier.name),</span>
+<span class="fc" id="L136">                    country = it.country,</span>
+<span class="fc" id="L137">                    college = it.college,</span>
+<span class="fc" id="L138">                    avatarId = it.avatarId,</span>
+                ),
+                stats =
+<span class="fc" id="L141">                UserStatsDto(</span>
+<span class="fc" id="L142">                    rating = BigDecimal(it.rating),</span>
+<span class="fc" id="L143">                    wins = it.wins,</span>
+<span class="fc" id="L144">                    losses = it.losses,</span>
+<span class="fc" id="L145">                    ties = it.ties</span>
+                ),
+            )
+        }
+    }
+
+    fun getDailyChallengeLeaderboard(
+        page: Int?,
+        size: Int?
+    ): List&lt;DailyChallengeLeaderBoardResponseDto&gt; {
+<span class="nc bnc" id="L155" title="All 4 branches missed.">        val pageRequest = PageRequest.of(page ?: 0, size ?: 10, Sort.by(Sort.Direction.DESC, &quot;score&quot;))</span>
+<span class="nc" id="L156">        return publicUserRepository.findAll(pageRequest).content.map {</span>
+<span class="nc" id="L157">            DailyChallengeLeaderBoardResponseDto(</span>
+<span class="nc" id="L158">                userName = it.username, score = BigDecimal(it.score), avatarId = it.avatarId</span>
+            )
+        }
+    }
+
+    fun getUserProfile(userId: UUID, email: String): CurrentUserProfileDto {
+<span class="nc" id="L164">        val user = publicUserRepository.findById(userId).get()</span>
+<span class="nc" id="L165">        return CurrentUserProfileDto(</span>
+<span class="nc" id="L166">            id = userId,</span>
+<span class="nc" id="L167">            username = user.username,</span>
+<span class="nc" id="L168">            email = email,</span>
+<span class="nc" id="L169">            name = user.name,</span>
+<span class="nc" id="L170">            country = user.country,</span>
+<span class="nc" id="L171">            college = user.college,</span>
+<span class="nc" id="L172">            tutorialLevel = user.tutorialLevel,</span>
+<span class="nc" id="L173">            avatarId = user.avatarId,</span>
+<span class="nc bnc" id="L174" title="All 4 branches missed.">            isTutorialComplete = user.tutorialLevel == totalTutorialLevels.toInt()</span>
+        )
+    }
+
+    fun updateUserProfile(userId: UUID, updateCurrentUserProfileDto: UpdateCurrentUserProfileDto) {
+<span class="nc" id="L179">        val user = publicUserRepository.findById(userId).get()</span>
+
+<span class="nc bnc" id="L181" title="All 2 branches missed.">        if (updateCurrentUserProfileDto.name != null &amp;&amp;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">            updateCurrentUserProfileDto.name!!.trim().length &lt; 5</span>
+        ) {
+<span class="nc" id="L184">            throw CustomException(HttpStatus.BAD_REQUEST, &quot;Name must be minimum 5 characters&quot;)</span>
+        }
+
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        if (updateCurrentUserProfileDto.country != null &amp;&amp;</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">            updateCurrentUserProfileDto.country!!.trim().isEmpty()</span>
+        ) {
+<span class="nc" id="L190">            throw CustomException(HttpStatus.BAD_REQUEST, &quot;Country can not be an empty&quot;)</span>
+        }
+
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (updateCurrentUserProfileDto.college != null &amp;&amp;</span>
+<span class="nc bnc" id="L194" title="All 4 branches missed.">            updateCurrentUserProfileDto.college!!.trim().isEmpty()</span>
+        ) {
+<span class="nc" id="L196">            throw CustomException(HttpStatus.BAD_REQUEST, &quot;College can not be an empty&quot;)</span>
+        }
+<span class="nc bnc" id="L198" title="All 2 branches missed.">        if (updateCurrentUserProfileDto.avatarId != null &amp;&amp;</span>
+<span class="nc bnc" id="L199" title="All 6 branches missed.">            updateCurrentUserProfileDto.avatarId!! !in 0..19</span>
+        ) {
+<span class="nc" id="L201">            throw CustomException(HttpStatus.BAD_REQUEST, &quot;Selected Avatar is invalid&quot;)</span>
+        }
+
+<span class="nc" id="L204">        val updatedUser =</span>
+<span class="nc" id="L205">            user.copy(</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                name = updateCurrentUserProfileDto.name ?: user.name,</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">                country = updateCurrentUserProfileDto.country ?: user.country,</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                college = updateCurrentUserProfileDto.college ?: user.college,</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">                avatarId = updateCurrentUserProfileDto.avatarId ?: user.avatarId,</span>
+                tutorialLevel =
+<span class="nc" id="L211">                updateTutorialLevel(</span>
+<span class="nc" id="L212">                    updateCurrentUserProfileDto.updateTutorialLevel, user.tutorialLevel</span>
+                )
+            )
+<span class="nc" id="L215">        publicUserRepository.save(updatedUser)</span>
+<span class="nc" id="L216">    }</span>
+
+    fun updateTutorialLevel(updateTutorialType: TutorialUpdateTypeDto?, tutorialLevel: Int): Int {
+<span class="nc" id="L219">        var updatedTutorialLevel = tutorialLevel</span>
+<span class="nc bnc" id="L220" title="All 7 branches missed.">        when (updateTutorialType) {</span>
+            TutorialUpdateTypeDto.NEXT -&gt; {
+<span class="nc bnc" id="L222" title="All 4 branches missed.">                if (tutorialLevel &gt;= totalTutorialLevels.toInt()) {</span>
+<span class="nc" id="L223">                    return tutorialLevel</span>
+                }
+<span class="nc" id="L225">                updatedTutorialLevel += 1</span>
+            }
+            TutorialUpdateTypeDto.PREVIOUS -&gt; {
+<span class="nc bnc" id="L228" title="All 2 branches missed.">                if (tutorialLevel &lt;= 1) {</span>
+<span class="nc" id="L229">                    return 1</span>
+                }
+<span class="nc" id="L231">                updatedTutorialLevel -= 1</span>
+            }
+            TutorialUpdateTypeDto.SKIP -&gt; {
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                updatedTutorialLevel = totalTutorialLevels.toInt()</span>
+            }
+            TutorialUpdateTypeDto.RESET -&gt; {
+<span class="nc" id="L237">                updatedTutorialLevel = 1</span>
+            }
+            else -&gt; {
+<span class="nc" id="L240">                return tutorialLevel</span>
+            }
+        }
+<span class="nc" id="L243">        return updatedTutorialLevel</span>
+    }
+
+    fun updatePublicRating(
+        userId: UUID,
+        isInitiator: Boolean,
+        verdict: MatchVerdictEnum,
+        newRating: Double
+    ) {
+<span class="nc" id="L252">        val user = publicUserRepository.findById(userId).get()</span>
+<span class="nc" id="L253">        val updatedUser =</span>
+<span class="nc" id="L254">            user.copy(</span>
+<span class="nc" id="L255">                rating = newRating,</span>
+                wins =
+<span class="nc bnc" id="L257" title="All 4 branches missed.">                if ((isInitiator &amp;&amp; verdict == MatchVerdictEnum.PLAYER1) ||</span>
+<span class="nc bnc" id="L258" title="All 4 branches missed.">                    (!isInitiator &amp;&amp; verdict == MatchVerdictEnum.PLAYER2)</span>
+                )
+<span class="nc" id="L260">                    user.wins + 1</span>
+<span class="nc" id="L261">                else user.wins,</span>
+                losses =
+<span class="nc bnc" id="L263" title="All 4 branches missed.">                if ((isInitiator &amp;&amp; verdict == MatchVerdictEnum.PLAYER2) ||</span>
+<span class="nc bnc" id="L264" title="All 4 branches missed.">                    (!isInitiator &amp;&amp; verdict == MatchVerdictEnum.PLAYER1)</span>
+                )
+<span class="nc" id="L266">                    user.losses + 1</span>
+<span class="nc" id="L267">                else user.losses,</span>
+<span class="nc bnc" id="L268" title="All 2 branches missed.">                ties = if (verdict == MatchVerdictEnum.TIE) user.ties + 1 else user.ties</span>
+            )
+<span class="nc" id="L270">        publicUserRepository.save(updatedUser)</span>
+<span class="nc" id="L271">    }</span>
+
+    fun updateAutoMatchRating(userId: UUID, newRating: Double) {
+<span class="nc" id="L274">        val user = publicUserRepository.findById(userId).get()</span>
+<span class="nc" id="L275">        val updatedUser = user.copy(rating = newRating)</span>
+<span class="nc" id="L276">        publicUserRepository.save(updatedUser)</span>
+<span class="nc" id="L277">        logger.info(&quot;Ratings updated for ${user.username}&quot;)</span>
+<span class="nc" id="L278">    }</span>
+    fun updateAutoMatchWinsLosses(
+        userIds: List&lt;UUID&gt;,
+        userIdWinsMap: Map&lt;UUID, Int&gt;,
+        userIdLoss: Map&lt;UUID, Int&gt;,
+        userIdTies: Map&lt;UUID, Int&gt;
+    ) {
+<span class="nc" id="L285">        logger.info(&quot;Updating wins and losses for $userIds&quot;)</span>
+<span class="nc" id="L286">        userIds.forEach {</span>
+<span class="nc" id="L287">            val user = publicUserRepository.findById(it).get()</span>
+<span class="nc" id="L288">            val updatedUser =</span>
+<span class="nc" id="L289">                user.copy(</span>
+<span class="nc" id="L290">                    wins = user.wins + userIdWinsMap[it]!!,</span>
+<span class="nc" id="L291">                    losses = user.losses + userIdLoss[it]!!,</span>
+<span class="nc" id="L292">                    ties = user.ties + userIdTies[it]!!</span>
+                )
+<span class="nc" id="L294">            publicUserRepository.save(updatedUser)</span>
+<span class="nc" id="L295">        }</span>
+<span class="nc" id="L296">    }</span>
+    fun getPublicUser(userId: UUID): PublicUserEntity {
+<span class="fc" id="L298">        return publicUserRepository.findById(userId).get()</span>
+    }
+
+    fun getPublicUserByUsername(username: String): PublicUserEntity {
+<span class="fc" id="L302">        return publicUserRepository.findByUsername(username).orElseThrow {</span>
+<span class="nc" id="L303">            CustomException(HttpStatus.BAD_REQUEST, &quot;Invalid username&quot;)</span>
+        }
+    }
+
+    fun isUsernameUnique(username: String): Boolean {
+<span class="nc" id="L308">        return publicUserRepository.findByUsername(username).isEmpty</span>
+    }
+
+    fun updateDailyChallengeScore(userId: UUID, score: Double, dailyChallenge: DailyChallengeEntity) {
+<span class="nc" id="L312">        val user = publicUserRepository.findById(userId).get()</span>
+<span class="nc" id="L313">        val current = user.dailyChallengeHistory</span>
+<span class="nc" id="L314">        current[dailyChallenge.day] = DailyChallengeHistory(score, dailyChallenge)</span>
+<span class="nc" id="L315">        val updatedUser = user.copy(score = user.score + score, dailyChallengeHistory = current)</span>
+<span class="nc" id="L316">        publicUserRepository.save(updatedUser)</span>
+<span class="nc" id="L317">    }</span>
+
+    fun getTopNUsers(): List&lt;PublicUserEntity&gt; {
+<span class="nc" id="L320">        return publicUserRepository.findAllByTier(TierTypeDto.TIER1).sortedByDescending { it.rating }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

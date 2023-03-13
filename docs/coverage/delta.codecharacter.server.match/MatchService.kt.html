@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.match</a> &gt; <span class="el_source">MatchService.kt</span></div><h1>MatchService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.match
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import delta.codecharacter.dtos.ChallengeTypeDto
+import delta.codecharacter.dtos.CreateMatchRequestDto
+import delta.codecharacter.dtos.DailyChallengeMatchRequestDto
+import delta.codecharacter.dtos.GameDto
+import delta.codecharacter.dtos.GameStatusDto
+import delta.codecharacter.dtos.MatchDto
+import delta.codecharacter.dtos.MatchModeDto
+import delta.codecharacter.dtos.PublicUserDto
+import delta.codecharacter.dtos.TierTypeDto
+import delta.codecharacter.dtos.VerdictDto
+import delta.codecharacter.server.code.LanguageEnum
+import delta.codecharacter.server.code.code_revision.CodeRevisionService
+import delta.codecharacter.server.code.latest_code.LatestCodeService
+import delta.codecharacter.server.code.locked_code.LockedCodeService
+import delta.codecharacter.server.daily_challenge.DailyChallengeService
+import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchEntity
+import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchRepository
+import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchVerdictEnum
+import delta.codecharacter.server.exception.CustomException
+import delta.codecharacter.server.game.GameService
+import delta.codecharacter.server.game.GameStatusEnum
+import delta.codecharacter.server.game_map.latest_map.LatestMapService
+import delta.codecharacter.server.game_map.locked_map.LockedMapService
+import delta.codecharacter.server.game_map.map_revision.MapRevisionService
+import delta.codecharacter.server.logic.validation.MapValidator
+import delta.codecharacter.server.logic.verdict.VerdictAlgorithm
+import delta.codecharacter.server.notifications.NotificationService
+import delta.codecharacter.server.user.public_user.PublicUserService
+import delta.codecharacter.server.user.rating_history.RatingHistoryService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.amqp.rabbit.annotation.RabbitListener
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import org.springframework.messaging.simp.SimpMessagingTemplate
+import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.time.Duration
+import java.time.Instant
+import java.util.UUID
+
+<span class="fc" id="L46">@Service</span>
+<span class="fc" id="L47">class MatchService(</span>
+<span class="fc" id="L48">    @Autowired private val matchRepository: MatchRepository,</span>
+<span class="fc" id="L49">    @Autowired private val gameService: GameService,</span>
+<span class="fc" id="L50">    @Autowired private val latestCodeService: LatestCodeService,</span>
+<span class="fc" id="L51">    @Autowired private val codeRevisionService: CodeRevisionService,</span>
+<span class="fc" id="L52">    @Autowired private val lockedCodeService: LockedCodeService,</span>
+<span class="fc" id="L53">    @Autowired private val latestMapService: LatestMapService,</span>
+<span class="fc" id="L54">    @Autowired private val mapRevisionService: MapRevisionService,</span>
+<span class="fc" id="L55">    @Autowired private val lockedMapService: LockedMapService,</span>
+<span class="fc" id="L56">    @Autowired private val publicUserService: PublicUserService,</span>
+<span class="fc" id="L57">    @Autowired private val verdictAlgorithm: VerdictAlgorithm,</span>
+<span class="fc" id="L58">    @Autowired private val ratingHistoryService: RatingHistoryService,</span>
+<span class="fc" id="L59">    @Autowired private val notificationService: NotificationService,</span>
+<span class="fc" id="L60">    @Autowired private val dailyChallengeService: DailyChallengeService,</span>
+<span class="fc" id="L61">    @Autowired private val dailyChallengeMatchRepository: DailyChallengeMatchRepository,</span>
+<span class="fc" id="L62">    @Autowired private val jackson2ObjectMapperBuilder: Jackson2ObjectMapperBuilder,</span>
+<span class="fc" id="L63">    @Autowired private val simpMessagingTemplate: SimpMessagingTemplate,</span>
+<span class="fc" id="L64">    @Autowired private val mapValidator: MapValidator,</span>
+<span class="fc" id="L65">    @Autowired private val autoMatchRepository: AutoMatchRepository</span>
+) {
+<span class="fc" id="L67">    private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()</span>
+<span class="fc" id="L68">    private val logger: Logger = LoggerFactory.getLogger(MatchService::class.java)</span>
+
+    private fun createSelfMatch(userId: UUID, codeRevisionId: UUID?, mapRevisionId: UUID?) {
+        val code: String
+        val language: LanguageEnum
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (codeRevisionId == null) {</span>
+<span class="nc" id="L74">            val latestCode = latestCodeService.getLatestCode(userId)</span>
+<span class="nc" id="L75">            code = latestCode.code</span>
+<span class="nc" id="L76">            language = LanguageEnum.valueOf(latestCode.language.name)</span>
+        } else {
+<span class="fc" id="L78">            val codeRevision =</span>
+<span class="fc bfc" id="L79" title="All 6 branches covered.">                codeRevisionService.getCodeRevisions(userId).find { it.id == codeRevisionId }</span>
+<span class="fc" id="L80">                    ?: throw CustomException(HttpStatus.BAD_REQUEST, &quot;Invalid revision ID&quot;)</span>
+<span class="fc" id="L81">            code = codeRevision.code</span>
+<span class="fc" id="L82">            language = LanguageEnum.valueOf(codeRevision.language.name)</span>
+        }
+
+<span class="fc" id="L85">        val map: String =</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            if (mapRevisionId == null) {</span>
+<span class="nc" id="L87">                val latestMap = latestMapService.getLatestMap(userId)</span>
+<span class="nc" id="L88">                latestMap.map</span>
+            } else {
+<span class="fc" id="L90">                val mapRevision =</span>
+<span class="fc bfc" id="L91" title="All 6 branches covered.">                    mapRevisionService.getMapRevisions(userId).find { it.id == mapRevisionId }</span>
+<span class="fc" id="L92">                        ?: throw CustomException(HttpStatus.BAD_REQUEST, &quot;Invalid revision ID&quot;)</span>
+<span class="fc" id="L93">                mapRevision.map</span>
+            }
+
+<span class="fc" id="L96">        val matchId = UUID.randomUUID()</span>
+<span class="fc" id="L97">        val game = gameService.createGame(matchId)</span>
+<span class="fc" id="L98">        val publicUser = publicUserService.getPublicUser(userId)</span>
+<span class="fc" id="L99">        val match =</span>
+<span class="fc" id="L100">            MatchEntity(</span>
+<span class="fc" id="L101">                id = matchId,</span>
+<span class="fc" id="L102">                games = listOf(game),</span>
+<span class="fc" id="L103">                mode = MatchModeEnum.SELF,</span>
+<span class="fc" id="L104">                verdict = MatchVerdictEnum.TIE,</span>
+<span class="fc" id="L105">                createdAt = Instant.now(),</span>
+<span class="fc" id="L106">                totalPoints = 0,</span>
+<span class="fc" id="L107">                player1 = publicUser,</span>
+<span class="fc" id="L108">                player2 = publicUser,</span>
+            )
+<span class="fc" id="L110">        matchRepository.save(match)</span>
+<span class="fc" id="L111">        gameService.sendGameRequest(game, code, LanguageEnum.valueOf(language.name), map)</span>
+<span class="fc" id="L112">    }</span>
+
+    fun createDualMatch(userId: UUID, opponentUsername: String, mode: MatchModeEnum): UUID {
+<span class="fc" id="L115">        val publicUser = publicUserService.getPublicUser(userId)</span>
+<span class="fc" id="L116">        val publicOpponent = publicUserService.getPublicUserByUsername(opponentUsername)</span>
+<span class="fc" id="L117">        val opponentId = publicOpponent.userId</span>
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (userId == opponentId) {</span>
+<span class="nc" id="L119">            throw CustomException(HttpStatus.BAD_REQUEST, &quot;You cannot play against yourself&quot;)</span>
+        }
+<span class="fc" id="L121">        val (userLanguage, userCode) = lockedCodeService.getLockedCode(userId)</span>
+<span class="fc" id="L122">        val userMap = lockedMapService.getLockedMap(userId)</span>
+
+<span class="fc" id="L124">        val (opponentLanguage, opponentCode) = lockedCodeService.getLockedCode(opponentId)</span>
+<span class="fc" id="L125">        val opponentMap = lockedMapService.getLockedMap(opponentId)</span>
+
+<span class="fc" id="L127">        val matchId = UUID.randomUUID()</span>
+
+<span class="fc" id="L129">        val game1 = gameService.createGame(matchId)</span>
+<span class="fc" id="L130">        val game2 = gameService.createGame(matchId)</span>
+
+<span class="fc" id="L132">        val match =</span>
+<span class="fc" id="L133">            MatchEntity(</span>
+<span class="fc" id="L134">                id = matchId,</span>
+<span class="fc" id="L135">                games = listOf(game1, game2),</span>
+<span class="fc" id="L136">                mode = mode,</span>
+<span class="fc" id="L137">                verdict = MatchVerdictEnum.TIE,</span>
+<span class="fc" id="L138">                createdAt = Instant.now(),</span>
+<span class="fc" id="L139">                totalPoints = 0,</span>
+<span class="fc" id="L140">                player1 = publicUser,</span>
+<span class="fc" id="L141">                player2 = publicOpponent,</span>
+            )
+<span class="fc" id="L143">        matchRepository.save(match)</span>
+
+<span class="fc" id="L145">        gameService.sendGameRequest(game1, userCode, userLanguage, opponentMap)</span>
+<span class="fc" id="L146">        gameService.sendGameRequest(game2, opponentCode, opponentLanguage, userMap)</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (mode == MatchModeEnum.AUTO) {</span>
+<span class="nc" id="L148">            logger.info(</span>
+<span class="nc" id="L149">                &quot;Auto match started between ${match.player1.username} and ${match.player2.username}&quot;</span>
+            )
+        }
+<span class="fc" id="L152">        return matchId</span>
+    }
+
+    fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
+<span class="fc" id="L156">        val (_, chall, challType, _, completionStatus) =</span>
+<span class="fc" id="L157">            dailyChallengeService.getDailyChallengeByDateForUser(userId)</span>
+<span class="pc bpc" id="L158" title="1 of 4 branches missed.">        if (completionStatus != null &amp;&amp; completionStatus) {</span>
+<span class="fc" id="L159">            throw CustomException(</span>
+<span class="fc" id="L160">                HttpStatus.BAD_REQUEST, &quot;You have already completed your daily challenge&quot;</span>
+            )
+        }
+<span class="fc" id="L163">        val dc = dailyChallengeService.getDailyChallengeByDate()</span>
+<span class="fc" id="L164">        val (value, _) = dailyChallengeMatchRequestDto</span>
+        val language: LanguageEnum
+        val map: String
+        val code: String
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        when (challType) {</span>
+            ChallengeTypeDto.CODE -&gt; { // code as question and map as answer
+<span class="fc" id="L170">                mapValidator.validateMap(value)</span>
+<span class="fc" id="L171">                code = chall.cpp.toString()</span>
+<span class="fc" id="L172">                language = LanguageEnum.CPP</span>
+<span class="fc" id="L173">                map = value</span>
+            }
+            ChallengeTypeDto.MAP -&gt; {
+<span class="nc" id="L176">                map = dc.map</span>
+<span class="nc" id="L177">                language = LanguageEnum.valueOf(dailyChallengeMatchRequestDto.language.toString())</span>
+<span class="nc" id="L178">                code = value</span>
+            }
+        }
+<span class="fc" id="L181">        val matchId = UUID.randomUUID()</span>
+<span class="fc" id="L182">        val game = gameService.createGame(matchId)</span>
+<span class="fc" id="L183">        val user = publicUserService.getPublicUser(userId)</span>
+<span class="fc" id="L184">        val match =</span>
+<span class="fc" id="L185">            DailyChallengeMatchEntity(</span>
+<span class="fc" id="L186">                id = matchId,</span>
+<span class="fc" id="L187">                verdict = DailyChallengeMatchVerdictEnum.STARTED,</span>
+<span class="fc" id="L188">                createdAt = Instant.now(),</span>
+<span class="fc" id="L189">                user = user,</span>
+<span class="fc" id="L190">                game = game</span>
+            )
+<span class="fc" id="L192">        dailyChallengeMatchRepository.save(match)</span>
+<span class="fc" id="L193">        gameService.sendGameRequest(game, code, language, map)</span>
+<span class="fc" id="L194">    }</span>
+    fun createMatch(userId: UUID, createMatchRequestDto: CreateMatchRequestDto) {
+<span class="pc bpc" id="L196" title="1 of 3 branches missed.">        when (createMatchRequestDto.mode) {</span>
+            MatchModeDto.SELF -&gt; {
+<span class="fc" id="L198">                val (_, _, mapRevisionId, codeRevisionId) = createMatchRequestDto</span>
+<span class="fc" id="L199">                createSelfMatch(userId, codeRevisionId, mapRevisionId)</span>
+            }
+            MatchModeDto.MANUAL, MatchModeDto.AUTO -&gt; {
+<span class="fc bfc" id="L202" title="All 2 branches covered.">                if (createMatchRequestDto.opponentUsername == null) {</span>
+<span class="fc" id="L203">                    throw CustomException(HttpStatus.BAD_REQUEST, &quot;Opponent ID is required&quot;)</span>
+                }
+<span class="fc" id="L205">                createDualMatch(userId, createMatchRequestDto.opponentUsername!!, MatchModeEnum.MANUAL)</span>
+            }
+            else -&gt; {
+<span class="nc" id="L208">                throw CustomException(HttpStatus.BAD_REQUEST, &quot;MatchMode Is Not Correct&quot;)</span>
+            }
+        }
+<span class="fc" id="L211">    }</span>
+
+    fun createAutoMatch() {
+<span class="nc" id="L214">        val topNUsers = publicUserService.getTopNUsers()</span>
+<span class="nc" id="L215">        val userIds = topNUsers.map { it.userId }</span>
+<span class="nc" id="L216">        val usernames = topNUsers.map { it.username }</span>
+<span class="nc" id="L217">        logger.info(&quot;Auto matches started for users: $usernames&quot;)</span>
+<span class="nc" id="L218">        autoMatchRepository.deleteAll()</span>
+<span class="nc" id="L219">        userIds.forEachIndexed { i, userId -&gt;</span>
+<span class="nc" id="L220">            run {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">                for (j in i + 1 until userIds.size) {</span>
+<span class="nc" id="L222">                    val opponentUsername = usernames[j]</span>
+<span class="nc" id="L223">                    val matchId = createDualMatch(userId, opponentUsername, MatchModeEnum.AUTO)</span>
+<span class="nc" id="L224">                    autoMatchRepository.save(AutoMatchEntity(matchId, 0))</span>
+                }
+<span class="nc" id="L226">            }</span>
+<span class="nc" id="L227">        }</span>
+<span class="nc" id="L228">    }</span>
+
+    private fun mapMatchEntitiesToDtos(matchEntities: List&lt;MatchEntity&gt;): List&lt;MatchDto&gt; {
+<span class="nc" id="L231">        return matchEntities.map { matchEntity -&gt;</span>
+<span class="nc" id="L232">            MatchDto(</span>
+<span class="nc" id="L233">                id = matchEntity.id,</span>
+<span class="nc" id="L234">                matchMode = MatchModeDto.valueOf(matchEntity.mode.name),</span>
+<span class="nc" id="L235">                matchVerdict = VerdictDto.valueOf(matchEntity.verdict.name),</span>
+<span class="nc" id="L236">                createdAt = matchEntity.createdAt,</span>
+                games =
+<span class="nc" id="L238">                matchEntity</span>
+<span class="nc" id="L239">                    .games</span>
+<span class="nc" id="L240">                    .map { gameEntity -&gt;</span>
+<span class="nc" id="L241">                        GameDto(</span>
+<span class="nc" id="L242">                            id = gameEntity.id,</span>
+<span class="nc" id="L243">                            destruction = BigDecimal(gameEntity.destruction),</span>
+<span class="nc" id="L244">                            coinsUsed = gameEntity.coinsUsed,</span>
+<span class="nc" id="L245">                            status = GameStatusDto.valueOf(gameEntity.status.name),</span>
+                        )
+                    }
+<span class="nc" id="L248">                    .toSet(),</span>
+                user1 =
+<span class="nc" id="L250">                PublicUserDto(</span>
+<span class="nc" id="L251">                    username = matchEntity.player1.username,</span>
+<span class="nc" id="L252">                    name = matchEntity.player1.name,</span>
+<span class="nc" id="L253">                    tier = TierTypeDto.valueOf(matchEntity.player1.tier.name),</span>
+<span class="nc" id="L254">                    country = matchEntity.player1.country,</span>
+<span class="nc" id="L255">                    college = matchEntity.player1.college,</span>
+<span class="nc" id="L256">                    avatarId = matchEntity.player1.avatarId,</span>
+                ),
+                user2 =
+<span class="nc" id="L259">                PublicUserDto(</span>
+<span class="nc" id="L260">                    username = matchEntity.player2.username,</span>
+<span class="nc" id="L261">                    name = matchEntity.player2.name,</span>
+<span class="nc" id="L262">                    tier = TierTypeDto.valueOf(matchEntity.player2.tier.name),</span>
+<span class="nc" id="L263">                    country = matchEntity.player2.country,</span>
+<span class="nc" id="L264">                    college = matchEntity.player2.college,</span>
+<span class="nc" id="L265">                    avatarId = matchEntity.player2.avatarId,</span>
+                ),
+            )
+        }
+    }
+
+    private fun mapDailyChallengeMatchEntitiesToDtos(
+        dailyChallengeMatchEntities: List&lt;DailyChallengeMatchEntity&gt;
+    ): List&lt;MatchDto&gt; {
+<span class="nc" id="L274">        return dailyChallengeMatchEntities.map { entity -&gt;</span>
+<span class="nc" id="L275">            MatchDto(</span>
+<span class="nc" id="L276">                id = entity.id,</span>
+<span class="nc" id="L277">                matchMode = MatchModeDto.valueOf(&quot;DAILYCHALLENGE&quot;),</span>
+<span class="nc" id="L278">                matchVerdict = VerdictDto.valueOf(entity.verdict.name),</span>
+<span class="nc" id="L279">                createdAt = entity.createdAt,</span>
+                games =
+<span class="nc" id="L281">                setOf(</span>
+<span class="nc" id="L282">                    GameDto(</span>
+<span class="nc" id="L283">                        id = entity.game.id,</span>
+<span class="nc" id="L284">                        destruction = BigDecimal(entity.game.destruction),</span>
+<span class="nc" id="L285">                        coinsUsed = entity.game.coinsUsed,</span>
+<span class="nc" id="L286">                        status = GameStatusDto.valueOf(entity.game.status.name)</span>
+                    )
+                ),
+                user1 =
+<span class="nc" id="L290">                PublicUserDto(</span>
+<span class="nc" id="L291">                    username = entity.user.username,</span>
+<span class="nc" id="L292">                    name = entity.user.name,</span>
+<span class="nc" id="L293">                    tier = TierTypeDto.valueOf(entity.user.tier.name),</span>
+<span class="nc" id="L294">                    country = entity.user.country,</span>
+<span class="nc" id="L295">                    college = entity.user.college,</span>
+<span class="nc" id="L296">                    avatarId = entity.user.avatarId,</span>
+                ),
+            )
+        }
+    }
+
+    fun getTopMatches(): List&lt;MatchDto&gt; {
+<span class="nc" id="L303">        val matches = matchRepository.findTop10ByOrderByTotalPointsDesc()</span>
+<span class="nc" id="L304">        return mapMatchEntitiesToDtos(matches)</span>
+    }
+
+    fun getUserMatches(userId: UUID): List&lt;MatchDto&gt; {
+<span class="nc" id="L308">        val publicUser = publicUserService.getPublicUser(userId)</span>
+<span class="nc" id="L309">        val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)</span>
+<span class="nc" id="L310">        val dcMatches =</span>
+<span class="nc" id="L311">            dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {</span>
+<span class="nc bnc" id="L312" title="All 4 branches missed.">                Duration.between(it.createdAt, Instant.now()).toHours() &lt; 24 &amp;&amp;</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">                    it.verdict != DailyChallengeMatchVerdictEnum.STARTED</span>
+            }
+<span class="nc" id="L315">        return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)</span>
+    }
+
+    @RabbitListener(queues = [&quot;gameStatusUpdateQueue&quot;], ackMode = &quot;AUTO&quot;)
+    fun receiveGameResult(gameStatusUpdateJson: String) {
+<span class="fc" id="L320">        val updatedGame = gameService.updateGameStatus(gameStatusUpdateJson)</span>
+<span class="fc" id="L321">        val matchId = updatedGame.matchId</span>
+<span class="pc bpc" id="L322" title="1 of 2 branches missed.">        if (matchRepository.findById(matchId).isPresent) {</span>
+<span class="fc" id="L323">            val match = matchRepository.findById(updatedGame.matchId).get()</span>
+<span class="pc bpc" id="L324" title="2 of 4 branches missed.">            if (match.mode != MatchModeEnum.AUTO &amp;&amp; match.games.first().id == updatedGame.id) {</span>
+<span class="fc" id="L325">                simpMessagingTemplate.convertAndSend(</span>
+<span class="fc" id="L326">                    &quot;/updates/${match.player1.userId}&quot;,</span>
+<span class="fc" id="L327">                    mapper.writeValueAsString(</span>
+<span class="fc" id="L328">                        GameDto(</span>
+<span class="fc" id="L329">                            id = updatedGame.id,</span>
+<span class="fc" id="L330">                            destruction = BigDecimal(updatedGame.destruction),</span>
+<span class="fc" id="L331">                            coinsUsed = updatedGame.coinsUsed,</span>
+<span class="fc" id="L332">                            status = GameStatusDto.valueOf(updatedGame.status.name),</span>
+                        )
+                    )
+                )
+            }
+<span class="pc bpc" id="L337" title="1 of 2 branches missed.">            if (match.mode != MatchModeEnum.SELF &amp;&amp;</span>
+<span class="nc bnc" id="L338" title="All 2 branches missed.">                match.games.all { game -&gt;</span>
+<span class="nc bnc" id="L339" title="All 6 branches missed.">                    game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR</span>
+                }
+            ) {
+
+<span class="nc bnc" id="L343" title="All 2 branches missed.">                if (match.mode == MatchModeEnum.AUTO) {</span>
+<span class="nc bnc" id="L344" title="All 6 branches missed.">                    if (match.games.any { game -&gt; game.status == GameStatusEnum.EXECUTE_ERROR }) {</span>
+<span class="nc" id="L345">                        val autoMatch = autoMatchRepository.findById(match.id).get()</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">                        if (autoMatch.tries &lt; 2) {</span>
+<span class="nc" id="L347">                            autoMatchRepository.delete(autoMatch)</span>
+<span class="nc" id="L348">                            val newMatchId =</span>
+<span class="nc" id="L349">                                createDualMatch(match.player1.userId, match.player2.username, MatchModeEnum.AUTO)</span>
+<span class="nc" id="L350">                            autoMatchRepository.save(AutoMatchEntity(newMatchId, autoMatch.tries + 1))</span>
+<span class="nc" id="L351">                            return</span>
+                        }
+                    }
+                }
+
+<span class="nc" id="L356">                val player1Game = match.games.first()</span>
+<span class="nc" id="L357">                val player2Game = match.games.last()</span>
+<span class="nc" id="L358">                val verdict =</span>
+<span class="nc" id="L359">                    verdictAlgorithm.getVerdict(</span>
+<span class="nc bnc" id="L360" title="All 2 branches missed.">                        player1Game.status == GameStatusEnum.EXECUTE_ERROR,</span>
+<span class="nc" id="L361">                        player1Game.coinsUsed,</span>
+<span class="nc" id="L362">                        player1Game.destruction,</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">                        player2Game.status == GameStatusEnum.EXECUTE_ERROR,</span>
+<span class="nc" id="L364">                        player2Game.coinsUsed,</span>
+<span class="nc" id="L365">                        player2Game.destruction</span>
+                    )
+<span class="nc" id="L367">                val finishedMatch = match.copy(verdict = verdict)</span>
+<span class="nc" id="L368">                val (newUserRating, newOpponentRating) =</span>
+<span class="nc" id="L369">                    ratingHistoryService.updateRating(match.player1.userId, match.player2.userId, verdict)</span>
+<span class="nc bnc" id="L370" title="All 2 branches missed.">                if (match.mode == MatchModeEnum.MANUAL) {</span>
+                    if ((
+<span class="nc bnc" id="L372" title="All 2 branches missed.">                        match.player1.tier == TierTypeDto.TIER2 &amp;&amp;</span>
+<span class="nc bnc" id="L373" title="All 2 branches missed.">                            match.player2.tier == TierTypeDto.TIER2</span>
+                        ) ||
+                        (
+<span class="nc bnc" id="L376" title="All 2 branches missed.">                            match.player1.tier == TierTypeDto.TIER_PRACTICE &amp;&amp;</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">                                match.player2.tier == TierTypeDto.TIER_PRACTICE</span>
+                            )
+                    ) {
+<span class="nc" id="L380">                        publicUserService.updatePublicRating(</span>
+<span class="nc" id="L381">                            userId = match.player1.userId,</span>
+<span class="nc" id="L382">                            isInitiator = true,</span>
+<span class="nc" id="L383">                            verdict = verdict,</span>
+<span class="nc" id="L384">                            newRating = newUserRating</span>
+                        )
+<span class="nc" id="L386">                        publicUserService.updatePublicRating(</span>
+<span class="nc" id="L387">                            userId = match.player2.userId,</span>
+<span class="nc" id="L388">                            isInitiator = false,</span>
+<span class="nc" id="L389">                            verdict = verdict,</span>
+<span class="nc" id="L390">                            newRating = newOpponentRating</span>
+                        )
+                    }
+<span class="nc" id="L393">                    notificationService.sendNotification(</span>
+<span class="nc" id="L394">                        match.player1.userId,</span>
+<span class="nc" id="L395">                        &quot;Match Result&quot;,</span>
+                        &quot;${
+<span class="nc bnc" id="L397" title="All 3 branches missed.">                        when (verdict) {</span>
+<span class="nc" id="L398">                            MatchVerdictEnum.PLAYER1 -&gt; &quot;Won&quot;</span>
+<span class="nc" id="L399">                            MatchVerdictEnum.PLAYER2 -&gt; &quot;Lost&quot;</span>
+<span class="nc" id="L400">                            MatchVerdictEnum.TIE -&gt; &quot;Tied&quot;</span>
+                        }
+<span class="nc" id="L402">                        } against ${match.player2.username}&quot;,</span>
+                    )
+                }
+<span class="nc" id="L405">                matchRepository.save(finishedMatch)</span>
+
+<span class="nc bnc" id="L407" title="All 2 branches missed.">                if (match.mode == MatchModeEnum.AUTO) {</span>
+<span class="nc bnc" id="L408" title="All 2 branches missed.">                    if (autoMatchRepository.findAll().all { autoMatch -&gt;</span>
+<span class="nc bnc" id="L409" title="All 2 branches missed.">                        matchRepository.findById(autoMatch.matchId).get().games.all { game -&gt;</span>
+<span class="nc bnc" id="L410" title="All 6 branches missed.">                            game.status == GameStatusEnum.EXECUTED || game.status == GameStatusEnum.EXECUTE_ERROR</span>
+                        }
+                    }
+                    ) {
+<span class="nc" id="L414">                        val matches =</span>
+<span class="nc" id="L415">                            matchRepository.findByIdIn(autoMatchRepository.findAll().map { it.matchId })</span>
+<span class="nc" id="L416">                        val userIds =</span>
+<span class="nc" id="L417">                            matches.map { it.player1.userId }.toSet() +</span>
+<span class="nc" id="L418">                                matches.map { it.player2.userId }.toSet()</span>
+<span class="nc" id="L419">                        val (userIdWinMap, userIdLossMap, userIdTieMap) =</span>
+<span class="nc" id="L420">                            ratingHistoryService.updateTotalWinsTiesLosses(</span>
+<span class="nc" id="L421">                                userIds = userIds.toList(), matches = matches</span>
+                            )
+<span class="nc" id="L423">                        publicUserService.updateAutoMatchWinsLosses(</span>
+<span class="nc" id="L424">                            userIds.toList(), userIdWinMap, userIdLossMap, userIdTieMap</span>
+                        )
+<span class="nc" id="L426">                        val newRatings =</span>
+<span class="nc" id="L427">                            ratingHistoryService.updateAndGetAutoMatchRatings(userIds.toList(), matches)</span>
+<span class="nc" id="L428">                        newRatings.forEach { (userId, newRating) -&gt;</span>
+<span class="nc" id="L429">                            publicUserService.updateAutoMatchRating(userId = userId, newRating = newRating.rating)</span>
+<span class="nc" id="L430">                        }</span>
+<span class="nc" id="L431">                        logger.info(&quot;LeaderBoard Tier Promotion and Demotion started&quot;)</span>
+<span class="nc" id="L432">                        publicUserService.promoteTiers()</span>
+                    }
+<span class="nc" id="L434">                    notificationService.sendNotification(</span>
+<span class="nc" id="L435">                        match.player1.userId,</span>
+<span class="nc" id="L436">                        &quot;Auto Match Result&quot;,</span>
+                        &quot;${
+<span class="nc bnc" id="L438" title="All 3 branches missed.">                        when (verdict) {</span>
+<span class="nc" id="L439">                            MatchVerdictEnum.PLAYER1 -&gt; &quot;Won&quot;</span>
+<span class="nc" id="L440">                            MatchVerdictEnum.PLAYER2 -&gt; &quot;Lost&quot;</span>
+<span class="nc" id="L441">                            MatchVerdictEnum.TIE -&gt; &quot;Tied&quot;</span>
+                        }
+<span class="nc" id="L443">                        } against ${match.player2.username}&quot;,</span>
+                    )
+<span class="nc" id="L445">                    logger.info(</span>
+<span class="nc" id="L446">                        &quot;Match between ${match.player1.username} and ${match.player2.username} completed with verdict $verdict&quot;</span>
+                    )
+                }
+            }
+<span class="nc bnc" id="L450" title="All 2 branches missed.">        } else if (dailyChallengeMatchRepository.findById(matchId).isPresent) {</span>
+<span class="nc" id="L451">            val match = dailyChallengeMatchRepository.findById(matchId).get()</span>
+<span class="nc" id="L452">            simpMessagingTemplate.convertAndSend(</span>
+<span class="nc" id="L453">                &quot;/updates/${match.user.userId}&quot;,</span>
+<span class="nc" id="L454">                mapper.writeValueAsString(</span>
+<span class="nc" id="L455">                    GameDto(</span>
+<span class="nc" id="L456">                        id = updatedGame.id,</span>
+<span class="nc" id="L457">                        destruction = BigDecimal(updatedGame.destruction),</span>
+<span class="nc" id="L458">                        coinsUsed = updatedGame.coinsUsed,</span>
+<span class="nc" id="L459">                        status = GameStatusDto.valueOf(updatedGame.status.name),</span>
+                    )
+                )
+            )
+<span class="nc bnc" id="L463" title="All 2 branches missed.">            if (updatedGame.status != GameStatusEnum.EXECUTING) {</span>
+<span class="nc" id="L464">                val updatedMatch =</span>
+<span class="nc" id="L465">                    match.copy(</span>
+                        verdict =
+<span class="nc" id="L467">                        dailyChallengeService.completeDailyChallenge(updatedGame, match.user.userId)</span>
+                    )
+<span class="nc" id="L469">                notificationService.sendNotification(</span>
+<span class="nc" id="L470">                    match.user.userId,</span>
+<span class="nc" id="L471">                    title = &quot;Daily Challenge Results&quot;,</span>
+                    content =
+<span class="nc bnc" id="L473" title="All 3 branches missed.">                    when (updatedMatch.verdict) {</span>
+<span class="nc" id="L474">                        DailyChallengeMatchVerdictEnum.SUCCESS -&gt; &quot;Successfully completed challenge&quot;</span>
+<span class="nc" id="L475">                        DailyChallengeMatchVerdictEnum.FAILURE -&gt; &quot;Failed to complete challenge&quot;</span>
+                        else -&gt; {
+<span class="nc" id="L477">                            &quot;Some error occurred. Try again!&quot;</span>
+                        }
+                    }
+                )
+<span class="nc" id="L481">                dailyChallengeMatchRepository.save(updatedMatch)</span>
+            }
+        }
+<span class="fc" id="L484">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

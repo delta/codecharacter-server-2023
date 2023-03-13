@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RatingHistoryService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.user.rating_history</a> &gt; <span class="el_source">RatingHistoryService.kt</span></div><h1>RatingHistoryService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.user.rating_history
+
+import delta.codecharacter.dtos.RatingHistoryDto
+import delta.codecharacter.server.logic.rating.GlickoRating
+import delta.codecharacter.server.logic.rating.RatingAlgorithm
+import delta.codecharacter.server.match.MatchEntity
+import delta.codecharacter.server.match.MatchVerdictEnum
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import java.math.BigDecimal
+import java.time.Instant
+import java.util.UUID
+
+<span class="fc" id="L14">@Service</span>
+<span class="fc" id="L15">class RatingHistoryService(</span>
+<span class="fc" id="L16">    @Autowired private val ratingHistoryRepository: RatingHistoryRepository,</span>
+<span class="fc" id="L17">    @Autowired private val ratingAlgorithm: RatingAlgorithm</span>
+) {
+    fun create(userId: UUID) {
+<span class="nc" id="L20">        val ratingHistory =</span>
+<span class="nc" id="L21">            RatingHistoryEntity(</span>
+<span class="nc" id="L22">                userId = userId, rating = 1500.0, ratingDeviation = 350.0, validFrom = Instant.now()</span>
+            )
+<span class="nc" id="L24">        ratingHistoryRepository.save(ratingHistory)</span>
+<span class="nc" id="L25">    }</span>
+
+    fun getRatingHistory(userId: UUID): List&lt;RatingHistoryDto&gt; {
+<span class="nc" id="L28">        return ratingHistoryRepository.findAllByUserId(userId).map {</span>
+<span class="nc" id="L29">            RatingHistoryDto(</span>
+<span class="nc" id="L30">                rating = BigDecimal(it.rating),</span>
+<span class="nc" id="L31">                ratingDeviation = BigDecimal(it.ratingDeviation),</span>
+<span class="nc" id="L32">                validFrom = it.validFrom</span>
+            )
+        }
+    }
+
+    private fun convertVerdictToMatchResult(verdict: MatchVerdictEnum): Double {
+<span class="nc bnc" id="L38" title="All 3 branches missed.">        return when (verdict) {</span>
+<span class="nc" id="L39">            MatchVerdictEnum.PLAYER1 -&gt; 1.0</span>
+<span class="nc" id="L40">            MatchVerdictEnum.PLAYER2 -&gt; 0.0</span>
+<span class="nc" id="L41">            MatchVerdictEnum.TIE -&gt; 0.5</span>
+        }
+    }
+
+    fun updateRating(
+        userId: UUID,
+        opponentId: UUID,
+        verdict: MatchVerdictEnum
+    ): Pair&lt;Double, Double&gt; {
+<span class="nc" id="L50">        val (_, userRating, userRatingDeviation, userRatingValidFrom) =</span>
+<span class="nc" id="L51">            ratingHistoryRepository.findFirstByUserIdOrderByValidFromDesc(userId)</span>
+<span class="nc" id="L52">        val (_, opponentRating, opponentRatingDeviation, opponentRatingValidFrom) =</span>
+<span class="nc" id="L53">            ratingHistoryRepository.findFirstByUserIdOrderByValidFromDesc(opponentId)</span>
+
+<span class="nc" id="L55">        val userWeightedRatingDeviation =</span>
+<span class="nc" id="L56">            ratingAlgorithm.getWeightedRatingDeviationSinceLastCompetition(</span>
+<span class="nc" id="L57">                userRatingDeviation, userRatingValidFrom</span>
+            )
+<span class="nc" id="L59">        val opponentWeightedRatingDeviation =</span>
+<span class="nc" id="L60">            ratingAlgorithm.getWeightedRatingDeviationSinceLastCompetition(</span>
+<span class="nc" id="L61">                opponentRatingDeviation, opponentRatingValidFrom</span>
+            )
+
+<span class="nc" id="L64">        val newUserRating =</span>
+<span class="nc" id="L65">            ratingAlgorithm.calculateNewRating(</span>
+<span class="nc" id="L66">                GlickoRating(userRating, userWeightedRatingDeviation),</span>
+<span class="nc" id="L67">                listOf(GlickoRating(opponentRating, opponentWeightedRatingDeviation)),</span>
+<span class="nc" id="L68">                listOf(convertVerdictToMatchResult(verdict))</span>
+            )
+<span class="nc" id="L70">        val newOpponentRating =</span>
+<span class="nc" id="L71">            ratingAlgorithm.calculateNewRating(</span>
+<span class="nc" id="L72">                GlickoRating(opponentRating, opponentWeightedRatingDeviation),</span>
+<span class="nc" id="L73">                listOf(GlickoRating(userRating, userWeightedRatingDeviation)),</span>
+<span class="nc" id="L74">                listOf(1.0 - convertVerdictToMatchResult(verdict))</span>
+            )
+
+<span class="nc" id="L77">        val currentInstant = Instant.now()</span>
+<span class="nc" id="L78">        ratingHistoryRepository.save(</span>
+<span class="nc" id="L79">            RatingHistoryEntity(</span>
+<span class="nc" id="L80">                userId = userId,</span>
+<span class="nc" id="L81">                rating = newUserRating.rating,</span>
+<span class="nc" id="L82">                ratingDeviation = newUserRating.ratingDeviation,</span>
+<span class="nc" id="L83">                validFrom = currentInstant</span>
+            )
+        )
+<span class="nc" id="L86">        ratingHistoryRepository.save(</span>
+<span class="nc" id="L87">            RatingHistoryEntity(</span>
+<span class="nc" id="L88">                userId = opponentId,</span>
+<span class="nc" id="L89">                rating = newOpponentRating.rating,</span>
+<span class="nc" id="L90">                ratingDeviation = newOpponentRating.ratingDeviation,</span>
+<span class="nc" id="L91">                validFrom = currentInstant</span>
+            )
+        )
+
+<span class="nc" id="L95">        return Pair(newUserRating.rating, newOpponentRating.rating)</span>
+    }
+
+    private fun getNewRatingAfterAutoMatches(
+        userId: UUID,
+        userRatings: Map&lt;UUID, RatingHistoryEntity&gt;,
+        autoMatches: List&lt;MatchEntity&gt;
+    ): GlickoRating {
+<span class="nc bnc" id="L103" title="All 2 branches missed.">        val userAsInitiatorMatches = autoMatches.filter { it.player1.userId == userId }</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        val userAsOpponentMatches = autoMatches.filter { it.player2.userId == userId }</span>
+
+<span class="nc" id="L106">        val usersWeightedRatingDeviations =</span>
+<span class="nc" id="L107">            userRatings</span>
+<span class="nc" id="L108">                .map {</span>
+<span class="nc" id="L109">                    it.key to</span>
+<span class="nc" id="L110">                        ratingAlgorithm.getWeightedRatingDeviationSinceLastCompetition(</span>
+<span class="nc" id="L111">                            it.value.ratingDeviation, it.value.validFrom</span>
+                        )
+                }
+<span class="nc" id="L114">                .toMap()</span>
+
+<span class="nc" id="L116">        val ratingsForUserAsPlayer1 =</span>
+<span class="nc" id="L117">            userAsInitiatorMatches.map { match -&gt;</span>
+<span class="nc" id="L118">                GlickoRating(match.player2.rating, usersWeightedRatingDeviations[match.player2.userId]!!)</span>
+            }
+<span class="nc" id="L120">        val verdictsForUserAsPlayer1 =</span>
+<span class="nc" id="L121">            userAsInitiatorMatches.map { match -&gt; convertVerdictToMatchResult(match.verdict) }</span>
+
+<span class="nc" id="L123">        val ratingsForUserAsPlayer2 =</span>
+<span class="nc" id="L124">            userAsOpponentMatches.map { match -&gt;</span>
+<span class="nc" id="L125">                GlickoRating(match.player1.rating, usersWeightedRatingDeviations[match.player1.userId]!!)</span>
+            }
+<span class="nc" id="L127">        val verdictsForUserAsPlayer2 =</span>
+<span class="nc" id="L128">            userAsOpponentMatches.map { match -&gt; 1.0 - convertVerdictToMatchResult(match.verdict) }</span>
+
+<span class="nc" id="L130">        val ratings = ratingsForUserAsPlayer1 + ratingsForUserAsPlayer2</span>
+<span class="nc" id="L131">        val verdicts = verdictsForUserAsPlayer1 + verdictsForUserAsPlayer2</span>
+
+<span class="nc" id="L133">        return ratingAlgorithm.calculateNewRating(</span>
+<span class="nc" id="L134">            GlickoRating(userRatings[userId]!!.rating, usersWeightedRatingDeviations[userId]!!),</span>
+<span class="nc" id="L135">            ratings,</span>
+<span class="nc" id="L136">            verdicts</span>
+        )
+    }
+    fun updateTotalWinsTiesLosses(
+        userIds: List&lt;UUID&gt;,
+        matches: List&lt;MatchEntity&gt;
+    ): Triple&lt;Map&lt;UUID, Int&gt;, Map&lt;UUID, Int&gt;, Map&lt;UUID, Int&gt;&gt; {
+<span class="nc" id="L143">        val userIdWinMap = userIds.associateWith { 0 }.toMutableMap()</span>
+<span class="nc" id="L144">        val userIdLossMap = userIds.associateWith { 0 }.toMutableMap()</span>
+<span class="nc" id="L145">        val userIdTieMap = userIds.associateWith { 0 }.toMutableMap()</span>
+<span class="nc" id="L146">        matches.forEach { match -&gt;</span>
+<span class="nc bnc" id="L147" title="All 4 branches missed.">            when (match.verdict) {</span>
+                MatchVerdictEnum.PLAYER1 -&gt; {
+<span class="nc" id="L149">                    userIdWinMap[match.player1.userId] = userIdWinMap[match.player1.userId]!! + 1</span>
+<span class="nc" id="L150">                    userIdLossMap[match.player2.userId] = userIdLossMap[match.player2.userId]!! + 1</span>
+                }
+                MatchVerdictEnum.PLAYER2 -&gt; {
+<span class="nc" id="L153">                    userIdWinMap[match.player2.userId] = userIdWinMap[match.player2.userId]!! + 1</span>
+<span class="nc" id="L154">                    userIdLossMap[match.player1.userId] = userIdLossMap[match.player1.userId]!! + 1</span>
+                }
+                MatchVerdictEnum.TIE -&gt; {
+<span class="nc" id="L157">                    userIdTieMap[match.player1.userId] = userIdTieMap[match.player1.userId]!! + 1</span>
+<span class="nc" id="L158">                    userIdTieMap[match.player2.userId] = userIdTieMap[match.player2.userId]!! + 1</span>
+                }
+            }
+<span class="nc" id="L161">        }</span>
+<span class="nc" id="L162">        return Triple(userIdWinMap.toMap(), userIdLossMap.toMap(), userIdTieMap.toMap())</span>
+    }
+    fun updateAndGetAutoMatchRatings(
+        userIds: List&lt;UUID&gt;,
+        matches: List&lt;MatchEntity&gt;
+    ): Map&lt;UUID, GlickoRating&gt; {
+<span class="nc" id="L168">        val userRatings =</span>
+<span class="nc" id="L169">            userIds.associateWith { userId -&gt;</span>
+<span class="nc" id="L170">                ratingHistoryRepository.findFirstByUserIdOrderByValidFromDesc(userId)</span>
+            }
+<span class="nc" id="L172">        val newRatings =</span>
+<span class="nc" id="L173">            userIds.associateWith { userId -&gt;</span>
+<span class="nc" id="L174">                getNewRatingAfterAutoMatches(userId, userRatings, matches)</span>
+            }
+<span class="nc" id="L176">        val currentInstant = Instant.now()</span>
+<span class="nc" id="L177">        newRatings.forEach { (userId, rating) -&gt;</span>
+<span class="nc" id="L178">            ratingHistoryRepository.save(</span>
+<span class="nc" id="L179">                RatingHistoryEntity(</span>
+<span class="nc" id="L180">                    userId = userId,</span>
+<span class="nc" id="L181">                    rating = rating.rating,</span>
+<span class="nc" id="L182">                    ratingDeviation = rating.ratingDeviation,</span>
+<span class="nc" id="L183">                    validFrom = currentInstant</span>
+                )
+            )
+<span class="nc" id="L186">        }</span>
+
+<span class="nc" id="L188">        return newRatings</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

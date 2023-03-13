@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - LeaderboardControllerIntegrationTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>LeaderboardControllerIntegrationTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/delta.codecharacter.server.leaderboard.html">delta.codecharacter.server.leaderboard</a> &gt; LeaderboardControllerIntegrationTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.932s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">should get empty array for invalid tier type when leaderboard contains tier of different type()</td>
+<td class="success">0.492s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">should get leaderboard when tier type is either TIER_PRACTICE , TIER1 and TIER2()</td>
+<td class="success">0.187s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">should return all entries when tier not found()</td>
+<td class="success">0.253s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>2023-03-13T17:16:14.654Z  INFO 2500 --- [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [delta.codecharacter.server.leaderboard.LeaderboardControllerIntegrationTest]: LeaderboardControllerIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2023-03-13T17:16:14.709Z  INFO 2500 --- [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration delta.codecharacter.server.ServerApplication for test class delta.codecharacter.server.leaderboard.LeaderboardControllerIntegrationTest
+2023-03-13T17:16:14.754Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:14.753+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:20320,   &quot;ctx&quot;:&quot;conn4&quot;,&quot;msg&quot;:&quot;createCollection&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuidDisposition&quot;:&quot;generated&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;41beda96-5ab7-4b2f-a279-7fadf3f60e9c&quot;}},&quot;options&quot;:{}}}
+2023-03-13T17:16:14.763Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:14.763+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;INDEX&quot;,    &quot;id&quot;:20345,   &quot;ctx&quot;:&quot;conn4&quot;,&quot;msg&quot;:&quot;Index build: done building&quot;,&quot;attr&quot;:{&quot;buildUUID&quot;:null,&quot;collectionUUID&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;41beda96-5ab7-4b2f-a279-7fadf3f60e9c&quot;}},&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;index&quot;:&quot;_id_&quot;,&quot;ident&quot;:&quot;index-66--4017041888978331020&quot;,&quot;collectionIdent&quot;:&quot;collection-65--4017041888978331020&quot;,&quot;commitTimestamp&quot;:null}}
+2023-03-13T17:16:14.972Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:14.972+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;COMMAND&quot;,  &quot;id&quot;:518070,  &quot;ctx&quot;:&quot;conn4&quot;,&quot;msg&quot;:&quot;CMD: drop&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;}}
+2023-03-13T17:16:14.973Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:14.972+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:20318,   &quot;ctx&quot;:&quot;conn4&quot;,&quot;msg&quot;:&quot;Finishing collection drop&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;41beda96-5ab7-4b2f-a279-7fadf3f60e9c&quot;}}}}
+2023-03-13T17:16:14.973Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:14.972+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:22206,   &quot;ctx&quot;:&quot;conn4&quot;,&quot;msg&quot;:&quot;Deferring table drop for index&quot;,&quot;attr&quot;:{&quot;index&quot;:&quot;_id_&quot;,&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;41beda96-5ab7-4b2f-a279-7fadf3f60e9c&quot;}},&quot;ident&quot;:&quot;index-66--4017041888978331020&quot;,&quot;commitTimestamp&quot;:{&quot;$timestamp&quot;:{&quot;t&quot;:0,&quot;i&quot;:0}}}}
+2023-03-13T17:16:14.973Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:14.972+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:22214,   &quot;ctx&quot;:&quot;conn4&quot;,&quot;msg&quot;:&quot;Deferring table drop for collection&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;ident&quot;:&quot;collection-65--4017041888978331020&quot;,&quot;commitTimestamp&quot;:{&quot;$timestamp&quot;:{&quot;t&quot;:0,&quot;i&quot;:0}}}}
+2023-03-13T17:16:14.999Z  INFO 2500 --- [MessageBroker-1] d.c.server.schedulers.SchedulingService  : Practice phase ended!!
+2023-03-13T17:16:15.003Z  INFO 2500 --- [MessageBroker-1] d.c.s.u.public_user.PublicUserService    : Ratings reset after practice phase done
+2023-03-13T17:16:15.031Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.030+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:20320,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;createCollection&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuidDisposition&quot;:&quot;generated&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;b27a66c9-b84b-40b4-b566-997d651112e8&quot;}},&quot;options&quot;:{}}}
+2023-03-13T17:16:15.035Z  INFO 2500 --- [MessageBroker-1] d.c.s.u.public_user.PublicUserService    : Leaderboard tier set during the start of game phase
+2023-03-13T17:16:15.041Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.041+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;INDEX&quot;,    &quot;id&quot;:20345,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Index build: done building&quot;,&quot;attr&quot;:{&quot;buildUUID&quot;:null,&quot;collectionUUID&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;b27a66c9-b84b-40b4-b566-997d651112e8&quot;}},&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;index&quot;:&quot;_id_&quot;,&quot;ident&quot;:&quot;index-68--4017041888978331020&quot;,&quot;collectionIdent&quot;:&quot;collection-67--4017041888978331020&quot;,&quot;commitTimestamp&quot;:null}}
+2023-03-13T17:16:15.089Z  WARN 2500 --- [    Test worker] o.h.v.i.p.javabean.JavaBeanExecutable    : HV000254: Missing parameter metadata for TierTypeDto(String, int, String), which declares implicit or synthetic parameters. Automatic resolution of generic type information for method parameters may yield incorrect results if multiple parameters have the same erasure. To solve this, compile your code with the '-parameters' flag.
+2023-03-13T17:16:15.174Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.174+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;COMMAND&quot;,  &quot;id&quot;:518070,  &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;CMD: drop&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;}}
+2023-03-13T17:16:15.175Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.174+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:20318,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Finishing collection drop&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;b27a66c9-b84b-40b4-b566-997d651112e8&quot;}}}}
+2023-03-13T17:16:15.175Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.174+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:22206,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Deferring table drop for index&quot;,&quot;attr&quot;:{&quot;index&quot;:&quot;_id_&quot;,&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;b27a66c9-b84b-40b4-b566-997d651112e8&quot;}},&quot;ident&quot;:&quot;index-68--4017041888978331020&quot;,&quot;commitTimestamp&quot;:{&quot;$timestamp&quot;:{&quot;t&quot;:0,&quot;i&quot;:0}}}}
+2023-03-13T17:16:15.175Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.174+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:22214,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Deferring table drop for collection&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;ident&quot;:&quot;collection-67--4017041888978331020&quot;,&quot;commitTimestamp&quot;:{&quot;$timestamp&quot;:{&quot;t&quot;:0,&quot;i&quot;:0}}}}
+2023-03-13T17:16:15.197Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.196+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:20320,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;createCollection&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuidDisposition&quot;:&quot;generated&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;6246165d-380b-4fd7-9b30-1079a670a938&quot;}},&quot;options&quot;:{}}}
+2023-03-13T17:16:15.207Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.207+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;INDEX&quot;,    &quot;id&quot;:20345,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Index build: done building&quot;,&quot;attr&quot;:{&quot;buildUUID&quot;:null,&quot;collectionUUID&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;6246165d-380b-4fd7-9b30-1079a670a938&quot;}},&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;index&quot;:&quot;_id_&quot;,&quot;ident&quot;:&quot;index-70--4017041888978331020&quot;,&quot;collectionIdent&quot;:&quot;collection-69--4017041888978331020&quot;,&quot;commitTimestamp&quot;:null}}
+2023-03-13T17:16:15.673Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.673+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;COMMAND&quot;,  &quot;id&quot;:518070,  &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;CMD: drop&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;}}
+2023-03-13T17:16:15.674Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.673+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:20318,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Finishing collection drop&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;6246165d-380b-4fd7-9b30-1079a670a938&quot;}}}}
+2023-03-13T17:16:15.674Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.673+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:22206,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Deferring table drop for index&quot;,&quot;attr&quot;:{&quot;index&quot;:&quot;_id_&quot;,&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;uuid&quot;:{&quot;uuid&quot;:{&quot;$uuid&quot;:&quot;6246165d-380b-4fd7-9b30-1079a670a938&quot;}},&quot;ident&quot;:&quot;index-70--4017041888978331020&quot;,&quot;commitTimestamp&quot;:{&quot;$timestamp&quot;:{&quot;t&quot;:0,&quot;i&quot;:0}}}}
+2023-03-13T17:16:15.674Z  INFO 2500 --- [       Thread-6] d.f.e.m.s.autoconfigure.EmbeddedMongo    : {&quot;t&quot;:{&quot;$date&quot;:&quot;2023-03-13T17:16:15.673+00:00&quot;},&quot;s&quot;:&quot;I&quot;,  &quot;c&quot;:&quot;STORAGE&quot;,  &quot;id&quot;:22214,   &quot;ctx&quot;:&quot;conn3&quot;,&quot;msg&quot;:&quot;Deferring table drop for collection&quot;,&quot;attr&quot;:{&quot;namespace&quot;:&quot;test.public_user&quot;,&quot;ident&quot;:&quot;collection-69--4017041888978331020&quot;,&quot;commitTimestamp&quot;:{&quot;$timestamp&quot;:{&quot;t&quot;:0,&quot;i&quot;:0}}}}
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 7.6</a> at Mar 13, 2023, 5:16:41 PM</p>
+</div>
+</div>
+</body>
+</html>

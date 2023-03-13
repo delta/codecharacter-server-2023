@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SchedulingService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.schedulers</a> &gt; <span class="el_source">SchedulingService.kt</span></div><h1>SchedulingService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.schedulers
+
+import delta.codecharacter.server.code.code_revision.CodeRevisionService
+import delta.codecharacter.server.code.latest_code.LatestCodeService
+import delta.codecharacter.server.code.locked_code.LockedCodeService
+import delta.codecharacter.server.game_map.latest_map.LatestMapService
+import delta.codecharacter.server.game_map.locked_map.LockedMapService
+import delta.codecharacter.server.game_map.map_revision.MapRevisionService
+import delta.codecharacter.server.match.MatchService
+import delta.codecharacter.server.user.public_user.PublicUserService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Service
+
+<span class="fc" id="L17">@Service</span>
+<span class="fc" id="L18">class SchedulingService(</span>
+<span class="fc" id="L19">    @Autowired private val publicUserService: PublicUserService,</span>
+<span class="fc" id="L20">    @Autowired private val matchService: MatchService,</span>
+<span class="fc" id="L21">    @Autowired private val codeRevisionService: CodeRevisionService,</span>
+<span class="fc" id="L22">    @Autowired private val latestCodeService: LatestCodeService,</span>
+<span class="fc" id="L23">    @Autowired private val lockedCodeService: LockedCodeService,</span>
+<span class="fc" id="L24">    @Autowired private val latestMapService: LatestMapService,</span>
+<span class="fc" id="L25">    @Autowired private val lockedMapService: LockedMapService,</span>
+<span class="fc" id="L26">    @Autowired private val mapRevisionService: MapRevisionService</span>
+) {
+<span class="fc" id="L28">    private val logger: Logger = LoggerFactory.getLogger(SchedulingService::class.java)</span>
+
+    @Scheduled(cron = &quot;\${environment.registration-time}&quot;, zone = &quot;GMT+5:30&quot;)
+    fun updateTempLeaderboard() {
+<span class="fc" id="L32">        logger.info(&quot;Practice phase ended!!&quot;)</span>
+<span class="fc" id="L33">        publicUserService.resetRatingsAfterPracticePhase()</span>
+<span class="fc" id="L34">        codeRevisionService.resetCodeRevisionAfterPracticePhase()</span>
+<span class="fc" id="L35">        latestCodeService.resetLatestCodeAfterPracticePhase()</span>
+<span class="fc" id="L36">        lockedCodeService.resetLockedCodeAfterPracticePhase()</span>
+<span class="fc" id="L37">        latestMapService.resetLatestMapAfterPracticePhase()</span>
+<span class="fc" id="L38">        lockedMapService.resetLockedMapAfterPracticePhase()</span>
+<span class="fc" id="L39">        mapRevisionService.resetMapRevisionAfterPracticePhase()</span>
+<span class="fc" id="L40">        publicUserService.updateLeaderboardAfterPracticePhase()</span>
+<span class="fc" id="L41">    }</span>
+
+    @Scheduled(cron = &quot;\${environment.promote-demote-time}&quot;, zone = &quot;GMT+5:30&quot;)
+    fun createAutoMatch() {
+<span class="nc" id="L45">        matchService.createAutoMatch()</span>
+<span class="nc" id="L46">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>WebSecurityConfiguration.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.config</a> &gt; <span class="el_source">WebSecurityConfiguration.kt</span></div><h1>WebSecurityConfiguration.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.config
+
+import delta.codecharacter.server.auth.jwt.JwtRequestFilter
+import delta.codecharacter.server.auth.oauth2.CustomOAuth2FailureHandler
+import delta.codecharacter.server.auth.oauth2.CustomOAuth2SuccessHandler
+import delta.codecharacter.server.auth.oauth2.CustomOAuth2UserService
+import delta.codecharacter.server.auth.oauth2.CustomOidcUserService
+import delta.codecharacter.server.user.UserService
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.http.HttpMethod
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.invoke
+import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import org.springframework.security.web.firewall.HttpStatusRequestRejectedHandler
+import org.springframework.security.web.firewall.RequestRejectedHandler
+
+<span class="fc" id="L26">@Configuration</span>
+<span class="fc" id="L27">class WebSecurityConfiguration {</span>
+
+    @Autowired private lateinit var jwtRequestFilter: JwtRequestFilter
+    @Autowired private lateinit var userService: UserService
+    @Autowired private lateinit var customOidcUserService: CustomOidcUserService
+    @Autowired private lateinit var customOAuth2UserService: CustomOAuth2UserService
+    @Autowired private lateinit var customOAuth2SuccessHandler: CustomOAuth2SuccessHandler
+    @Autowired private lateinit var customOAuth2FailureHandler: CustomOAuth2FailureHandler
+
+    @Value(&quot;\${cors.enabled}&quot;) private val corsEnabled: Boolean = false
+
+    @Bean
+    fun filterChain(http: HttpSecurity?): SecurityFilterChain? {
+
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">        if (http != null) {</span>
+<span class="fc" id="L42">            http.invoke {</span>
+<span class="fc" id="L43">                csrf { disable() }</span>
+<span class="fc" id="L44">                oauth2Login {</span>
+<span class="fc" id="L45">                    userInfoEndpoint {</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">                        oidcUserService = customOidcUserService</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">                        userService = customOAuth2UserService</span>
+<span class="fc" id="L48">                    }</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">                    authenticationSuccessHandler = customOAuth2SuccessHandler</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">                    authenticationFailureHandler = customOAuth2FailureHandler</span>
+<span class="fc" id="L51">                }</span>
+<span class="fc" id="L52">                authorizeRequests { authorize(HttpMethod.OPTIONS, &quot;/**&quot;, permitAll) }</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">                cors { if (!corsEnabled) disable() }</span>
+<span class="fc" id="L54">                sessionManagement { sessionCreationPolicy = SessionCreationPolicy.STATELESS }</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">                addFilterBefore&lt;UsernamePasswordAuthenticationFilter&gt;(jwtRequestFilter)</span>
+<span class="fc" id="L56">            }</span>
+<span class="fc" id="L57">            return http.build()</span>
+        }
+<span class="nc" id="L59">        return null</span>
+    }
+    @Bean
+    fun authenticationProvider(): DaoAuthenticationProvider {
+<span class="fc" id="L63">        val daoAuthenticationProvider =</span>
+<span class="fc" id="L64">            DaoAuthenticationProvider().also {</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">                it.setUserDetailsService(userService)</span>
+<span class="fc" id="L66">                it.setPasswordEncoder(passwordEncoder())</span>
+<span class="fc" id="L67">            }</span>
+<span class="fc" id="L68">        return daoAuthenticationProvider</span>
+    }
+    @Bean
+    fun authenticationManager(
+        authenticationConfiguration: AuthenticationConfiguration
+    ): AuthenticationManager {
+<span class="fc" id="L74">        return authenticationConfiguration.authenticationManager</span>
+    }
+<span class="fc" id="L76">    @Bean fun passwordEncoder() = BCryptPasswordEncoder()</span>
+
+    @Bean
+    fun requestRejectedHandler(): RequestRejectedHandler {
+<span class="fc" id="L80">        return HttpStatusRequestRejectedHandler()</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

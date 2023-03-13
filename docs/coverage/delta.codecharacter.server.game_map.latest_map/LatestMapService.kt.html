@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LatestMapService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.game_map.latest_map</a> &gt; <span class="el_source">LatestMapService.kt</span></div><h1>LatestMapService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.game_map.latest_map
+
+import delta.codecharacter.dtos.GameMapDto
+import delta.codecharacter.dtos.GameMapTypeDto
+import delta.codecharacter.dtos.UpdateLatestMapRequestDto
+import delta.codecharacter.server.config.DefaultCodeMapConfiguration
+import delta.codecharacter.server.game_map.GameMap
+import delta.codecharacter.server.logic.validation.MapValidator
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import java.time.Instant
+import java.util.UUID
+
+/** Service for handling the latest map. */
+<span class="fc" id="L15">@Service</span>
+<span class="fc" id="L16">class LatestMapService(</span>
+<span class="fc" id="L17">    @Autowired private val latestMapRepository: LatestMapRepository,</span>
+<span class="fc" id="L18">    @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,</span>
+<span class="fc" id="L19">    @Autowired private val mapValidator: MapValidator,</span>
+) {
+
+<span class="fc" id="L22">    fun getLatestMap(userId: UUID, mapType: GameMapTypeDto = GameMapTypeDto.NORMAL): GameMapDto {</span>
+<span class="fc" id="L23">        val defaultMap = HashMap&lt;GameMapTypeDto, GameMap&gt;()</span>
+<span class="fc" id="L24">        defaultMap[mapType] = defaultCodeMapConfiguration.defaultLatestGameMap</span>
+<span class="fc" id="L25">        return latestMapRepository</span>
+<span class="fc" id="L26">            .findById(userId)</span>
+<span class="fc" id="L27">            .orElse(</span>
+<span class="fc" id="L28">                LatestMapEntity(</span>
+<span class="fc" id="L29">                    userId = userId,</span>
+<span class="fc" id="L30">                    latestMap = defaultMap,</span>
+                )
+            )
+<span class="fc" id="L33">            .let { latestMap -&gt;</span>
+<span class="fc" id="L34">                GameMapDto(</span>
+<span class="pc bpc" id="L35" title="2 of 4 branches missed.">                    map = latestMap.latestMap[mapType]?.map ?: defaultCodeMapConfiguration.defaultMap,</span>
+<span class="pc bpc" id="L36" title="2 of 4 branches missed.">                    mapImage = latestMap.latestMap[mapType]?.mapImage</span>
+<span class="nc" id="L37">                        ?: defaultCodeMapConfiguration.defaultMapImage,</span>
+<span class="pc bpc" id="L38" title="2 of 4 branches missed.">                    lastSavedAt = latestMap.latestMap[mapType]?.lastSavedAt ?: Instant.MIN</span>
+                )
+            }
+    }
+
+    fun resetLatestMapAfterPracticePhase() {
+<span class="fc" id="L44">        latestMapRepository.deleteAll()</span>
+<span class="fc" id="L45">    }</span>
+
+    fun updateLatestMap(userId: UUID, updateLatestMapDto: UpdateLatestMapRequestDto) {
+<span class="fc" id="L48">        mapValidator.validateMap(updateLatestMapDto.map)</span>
+<span class="fc" id="L49">        val latestMap = HashMap&lt;GameMapTypeDto, GameMap&gt;()</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        latestMap[updateLatestMapDto.mapType ?: GameMapTypeDto.NORMAL] =</span>
+<span class="fc" id="L51">            GameMap(</span>
+<span class="fc" id="L52">                mapImage = updateLatestMapDto.mapImage,</span>
+<span class="fc" id="L53">                map = updateLatestMapDto.map,</span>
+<span class="fc" id="L54">                lastSavedAt = Instant.now()</span>
+            )
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (latestMapRepository.findById(userId).isEmpty) {</span>
+<span class="nc" id="L57">            latestMapRepository.save(</span>
+<span class="nc" id="L58">                LatestMapEntity(</span>
+<span class="nc" id="L59">                    userId = userId,</span>
+<span class="nc" id="L60">                    latestMap = latestMap,</span>
+                )
+            )
+        } else {
+<span class="fc" id="L64">            val map = latestMapRepository.findById(userId).get()</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">            map.latestMap[updateLatestMapDto.mapType ?: GameMapTypeDto.NORMAL] =</span>
+<span class="fc" id="L66">                GameMap(</span>
+<span class="fc" id="L67">                    mapImage = updateLatestMapDto.mapImage,</span>
+<span class="fc" id="L68">                    map = updateLatestMapDto.map,</span>
+<span class="fc" id="L69">                    lastSavedAt = Instant.now()</span>
+                )
+<span class="fc" id="L71">            val updatedMap = map.copy(latestMap = map.latestMap)</span>
+<span class="fc" id="L72">            latestMapRepository.save(updatedMap)</span>
+        }
+<span class="fc" id="L74">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

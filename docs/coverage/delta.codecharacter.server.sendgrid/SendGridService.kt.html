@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SendGridService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.sendgrid</a> &gt; <span class="el_source">SendGridService.kt</span></div><h1>SendGridService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.sendgrid
+
+import com.sendgrid.Method
+import com.sendgrid.Request
+import com.sendgrid.Response
+import com.sendgrid.SendGrid
+import com.sendgrid.helpers.mail.Mail
+import com.sendgrid.helpers.mail.objects.Content
+import com.sendgrid.helpers.mail.objects.Email
+import delta.codecharacter.server.exception.CustomException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.stereotype.Service
+import java.util.UUID
+
+<span class="fc" id="L19">@Service</span>
+<span class="fc" id="L20">class SendGridService {</span>
+
+<span class="fc" id="L22">    private val logger: Logger = LoggerFactory.getLogger(SendGridService::class.java)</span>
+
+    @Autowired private lateinit var sendGrid: SendGrid
+
+    @Value(&quot;\${spring.sendgrid.sender-email}&quot;) private lateinit var senderEmail: String
+    //    @Value(&quot;\${spring.sendgrid.template-id}&quot;) private lateinit var templateId: String
+
+    @Value(&quot;\${base-url}&quot;) private lateinit var baseUrl: String
+
+    fun activateUserEmail(userId: UUID, token: String, name: String, email: String) {
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        val link = &quot;$baseUrl#/activate?id=$userId&amp;token=$token&quot;</span>
+<span class="nc" id="L33">        val linkName = &quot;User Activation&quot;</span>
+<span class="nc" id="L34">        val message = &quot;You are just one step away from activating your CodeCharacter account&quot;</span>
+<span class="nc" id="L35">        val disregardMessage = &quot;If you did not create an account with us,please disregard this email&quot;</span>
+<span class="nc" id="L36">        val buttonName = &quot;Activate&quot;</span>
+<span class="nc" id="L37">        val subjectInfo = &quot;CodeCharacter Account Activation Link&quot;</span>
+<span class="nc" id="L38">        sendTemplateEmail(</span>
+<span class="nc" id="L39">            email, name, linkName, link, message, disregardMessage, buttonName, subjectInfo</span>
+        )
+<span class="nc" id="L41">    }</span>
+
+    fun resetPasswordEmail(userId: UUID, token: String, name: String, email: String) {
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        val link = &quot;$baseUrl#/reset-password?id=$userId&amp;token=$token&quot;</span>
+<span class="nc" id="L45">        val linkName = &quot;Reset-Password link&quot;</span>
+<span class="nc" id="L46">        val message = &quot;Please click the button to reset your password&quot;</span>
+<span class="nc" id="L47">        val disregardMessage = &quot;If you did not request a password reset,please ignore this email.&quot;</span>
+<span class="nc" id="L48">        val buttonName = &quot;Reset Password&quot;</span>
+<span class="nc" id="L49">        val subjectInfo = &quot;CodeCharacter Reset-Password Link&quot;</span>
+<span class="nc" id="L50">        sendTemplateEmail(</span>
+<span class="nc" id="L51">            email, name, linkName, link, message, disregardMessage, buttonName, subjectInfo</span>
+        )
+<span class="nc" id="L53">    }</span>
+
+    fun sendTemplateEmail(
+        emailTo: String,
+        name: String,
+        linkName: String,
+        link: String,
+        message: String,
+        disregardMessage: String,
+        buttonName: String,
+        subjectInfo: String
+    ) {
+        // Using DynamicTemplates are preferred but we dont have creds to access that so we used this :(
+        //        val mail = Mail()
+        //        val personalization = DynamicTemplatePersonalization()
+        //        personalization.addTo(Email(emailTo))
+        //        mail.setFrom(Email(senderEmail))
+        //        mail.setSubject(subjectInfo)
+        //        personalization.addDynamicTemplateData(&quot;name&quot;, name)
+        //        personalization.addDynamicTemplateData(&quot;link_name&quot;, linkName)
+        //        personalization.addDynamicTemplateData(&quot;message&quot;, message)
+        //        personalization.addDynamicTemplateData(&quot;link&quot;, link)
+        //        personalization.addDynamicTemplateData(&quot;button_name&quot;, buttonName)
+        //        personalization.addDynamicTemplateData(&quot;subject&quot;, subjectInfo)
+        //        mail.addPersonalization(personalization)
+        //        mail.setTemplateId(templateId)
+<span class="nc" id="L79">        val emailContent =</span>
+            &quot;&lt;!DOCTYPE html PUBLIC \&quot;-//W3C//DTD XHTML 1.0 Strict//EN\&quot; \&quot;http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\&quot;&gt;\n&quot; +
+                &quot;&lt;html data-editor-version=\&quot;2\&quot; class=\&quot;sg-campaigns\&quot; xmlns=\&quot;http://www.w3.org/1999/xhtml\&quot;&gt;\n&quot; +
+                &quot;    &lt;head&gt;\n&quot; +
+                &quot;      &lt;meta http-equiv=\&quot;Content-Type\&quot; content=\&quot;text/html; charset=utf-8\&quot;&gt;\n&quot; +
+                &quot;      &lt;meta name=\&quot;viewport\&quot; content=\&quot;width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1\&quot;&gt;\n&quot; +
+                &quot;      &lt;!--[if !mso]&gt;&lt;!--&gt;\n&quot; +
+                &quot;      &lt;meta http-equiv=\&quot;X-UA-Compatible\&quot; content=\&quot;IE=Edge\&quot;&gt;\n&quot; +
+                &quot;      &lt;!--&lt;![endif]--&gt;\n&quot; +
+                &quot;      &lt;!--[if (gte mso 9)|(IE)]&gt;\n&quot; +
+                &quot;      &lt;xml&gt;\n&quot; +
+                &quot;        &lt;o:OfficeDocumentSettings&gt;\n&quot; +
+                &quot;          &lt;o:AllowPNG/&gt;\n&quot; +
+                &quot;          &lt;o:PixelsPerInch&gt;96&lt;/o:PixelsPerInch&gt;\n&quot; +
+                &quot;        &lt;/o:OfficeDocumentSettings&gt;\n&quot; +
+                &quot;      &lt;/xml&gt;\n&quot; +
+                &quot;      &lt;![endif]--&gt;\n&quot; +
+                &quot;      &lt;!--[if (gte mso 9)|(IE)]&gt;\n&quot; +
+                &quot;  &lt;style type=\&quot;text/css\&quot;&gt;\n&quot; +
+                &quot;    body {width: 620px;margin: 0 auto;}\n&quot; +
+                &quot;    table {border-collapse: collapse;}\n&quot; +
+                &quot;    table, td {mso-table-lspace: 0pt;mso-table-rspace: 0pt;}\n&quot; +
+                &quot;    img {-ms-interpolation-mode: bicubic;}\n&quot; +
+                &quot;  &lt;/style&gt;\n&quot; +
+                &quot;&lt;![endif]--&gt;\n&quot; +
+                &quot;      &lt;style type=\&quot;text/css\&quot;&gt;\n&quot; +
+                &quot;    body, p, div {\n&quot; +
+                &quot;      font-family: arial,helvetica,sans-serif;\n&quot; +
+                &quot;      font-size: 14px;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    body {\n&quot; +
+                &quot;      color: #000000;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    body a {\n&quot; +
+                &quot;      color: #932A89;\n&quot; +
+                &quot;      text-decoration: none;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    p { margin: 0; padding: 0; }\n&quot; +
+                &quot;    table.wrapper {\n&quot; +
+                &quot;      width:100% !important;\n&quot; +
+                &quot;      table-layout: fixed;\n&quot; +
+                &quot;      -webkit-font-smoothing: antialiased;\n&quot; +
+                &quot;      -webkit-text-size-adjust: 100%;\n&quot; +
+                &quot;      -moz-text-size-adjust: 100%;\n&quot; +
+                &quot;      -ms-text-size-adjust: 100%;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    img.max-width {\n&quot; +
+                &quot;      max-width: 100% !important;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    .column.of-2 {\n&quot; +
+                &quot;      width: 50%;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    .column.of-3 {\n&quot; +
+                &quot;      width: 33.333%;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    .column.of-4 {\n&quot; +
+                &quot;      width: 25%;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    ul ul ul ul  {\n&quot; +
+                &quot;      list-style-type: disc !important;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    ol ol {\n&quot; +
+                &quot;      list-style-type: lower-roman !important;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    ol ol ol {\n&quot; +
+                &quot;      list-style-type: lower-latin !important;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    ol ol ol ol {\n&quot; +
+                &quot;      list-style-type: decimal !important;\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;    @media screen and (max-width:480px) {\n&quot; +
+                &quot;      .preheader .rightColumnContent,\n&quot; +
+                &quot;      .footer .rightColumnContent {\n&quot; +
+                &quot;        text-align: left !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      .preheader .rightColumnContent div,\n&quot; +
+                &quot;      .preheader .rightColumnContent span,\n&quot; +
+                &quot;      .footer .rightColumnContent div,\n&quot; +
+                &quot;      .footer .rightColumnContent span {\n&quot; +
+                &quot;        text-align: left !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      .preheader .rightColumnContent,\n&quot; +
+                &quot;      .preheader .leftColumnContent {\n&quot; +
+                &quot;        font-size: 80% !important;\n&quot; +
+                &quot;        padding: 5px 0;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      table.wrapper-mobile {\n&quot; +
+                &quot;        width: 100% !important;\n&quot; +
+                &quot;        table-layout: fixed;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      img.max-width {\n&quot; +
+                &quot;        height: auto !important;\n&quot; +
+                &quot;        max-width: 100% !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      a.bulletproof-button {\n&quot; +
+                &quot;        display: block !important;\n&quot; +
+                &quot;        width: auto !important;\n&quot; +
+                &quot;        font-size: 80%;\n&quot; +
+                &quot;        padding-left: 0 !important;\n&quot; +
+                &quot;        padding-right: 0 !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      .columns {\n&quot; +
+                &quot;        width: 100% !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      .column {\n&quot; +
+                &quot;        display: block !important;\n&quot; +
+                &quot;        width: 100% !important;\n&quot; +
+                &quot;        padding-left: 0 !important;\n&quot; +
+                &quot;        padding-right: 0 !important;\n&quot; +
+                &quot;        margin-left: 0 !important;\n&quot; +
+                &quot;        margin-right: 0 !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;      .social-icon-column {\n&quot; +
+                &quot;        display: inline-block !important;\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;    }\n&quot; +
+                &quot;  &lt;/style&gt;\n&quot; +
+                &quot;    &lt;style&gt;\n&quot; +
+                &quot;      @media screen and (max-width:480px) {\n&quot; +
+                &quot;        table\\0 {\n&quot; +
+                &quot;          width: 480px !important;\n&quot; +
+                &quot;          }\n&quot; +
+                &quot;      }\n&quot; +
+                &quot;    &lt;/style&gt;\n&quot; +
+                &quot;      &lt;!--user entered Head Start--&gt;&lt;!--End Head user entered--&gt;\n&quot; +
+                &quot;    &lt;/head&gt;\n&quot; +
+                &quot;    &lt;body&gt;\n&quot; +
+                &quot;      &lt;center class=\&quot;wrapper\&quot; data-link-color=\&quot;#932A89\&quot; data-body-style=\&quot;font-size:14px; font-family:arial,helvetica,sans-serif; color:#000000; background-color:#f0f0f0;\&quot;&gt;\n&quot; +
+                &quot;        &lt;div class=\&quot;webkit\&quot;&gt;\n&quot; +
+                &quot;          &lt;table cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; border=\&quot;0\&quot; width=\&quot;100%\&quot; class=\&quot;wrapper\&quot; bgcolor=\&quot;#f0f0f0\&quot;&gt;\n&quot; +
+                &quot;            &lt;tr&gt;\n&quot; +
+                &quot;              &lt;td valign=\&quot;top\&quot; bgcolor=\&quot;#f0f0f0\&quot; width=\&quot;100%\&quot;&gt;\n&quot; +
+                &quot;                &lt;table width=\&quot;100%\&quot; role=\&quot;content-container\&quot; class=\&quot;outer\&quot; align=\&quot;center\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; border=\&quot;0\&quot;&gt;\n&quot; +
+                &quot;                  &lt;tr&gt;\n&quot; +
+                &quot;                    &lt;td width=\&quot;100%\&quot;&gt;\n&quot; +
+                &quot;                      &lt;table width=\&quot;100%\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; border=\&quot;0\&quot;&gt;\n&quot; +
+                &quot;                        &lt;tr&gt;\n&quot; +
+                &quot;                          &lt;td&gt;\n&quot; +
+                &quot;                            &lt;!--[if mso]&gt;\n&quot; +
+                &quot;    &lt;center&gt;\n&quot; +
+                &quot;    &lt;table&gt;&lt;tr&gt;&lt;td width=\&quot;620\&quot;&gt;\n&quot; +
+                &quot;  &lt;![endif]--&gt;\n&quot; +
+                &quot;                                    &lt;table width=\&quot;100%\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; border=\&quot;0\&quot; style=\&quot;width:100%; max-width:620px;\&quot; align=\&quot;center\&quot;&gt;\n&quot; +
+                &quot;                                      &lt;tr&gt;\n&quot; +
+                &quot;                                        &lt;td role=\&quot;modules-container\&quot; style=\&quot;padding:0px 10px 0px 10px; color:#000000; text-align:left;\&quot; bgcolor=\&quot;#F0F0F0\&quot; width=\&quot;100%\&quot; align=\&quot;left\&quot;&gt;&lt;table class=\&quot;module preheader preheader-hide\&quot; role=\&quot;module\&quot; data-type=\&quot;preheader\&quot; border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; width=\&quot;100%\&quot; style=\&quot;display: none !important; mso-hide: all; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;\&quot;&gt;\n&quot; +
+                &quot;    &lt;tr&gt;\n&quot; +
+                &quot;      &lt;td role=\&quot;module-content\&quot;&gt;\n&quot; +
+                &quot;        &lt;p&gt;&lt;/p&gt;\n&quot; +
+                &quot;      &lt;/td&gt;\n&quot; +
+                &quot;    &lt;/tr&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;table class=\&quot;module\&quot; role=\&quot;module\&quot; data-type=\&quot;text\&quot; border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; width=\&quot;100%\&quot; style=\&quot;table-layout: fixed;\&quot; data-muid=\&quot;806c535f-a48e-47c3-84e1-e42f460fcd8b\&quot; data-mc-module-version=\&quot;2019-10-22\&quot;&gt;\n&quot; +
+                &quot;    &lt;tbody&gt;\n&quot; +
+                &quot;      &lt;tr&gt;\n&quot; +
+                &quot;        &lt;td style=\&quot;padding:5px 0px 5px 120px; line-height:12px; text-align:inherit; background-color:#f0f0f0;\&quot; height=\&quot;100%\&quot; valign=\&quot;top\&quot; bgcolor=\&quot;#f0f0f0\&quot; role=\&quot;module-content\&quot;&gt;&lt;div&gt;&lt;div style=\&quot;font-family: inherit; text-align: right\&quot;&gt;&lt;span style=\&quot;font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; color: #9d9d9d; font-size: 10px\&quot;&gt;Email not displaying correctly? &lt;/span&gt;&lt;span style=\&quot;font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; color: #932a89; font-size: 10px\&quot;&gt;&lt;strong&gt;VIEW IT&lt;/strong&gt;&lt;/span&gt;&lt;span style=\&quot;font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; color: #9d9d9d; font-size: 10px\&quot;&gt; in your browser.&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;\n&quot; +
+                &quot;      &lt;/tr&gt;\n&quot; +
+                &quot;    &lt;/tbody&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;table border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; align=\&quot;center\&quot; width=\&quot;100%\&quot; role=\&quot;module\&quot; data-type=\&quot;columns\&quot; style=\&quot;padding:50px 20px 50px 20px;\&quot; bgcolor=\&quot;#1a1a1a\&quot; data-distribution=\&quot;1\&quot;&gt;\n&quot; +
+                &quot;    &lt;tbody&gt;\n&quot; +
+                &quot;      &lt;tr role=\&quot;module-content\&quot;&gt;\n&quot; +
+                &quot;        &lt;td height=\&quot;100%\&quot; valign=\&quot;top\&quot;&gt;&lt;table width=\&quot;460\&quot; style=\&quot;width:460px; border-spacing:0; border-collapse:collapse; margin:0px 50px 0px 50px;\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; align=\&quot;left\&quot; border=\&quot;0\&quot; bgcolor=\&quot;\&quot; class=\&quot;column column-0\&quot;&gt;\n&quot; +
+                &quot;      &lt;tbody&gt;\n&quot; +
+                &quot;        &lt;tr&gt;\n&quot; +
+                &quot;          &lt;td style=\&quot;padding:0px;margin:0px;border-spacing:0;\&quot;&gt;&lt;table class=\&quot;module\&quot; role=\&quot;module\&quot; data-type=\&quot;text\&quot; border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; width=\&quot;100%\&quot; style=\&quot;table-layout: fixed;\&quot; data-muid=\&quot;efe5a2c4-1b11-49e7-889d-856d80b40f63\&quot; data-mc-module-version=\&quot;2019-10-22\&quot;&gt;\n&quot; +
+                &quot;    &lt;tbody&gt;\n&quot; +
+                &quot;      &lt;tr&gt;\n&quot; +
+<span class="nc" id="L244">                &quot;        &lt;td style=\&quot;padding:40px 0px 30px 0px; line-height:36px; text-align:inherit; background-color:#5e5959;\&quot; height=\&quot;100%\&quot; valign=\&quot;top\&quot; bgcolor=\&quot;#5e5959\&quot; role=\&quot;module-content\&quot;&gt;&lt;div&gt;&lt;div style=\&quot;font-family: inherit; text-align: center\&quot;&gt;&lt;span style=\&quot;font-size: 36px\&quot;&gt;$linkName&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;\n&quot; +</span>
+                &quot;      &lt;/tr&gt;\n&quot; +
+                &quot;    &lt;/tbody&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;table class=\&quot;module\&quot; role=\&quot;module\&quot; data-type=\&quot;text\&quot; border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; width=\&quot;100%\&quot; style=\&quot;table-layout: fixed;\&quot; data-muid=\&quot;efe5a2c4-1b11-49e7-889d-856d80b40f63.2\&quot; data-mc-module-version=\&quot;2019-10-22\&quot;&gt;\n&quot; +
+                &quot;    &lt;tbody&gt;\n&quot; +
+                &quot;      &lt;tr&gt;\n&quot; +
+<span class="nc" id="L250">                &quot;        &lt;td style=\&quot;padding:50px 30px 30px 30px; line-height:28px; text-align:inherit; background-color:#ffffff;\&quot; height=\&quot;100%\&quot; valign=\&quot;top\&quot; bgcolor=\&quot;#ffffff\&quot; role=\&quot;module-content\&quot;&gt;&lt;div&gt;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;span style=\&quot;font-size: 20px; font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; color: #656565\&quot;&gt;Hi $name,&lt;/span&gt;&lt;/div&gt;\n&quot; +</span>
+                &quot;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;br&gt;&lt;/div&gt;\n&quot; +
+<span class="nc" id="L252">                &quot;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;span style=\&quot;font-size: 20px; font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; color: #656565\&quot;&gt;$message,&lt;/span&gt;&lt;/div&gt;\n&quot; +</span>
+                &quot;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;br&gt;&lt;/div&gt;\n&quot; +
+<span class="nc" id="L254">                &quot;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;span style=\&quot;font-size: 20px; font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; color: #656565\&quot;&gt;$disregardMessage&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;\n&quot; +</span>
+                &quot;      &lt;/tr&gt;\n&quot; +
+                &quot;    &lt;/tbody&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;table border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; class=\&quot;module\&quot; data-role=\&quot;module-button\&quot; data-type=\&quot;button\&quot; role=\&quot;module\&quot; style=\&quot;table-layout:fixed;\&quot; width=\&quot;100%\&quot; data-muid=\&quot;7e9e5ded-d560-42a6-8e95-14ac7fdc0977\&quot;&gt;\n&quot; +
+                &quot;      &lt;tbody&gt;\n&quot; +
+                &quot;        &lt;tr&gt;\n&quot; +
+                &quot;          &lt;td align=\&quot;center\&quot; bgcolor=\&quot;#ffffff\&quot; class=\&quot;outer-td\&quot; style=\&quot;padding:0px 0px 0px 0px; background-color:#ffffff;\&quot;&gt;\n&quot; +
+                &quot;            &lt;table border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; class=\&quot;wrapper-mobile\&quot; style=\&quot;text-align:center;\&quot;&gt;\n&quot; +
+                &quot;              &lt;tbody&gt;\n&quot; +
+                &quot;                &lt;tr&gt;\n&quot; +
+                &quot;                &lt;td align=\&quot;center\&quot; bgcolor=\&quot;#333333\&quot; class=\&quot;inner-td\&quot; style=\&quot;border-radius:6px; font-size:16px; text-align:center; background-color:inherit;\&quot;&gt;\n&quot; +
+<span class="nc" id="L265">                &quot;                  &lt;a href=\&quot;${link}\&quot; style=\&quot;background-color:#333333; border:1px solid #000000; border-color:#000000; border-radius:6px; border-width:1px; color:#ffffff; display:inline-block; font-size:14px; font-weight:normal; letter-spacing:0px; line-height:normal; padding:12px 18px 12px 18px; text-align:center; text-decoration:none; border-style:solid; font-family:arial black, helvetica, sans-serif;\&quot; target=\&quot;_blank\&quot;&gt;$buttonName&lt;/a&gt;\n&quot; +</span>
+                &quot;                &lt;/td&gt;\n&quot; +
+                &quot;                &lt;/tr&gt;\n&quot; +
+                &quot;              &lt;/tbody&gt;\n&quot; +
+                &quot;            &lt;/table&gt;\n&quot; +
+                &quot;          &lt;/td&gt;\n&quot; +
+                &quot;        &lt;/tr&gt;\n&quot; +
+                &quot;      &lt;/tbody&gt;\n&quot; +
+                &quot;    &lt;/table&gt;&lt;table class=\&quot;module\&quot; role=\&quot;module\&quot; data-type=\&quot;text\&quot; border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; width=\&quot;100%\&quot; style=\&quot;table-layout: fixed;\&quot; data-muid=\&quot;efe5a2c4-1b11-49e7-889d-856d80b40f63.1\&quot; data-mc-module-version=\&quot;2019-10-22\&quot;&gt;\n&quot; +
+                &quot;    &lt;tbody&gt;\n&quot; +
+                &quot;      &lt;tr&gt;\n&quot; +
+                &quot;        &lt;td style=\&quot;padding:40px 100px 50px 30px; line-height:26px; text-align:inherit; background-color:#FFFFFF;\&quot; height=\&quot;100%\&quot; valign=\&quot;top\&quot; bgcolor=\&quot;#FFFFFF\&quot; role=\&quot;module-content\&quot;&gt;&lt;div&gt;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;span style=\&quot;font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; font-size: 16px; color: #656565\&quot;&gt;With Regards!&lt;/span&gt;&lt;/div&gt;\n&quot; +
+                &quot;&lt;div style=\&quot;font-family: inherit; text-align: inherit\&quot;&gt;&lt;span style=\&quot;font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; font-size: 16px; color: #656565\&quot;&gt;CodeCharacter&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;\n&quot; +
+                &quot;      &lt;/tr&gt;\n&quot; +
+                &quot;    &lt;/tbody&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;/td&gt;\n&quot; +
+                &quot;        &lt;/tr&gt;\n&quot; +
+                &quot;      &lt;/tbody&gt;\n&quot; +
+                &quot;    &lt;/table&gt;&lt;/td&gt;\n&quot; +
+                &quot;      &lt;/tr&gt;\n&quot; +
+                &quot;    &lt;/tbody&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;table class=\&quot;module\&quot; role=\&quot;module\&quot; data-type=\&quot;text\&quot; border=\&quot;0\&quot; cellpadding=\&quot;0\&quot; cellspacing=\&quot;0\&quot; width=\&quot;100%\&quot; style=\&quot;table-layout: fixed;\&quot; data-muid=\&quot;13d36c46-b515-4bdf-ad3c-edafb5c1c151.1.1\&quot; data-mc-module-version=\&quot;2019-10-22\&quot;&gt;\n&quot; +
+                &quot;    &lt;tbody&gt;\n&quot; +
+                &quot;      &lt;tr&gt;\n&quot; +
+                &quot;        &lt;td style=\&quot;padding:0px 0px 25px 0px; line-height:32px; text-align:inherit; background-color:#000000;\&quot; height=\&quot;100%\&quot; valign=\&quot;top\&quot; bgcolor=\&quot;#000000\&quot; role=\&quot;module-content\&quot;&gt;&lt;div&gt;&lt;div style=\&quot;font-family: inherit; text-align: center\&quot;&gt;&lt;span style=\&quot;font-family: &amp;quot;trebuchet ms&amp;quot;, helvetica, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: center; text-indent: 0px; text-transform: none; white-space: pre-wrap; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; float: none; display: inline; font-size: 16px; color: #ffffff\&quot;&gt;CodeCharatcer-2023&lt;/span&gt;&lt;/div&gt;&lt;div&gt;&lt;/div&gt;&lt;/div&gt;&lt;/td&gt;\n&quot; +
+                &quot;      &lt;/tr&gt;\n&quot; +
+                &quot;    &lt;/tbody&gt;\n&quot; +
+                &quot;  &lt;/table&gt;&lt;/td&gt;\n&quot; +
+                &quot;                                      &lt;/tr&gt;\n&quot; +
+                &quot;                                    &lt;/table&gt;\n&quot; +
+                &quot;                                    &lt;!--[if mso]&gt;\n&quot; +
+                &quot;                                  &lt;/td&gt;\n&quot; +
+                &quot;                                &lt;/tr&gt;\n&quot; +
+                &quot;                              &lt;/table&gt;\n&quot; +
+                &quot;                            &lt;/center&gt;\n&quot; +
+                &quot;                            &lt;![endif]--&gt;\n&quot; +
+                &quot;                          &lt;/td&gt;\n&quot; +
+                &quot;                        &lt;/tr&gt;\n&quot; +
+                &quot;                      &lt;/table&gt;\n&quot; +
+                &quot;                    &lt;/td&gt;\n&quot; +
+                &quot;                  &lt;/tr&gt;\n&quot; +
+                &quot;                &lt;/table&gt;\n&quot; +
+                &quot;              &lt;/td&gt;\n&quot; +
+                &quot;            &lt;/tr&gt;\n&quot; +
+                &quot;          &lt;/table&gt;\n&quot; +
+                &quot;        &lt;/div&gt;\n&quot; +
+                &quot;      &lt;/center&gt;\n&quot; +
+                &quot;    &lt;/body&gt;\n&quot; +
+                &quot;  &lt;/html&gt;&quot;
+<span class="nc" id="L314">        val content = Content(&quot;text/html&quot;, emailContent)</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">        val mail = Mail(Email(senderEmail), subjectInfo, Email(emailTo), content)</span>
+<span class="nc" id="L316">        val request = Request()</span>
+<span class="nc" id="L317">        try {</span>
+<span class="nc" id="L318">            request.apply {</span>
+<span class="nc" id="L319">                method = Method.POST</span>
+<span class="nc" id="L320">                endpoint = &quot;mail/send&quot;</span>
+<span class="nc" id="L321">                body = mail.build()</span>
+<span class="nc" id="L322">            }</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">            val response: Response = sendGrid.api(request)</span>
+<span class="nc bnc" id="L324" title="All 2 branches missed.">            if (response.statusCode &gt;= 400) {</span>
+<span class="nc" id="L325">                logger.error(</span>
+<span class="nc" id="L326">                    &quot;Error while sending email with status: ${response.statusCode}. Error: ${response.body}&quot;</span>
+                )
+<span class="nc" id="L328">                throw CustomException(</span>
+<span class="nc" id="L329">                    HttpStatus.INTERNAL_SERVER_ERROR, &quot;Unknown error. Please contact event admins.&quot;</span>
+                )
+            }
+<span class="nc" id="L332">        } catch (e: Exception) {</span>
+<span class="nc" id="L333">            logger.error(&quot;Error while sending email: ${e.message}&quot;)</span>
+<span class="nc" id="L334">            throw CustomException(</span>
+<span class="nc" id="L335">                HttpStatus.INTERNAL_SERVER_ERROR, &quot;Unknown error. Please contact event admins.&quot;</span>
+            )
+        }
+<span class="nc" id="L338">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

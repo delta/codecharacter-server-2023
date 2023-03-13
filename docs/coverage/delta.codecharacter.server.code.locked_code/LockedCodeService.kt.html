@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LockedCodeService.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.code.locked_code</a> &gt; <span class="el_source">LockedCodeService.kt</span></div><h1>LockedCodeService.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.code.locked_code
+
+import delta.codecharacter.dtos.CodeTypeDto
+import delta.codecharacter.dtos.UpdateLatestCodeRequestDto
+import delta.codecharacter.server.code.Code
+import delta.codecharacter.server.code.LanguageEnum
+import delta.codecharacter.server.config.DefaultCodeMapConfiguration
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Service
+import java.util.UUID
+
+/** Service for locked code. */
+<span class="fc" id="L13">@Service</span>
+<span class="fc" id="L14">class LockedCodeService(</span>
+<span class="fc" id="L15">    @Autowired private val lockedCodeRepository: LockedCodeRepository,</span>
+<span class="fc" id="L16">    @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration</span>
+) {
+
+<span class="fc" id="L19">    fun getLockedCode(</span>
+        userId: UUID,
+<span class="fc" id="L21">        codeType: CodeTypeDto = CodeTypeDto.NORMAL</span>
+    ): Pair&lt;LanguageEnum, String&gt; {
+<span class="fc" id="L23">        val lockedCode = HashMap&lt;CodeTypeDto, Code&gt;()</span>
+<span class="fc" id="L24">        lockedCode[codeType] = defaultCodeMapConfiguration.defaultLockedCode</span>
+<span class="fc" id="L25">        return lockedCodeRepository</span>
+<span class="fc" id="L26">            .findById(userId)</span>
+<span class="fc" id="L27">            .orElse(</span>
+<span class="fc" id="L28">                LockedCodeEntity(</span>
+<span class="fc" id="L29">                    userId = userId,</span>
+<span class="fc" id="L30">                    lockedCode = lockedCode,</span>
+                )
+            )
+<span class="fc" id="L33">            .let { code -&gt;</span>
+<span class="fc" id="L34">                Pair(</span>
+<span class="pc bpc" id="L35" title="2 of 4 branches missed.">                    code.lockedCode[codeType]?.language ?: defaultCodeMapConfiguration.defaultLanguage,</span>
+<span class="pc bpc" id="L36" title="2 of 4 branches missed.">                    code.lockedCode[codeType]?.code ?: defaultCodeMapConfiguration.defaultCode</span>
+                )
+            }
+    }
+
+    fun resetLockedCodeAfterPracticePhase() {
+<span class="fc" id="L42">        lockedCodeRepository.deleteAll()</span>
+<span class="fc" id="L43">    }</span>
+
+    fun updateLockedCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
+<span class="fc" id="L46">        val lockedCode = HashMap&lt;CodeTypeDto, Code&gt;()</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">        lockedCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =</span>
+<span class="fc" id="L48">            Code(</span>
+<span class="fc" id="L49">                code = updateLatestCodeRequestDto.code,</span>
+<span class="fc" id="L50">                language = LanguageEnum.valueOf(updateLatestCodeRequestDto.language.name)</span>
+            )
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (lockedCodeRepository.findById(userId).isEmpty) {</span>
+<span class="fc" id="L53">            lockedCodeRepository.save(LockedCodeEntity(userId = userId, lockedCode = lockedCode))</span>
+        } else {
+<span class="fc" id="L55">            val code = lockedCodeRepository.findById(userId).get()</span>
+<span class="fc" id="L56">            val currentLockCode = code.lockedCode</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">            currentLockCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =</span>
+<span class="fc" id="L58">                Code(</span>
+<span class="fc" id="L59">                    code = updateLatestCodeRequestDto.code,</span>
+<span class="fc" id="L60">                    language = LanguageEnum.valueOf(updateLatestCodeRequestDto.language.name)</span>
+                )
+<span class="fc" id="L62">            val updatedLockedCodeEntity =</span>
+<span class="fc" id="L63">                code.copy(</span>
+<span class="fc" id="L64">                    lockedCode = currentLockCode,</span>
+                )
+<span class="fc" id="L66">            lockedCodeRepository.save(updatedLockedCodeEntity)</span>
+        }
+<span class="fc" id="L68">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DailyChallengeObject.kt</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">server</a> &gt; <a href="index.source.html" class="el_package">delta.codecharacter.server.seeders</a> &gt; <span class="el_source">DailyChallengeObject.kt</span></div><h1>DailyChallengeObject.kt</h1><pre class="source lang-java linenums">package delta.codecharacter.server.seeders
+
+import com.fasterxml.jackson.annotation.JsonProperty
+import delta.codecharacter.dtos.ChallengeTypeDto
+import delta.codecharacter.dtos.DailyChallengeObjectDto
+
+<span class="nc" id="L7">data class DailyChallengeObject(</span>
+<span class="nc" id="L8">    @field:JsonProperty(&quot;day&quot;) val day: Int,</span>
+<span class="nc" id="L9">    @field:JsonProperty(&quot;challName&quot;) val challName: String,</span>
+<span class="nc" id="L10">    @field:JsonProperty(&quot;challType&quot;) val challType: ChallengeTypeDto,</span>
+<span class="nc" id="L11">    @field:JsonProperty(&quot;chall&quot;) val chall: DailyChallengeObjectDto,</span>
+<span class="nc" id="L12">    @field:JsonProperty(&quot;description&quot;) val description: String?,</span>
+<span class="nc" id="L13">    @field:JsonProperty(&quot;perfectScore&quot;) val perfectScore: Int,</span>
+<span class="nc" id="L14">    @field:JsonProperty(&quot;numberOfCompletions&quot;) val numberOfCompletions: Int,</span>
+<span class="nc" id="L15">    @field:JsonProperty(&quot;toleratedDestruction&quot;) val toleratedDestruction: Int,</span>
+<span class="nc" id="L16">    @field:JsonProperty(&quot;map&quot;) val map: String</span>
+)
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
