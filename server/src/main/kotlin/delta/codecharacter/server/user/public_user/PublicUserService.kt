@@ -311,8 +311,10 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
     fun updateDailyChallengeScore(userId: UUID, score: Double, dailyChallenge: DailyChallengeEntity) {
         val user = publicUserRepository.findById(userId).get()
         val current = user.dailyChallengeHistory
+        var totalScore = 0.00
         current[dailyChallenge.day] = DailyChallengeHistory(score, dailyChallenge)
-        val updatedUser = user.copy(score = user.score + score, dailyChallengeHistory = current)
+        current.forEach { (day, dayHistory) -> totalScore += dayHistory.score }
+        val updatedUser = user.copy(score = totalScore, dailyChallengeHistory = current)
         publicUserRepository.save(updatedUser)
     }
 
