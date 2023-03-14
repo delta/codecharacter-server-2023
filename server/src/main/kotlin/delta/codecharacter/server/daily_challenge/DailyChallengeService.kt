@@ -43,6 +43,14 @@ class DailyChallengeService(
     fun getDailyChallengeByDateForUser(userId: UUID): DailyChallengeGetRequestDto {
         val user = publicUserService.getPublicUser(userId)
         val currentDailyChallenge = getDailyChallengeByDate()
+        if (currentDailyChallenge.challType == ChallengeTypeDto.CODE) {
+            currentDailyChallenge.chall.cpp =
+                "This is a blind code challenge, you have to build a map to counter this attack. Godspeed, commander."
+            currentDailyChallenge.chall.java =
+                "This is a blind code challenge, you have to build a map to counter this attack. Godspeed, commander."
+            currentDailyChallenge.chall.python =
+                "This is a blind code challenge, you have to build a map to counter this attack. Godspeed, commander."
+        }
         return DailyChallengeGetRequestDto(
             challName = currentDailyChallenge.challName,
             chall = currentDailyChallenge.chall,
