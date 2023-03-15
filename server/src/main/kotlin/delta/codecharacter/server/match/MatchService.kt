@@ -154,7 +154,7 @@ class MatchService(
 
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
         val (_, chall, challType, _, completionStatus) =
-            dailyChallengeService.getDailyChallengeByDateForUser(userId)
+            dailyChallengeService.getDailyChallengeByDateForUser(userId, true)
         if (completionStatus != null && completionStatus) {
             throw CustomException(
                 HttpStatus.BAD_REQUEST, "You have already completed your daily challenge"

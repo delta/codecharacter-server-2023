@@ -22,7 +22,7 @@ class DailyChallengeController(
     @Secured(value = ["ROLE_USER"])
     override fun getDailyChallenge(): ResponseEntity<DailyChallengeGetRequestDto> {
         val user = SecurityContextHolder.getContext().authentication.principal as UserEntity
-        return ResponseEntity.ok(dailyChallengeService.getDailyChallengeByDateForUser(user.id))
+        return ResponseEntity.ok(dailyChallengeService.getDailyChallengeByDateForUser(user.id, false))
     }
     override fun getDailyChallengeLeaderBoard(
         page: Int?,

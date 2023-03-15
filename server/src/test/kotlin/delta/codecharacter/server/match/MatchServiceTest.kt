@@ -345,7 +345,7 @@ internal class MatchServiceTest {
                 completionStatus = false
             )
         val matchRequest = DailyChallengeMatchRequestDto(value = "[[0,0,0]]")
-        every { dailyChallengeService.getDailyChallengeByDateForUser(any()) } returns
+        every { dailyChallengeService.getDailyChallengeByDateForUser(any(), true) } returns
             dailyChallengeForUser
         every { dailyChallengeMatchRepository.save(any()) } returns mockk()
         every { publicUserService.getPublicUser(any()) } returns TestAttributes.publicUser
@@ -380,7 +380,7 @@ internal class MatchServiceTest {
                 description = "description",
                 completionStatus = true
             )
-        every { dailyChallengeService.getDailyChallengeByDateForUser(any()) } returns
+        every { dailyChallengeService.getDailyChallengeByDateForUser(any(), true) } returns
             dailyChallengeForUser
         val exception = assertThrows<CustomException> { matchService.createDCMatch(mockk(), mockk()) }
         assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)

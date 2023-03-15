@@ -2,6 +2,7 @@ package delta.codecharacter.server.daily_challenge
 
 import delta.codecharacter.dtos.ChallengeTypeDto
 import delta.codecharacter.dtos.DailyChallengeGetRequestDto
+import delta.codecharacter.dtos.DailyChallengeObjectDto
 import delta.codecharacter.server.daily_challenge.match.DailyChallengeMatchVerdictEnum
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game.GameEntity
@@ -40,12 +41,25 @@ class DailyChallengeService(
         return currentDailyChallenge
     }
 
-    fun getDailyChallengeByDateForUser(userId: UUID): DailyChallengeGetRequestDto {
+    fun getDailyChallengeByDateForUser(
+        userId: UUID,
+        isFromMatch: Boolean
+    ): DailyChallengeGetRequestDto {
         val user = publicUserService.getPublicUser(userId)
         val currentDailyChallenge = getDailyChallengeByDate()
+        val codeChallString =
+            "This is a blind code challenge, you have to build a map to counter this attack. Godspeed, commander.\n"
+        val chall =
+            if (currentDailyChallenge.challType == ChallengeTypeDto.CODE && !isFromMatch) {
+                DailyChallengeObjectDto(
+                    cpp = codeChallString, python = codeChallString, java = codeChallString
+                )
+            } else {
+                currentDailyChallenge.chall
+            }
         return DailyChallengeGetRequestDto(
             challName = currentDailyChallenge.challName,
-            chall = currentDailyChallenge.chall,
+            chall = chall,
             challType = currentDailyChallenge.challType,
             description = currentDailyChallenge.description,
             completionStatus = user.dailyChallengeHistory.containsKey(currentDailyChallenge.day)

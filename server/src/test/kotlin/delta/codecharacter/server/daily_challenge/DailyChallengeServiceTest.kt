@@ -42,7 +42,7 @@ internal class DailyChallengeServiceTest {
     @Test
     fun `should return daily challenge for User`() {
         assertThat(
-            dailyChallengeService.getDailyChallengeByDateForUser(UUID.randomUUID())
+            dailyChallengeService.getDailyChallengeByDateForUser(UUID.randomUUID(), false)
                 .completionStatus
         )
             .isEqualTo(false)
