@@ -154,7 +154,7 @@ class MatchService(
 
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
         val (_, chall, challType, _, completionStatus) =
-            dailyChallengeService.getDailyChallengeByDateForUser(userId, true)
+            dailyChallengeService.getDailyChallengeByDateForUser(userId,true)
         if (completionStatus != null && completionStatus) {
             throw CustomException(
                 HttpStatus.BAD_REQUEST, "You have already completed your daily challenge"
@@ -307,12 +307,13 @@ class MatchService(
     fun getUserMatches(userId: UUID): List<MatchDto> {
         val publicUser = publicUserService.getPublicUser(userId)
         val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
+        val autoMatchesPlayer2 = matchRepository.findByPlayer2AndModeOrderByCreatedAtDesc(publicUser,MatchModeEnum.AUTO)
         val dcMatches =
             dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
                 Duration.between(it.createdAt, Instant.now()).toHours() < 24 &&
                     it.verdict != DailyChallengeMatchVerdictEnum.STARTED
             }
-        return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)
+        return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)+mapMatchEntitiesToDtos(autoMatchesPlayer2)
     }
 
     @RabbitListener(queues = ["gameStatusUpdateQueue"], ackMode = "AUTO")
