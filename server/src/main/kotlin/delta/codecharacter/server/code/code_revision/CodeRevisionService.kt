@@ -16,7 +16,7 @@ import java.util.UUID
 /** Service for code revision. */
 @Service
 class CodeRevisionService(@Autowired private val codeRevisionRepository: CodeRevisionRepository) {
-    @Value("\${environment.is-event-open}") private val isEventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = true
 
     fun createCodeRevision(userId: UUID, createCodeRevisionRequestDto: CreateCodeRevisionRequestDto) {
         if (!isEventOpen) {

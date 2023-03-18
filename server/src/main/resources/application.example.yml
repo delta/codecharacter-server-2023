@@ -33,7 +33,7 @@ environment:
   no-of-players-for-promotion: 5
   promote-demote-time: "* * */6 * * *"
   max-limit-for-towers: 100000
-  is-event-open: false
+  is-event-open: true
 
 
 server:

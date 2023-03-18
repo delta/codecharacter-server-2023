@@ -18,7 +18,7 @@ class LockedCodeService(
     @Autowired private val lockedCodeRepository: LockedCodeRepository,
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration
 ) {
-    @Value("\${environment.is-event-open}") private val isEventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = true
     fun getLockedCode(
         userId: UUID,
         codeType: CodeTypeDto = CodeTypeDto.NORMAL

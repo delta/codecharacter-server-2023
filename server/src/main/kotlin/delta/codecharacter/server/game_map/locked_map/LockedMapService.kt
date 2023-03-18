@@ -19,7 +19,7 @@ class LockedMapService(
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,
     @Autowired private val mapValidator: MapValidator,
 ) {
-    @Value("\${environment.is-event-open}") private val isEventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = true
     fun getLockedMap(userId: UUID, mapType: GameMapTypeDto? = GameMapTypeDto.NORMAL): String {
         val defaultMap = HashMap<GameMapTypeDto, GameMap>()
         defaultMap[mapType ?: GameMapTypeDto.NORMAL] = defaultCodeMapConfiguration.defaultLockedGameMap
