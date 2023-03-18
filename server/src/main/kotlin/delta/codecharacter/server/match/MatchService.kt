@@ -35,7 +35,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -316,13 +315,15 @@ class MatchService(
     }
 
     fun getUserMatches(userId: UUID): List<MatchDto> {
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         val publicUser = publicUserService.getPublicUser(userId)
-        val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
+        val matches = matchRepository.findTop50ByPlayer1OrderByCreatedAtDesc(publicUser)
         val autoMatchesPlayer2 =
-            matchRepository.findByPlayer2AndModeOrderByCreatedAtDesc(
-                publicUser, MatchModeEnum.AUTO, PageRequest.of(1, 50)
+            matchRepository.findTop10ByPlayer2AndModeOrderByCreatedAtDesc(
+                publicUser, MatchModeEnum.AUTO
             )
-        logger.info(autoMatchesPlayer2.toString())
         val dcMatches =
             dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
                 Duration.between(it.createdAt, Instant.now()).toHours() < 24 &&
@@ -446,8 +447,8 @@ class MatchService(
                         newRatings.forEach { (userId, newRating) ->
                             publicUserService.updateAutoMatchRating(userId = userId, newRating = newRating.rating)
                         }
-                        logger.info("LeaderBoard Tier Promotion and Demotion started")
-                        publicUserService.promoteTiers()
+                        //                        logger.info("LeaderBoard Tier Promotion and Demotion started")
+                        //                        publicUserService.promoteTiers()
                     }
                     notificationService.sendNotification(
                         match.player1.userId,
