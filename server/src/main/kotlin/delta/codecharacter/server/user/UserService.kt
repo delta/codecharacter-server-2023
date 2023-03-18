@@ -204,6 +204,9 @@ class UserService(
     }
 
     fun completeUserProfile(userId: UUID, completeProfileRequestDto: CompleteProfileRequestDto) {
+        if (!isEventOpen.toBoolean()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         val (username, name, country, college, avatarId) = completeProfileRequestDto
         val user = userRepository.findFirstById(userId).get()
         if (user.isProfileComplete) {
