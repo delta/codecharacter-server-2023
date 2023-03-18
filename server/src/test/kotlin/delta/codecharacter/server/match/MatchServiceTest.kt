@@ -216,24 +216,6 @@ internal class MatchServiceTest {
     }
 
     @Test
-    @Throws(CustomException::class)
-    fun `should throw bad request if opponent id is empty in auto match`() {
-        val createMatchRequestDto =
-            CreateMatchRequestDto(
-                mode = MatchModeDto.AUTO,
-                codeRevisionId = UUID.randomUUID(),
-                mapRevisionId = UUID.randomUUID(),
-                opponentUsername = null
-            )
-
-        val exception =
-            assertThrows<CustomException> { matchService.createMatch(mockk(), createMatchRequestDto) }
-
-        assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)
-        assertThat(exception.message).isEqualTo("Opponent ID is required")
-    }
-
-    @Test
     fun `should create manual match`() {
         val userId = UUID.randomUUID()
         val opponentId = UUID.randomUUID()

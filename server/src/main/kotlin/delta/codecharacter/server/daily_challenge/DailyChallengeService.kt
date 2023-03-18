@@ -9,6 +9,8 @@ import delta.codecharacter.server.game.GameEntity
 import delta.codecharacter.server.game.GameStatusEnum
 import delta.codecharacter.server.logic.daily_challenge_score.DailyChallengeScoreAlgorithm
 import delta.codecharacter.server.user.public_user.PublicUserService
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
@@ -25,6 +27,8 @@ class DailyChallengeService(
 ) {
 
     @Value("\${environment.event-start-date}") private lateinit var startDate: String
+    @Value("\${environment.event-open}") private lateinit var eventOpen: String
+    private val logger: Logger = LoggerFactory.getLogger(PublicUserService::class.java)
 
     fun findNumberOfDays(): Int {
         val givenDateTime = Instant.parse(startDate)
@@ -34,6 +38,9 @@ class DailyChallengeService(
     }
 
     fun getDailyChallengeByDate(): DailyChallengeEntity {
+        if (!eventOpen.toBoolean()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Daily challenge cannot displayed")
+        }
         val currentDailyChallenge =
             dailyChallengeRepository.findByDay(findNumberOfDays()).orElseThrow {
                 throw CustomException(HttpStatus.BAD_REQUEST, "Invalid Request")

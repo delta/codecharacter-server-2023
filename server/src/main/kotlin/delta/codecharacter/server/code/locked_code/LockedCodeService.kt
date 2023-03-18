@@ -5,7 +5,10 @@ import delta.codecharacter.dtos.UpdateLatestCodeRequestDto
 import delta.codecharacter.server.code.Code
 import delta.codecharacter.server.code.LanguageEnum
 import delta.codecharacter.server.config.DefaultCodeMapConfiguration
+import delta.codecharacter.server.exception.CustomException
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -15,7 +18,7 @@ class LockedCodeService(
     @Autowired private val lockedCodeRepository: LockedCodeRepository,
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration
 ) {
-
+    @Value("\${environment.event-open}") private val eventOpen = false
     fun getLockedCode(
         userId: UUID,
         codeType: CodeTypeDto = CodeTypeDto.NORMAL
@@ -43,6 +46,9 @@ class LockedCodeService(
     }
 
     fun updateLockedCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
+        if (!eventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Code cannot be saved")
+        }
         val lockedCode = HashMap<CodeTypeDto, Code>()
         lockedCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =
             Code(
