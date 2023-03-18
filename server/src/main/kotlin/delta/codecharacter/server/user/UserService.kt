@@ -71,6 +71,9 @@ class UserService(
     }
 
     fun createUserWithOAuth(email: String, oauthProvider: LoginType): UserEntity {
+        if (!isEventOpen.toBoolean()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         val userId = UUID.randomUUID()
         val user =
             UserEntity(
