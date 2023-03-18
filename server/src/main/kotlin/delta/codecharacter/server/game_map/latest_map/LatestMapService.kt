@@ -21,7 +21,7 @@ class LatestMapService(
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,
     @Autowired private val mapValidator: MapValidator,
 ) {
-    @Value("\${environment.event-open}") private val eventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = false
     fun getLatestMap(userId: UUID, mapType: GameMapTypeDto = GameMapTypeDto.NORMAL): GameMapDto {
         val defaultMap = HashMap<GameMapTypeDto, GameMap>()
         defaultMap[mapType] = defaultCodeMapConfiguration.defaultLatestGameMap
@@ -48,8 +48,8 @@ class LatestMapService(
     }
 
     fun updateLatestMap(userId: UUID, updateLatestMapDto: UpdateLatestMapRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Map cannot be saved")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         mapValidator.validateMap(updateLatestMapDto.map)
         val latestMap = HashMap<GameMapTypeDto, GameMap>()

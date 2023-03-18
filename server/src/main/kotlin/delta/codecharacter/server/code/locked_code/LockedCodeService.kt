@@ -18,7 +18,7 @@ class LockedCodeService(
     @Autowired private val lockedCodeRepository: LockedCodeRepository,
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration
 ) {
-    @Value("\${environment.event-open}") private val eventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = false
     fun getLockedCode(
         userId: UUID,
         codeType: CodeTypeDto = CodeTypeDto.NORMAL
@@ -46,8 +46,8 @@ class LockedCodeService(
     }
 
     fun updateLockedCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Code cannot be saved")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val lockedCode = HashMap<CodeTypeDto, Code>()
         lockedCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =

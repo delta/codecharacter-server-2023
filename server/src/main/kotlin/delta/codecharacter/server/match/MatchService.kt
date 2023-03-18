@@ -66,7 +66,7 @@ class MatchService(
     @Autowired private val autoMatchRepository: AutoMatchRepository
 ) {
     private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()
-    @Value("\${environment.event-open}") private var eventOpen = true
+    @Value("\${environment.is-event-open}") private var isEventOpen = true
     private val logger: Logger = LoggerFactory.getLogger(MatchService::class.java)
 
     private fun createSelfMatch(userId: UUID, codeRevisionId: UUID?, mapRevisionId: UUID?) {
@@ -155,8 +155,8 @@ class MatchService(
     }
 
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Invalid match request")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val (_, chall, challType, _, completionStatus) =
             dailyChallengeService.getDailyChallengeByDateForUser(userId, true)
@@ -198,8 +198,8 @@ class MatchService(
         gameService.sendGameRequest(game, code, language, map)
     }
     fun createMatch(userId: UUID, createMatchRequestDto: CreateMatchRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Invalid match request")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         when (createMatchRequestDto.mode) {
             MatchModeDto.SELF -> {
@@ -219,7 +219,7 @@ class MatchService(
     }
 
     fun createAutoMatch() {
-        if (eventOpen) {
+        if (isEventOpen) {
             val topNUsers = publicUserService.getTopNUsers()
             val userIds = topNUsers.map { it.userId }
             val usernames = topNUsers.map { it.username }

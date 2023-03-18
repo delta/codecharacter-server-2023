@@ -21,7 +21,7 @@ class LatestCodeService(
     @Autowired private val latestCodeRepository: LatestCodeRepository,
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration
 ) {
-    @Value("\${environment.event-open}") private val eventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = false
     fun getLatestCode(userId: UUID, codeType: CodeTypeDto = CodeTypeDto.NORMAL): CodeDto {
         val latestCode = HashMap<CodeTypeDto, Code>()
         latestCode[codeType] = defaultCodeMapConfiguration.defaultLatestCode
@@ -52,8 +52,8 @@ class LatestCodeService(
         latestCodeRepository.deleteAll()
     }
     fun updateLatestCode(userId: UUID, updateLatestCodeRequestDto: UpdateLatestCodeRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Code cannot be saved")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val latestCode = HashMap<CodeTypeDto, Code>()
         latestCode[updateLatestCodeRequestDto.codeType ?: CodeTypeDto.NORMAL] =

@@ -19,10 +19,10 @@ class MapRevisionService(
     @Autowired private val mapRevisionRepository: MapRevisionRepository,
     @Autowired private val mapValidator: MapValidator,
 ) {
-    @Value("\${environment.event-open}") private val eventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = false
     fun createMapRevision(userId: UUID, createMapRevisionRequestDto: CreateMapRevisionRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Map cannot be committed")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val (map, _, message, mapType) = createMapRevisionRequestDto
         mapValidator.validateMap(map)

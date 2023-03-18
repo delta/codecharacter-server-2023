@@ -27,7 +27,7 @@ class DailyChallengeService(
 ) {
 
     @Value("\${environment.event-start-date}") private lateinit var startDate: String
-    @Value("\${environment.event-open}") private lateinit var eventOpen: String
+    @Value("\${environment.is-event-open}") private lateinit var isEventOpen: String
     private val logger: Logger = LoggerFactory.getLogger(PublicUserService::class.java)
 
     fun findNumberOfDays(): Int {
@@ -38,8 +38,8 @@ class DailyChallengeService(
     }
 
     fun getDailyChallengeByDate(): DailyChallengeEntity {
-        if (!eventOpen.toBoolean()) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Daily challenge cannot displayed")
+        if (!isEventOpen.toBoolean()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val currentDailyChallenge =
             dailyChallengeRepository.findByDay(findNumberOfDays()).orElseThrow {

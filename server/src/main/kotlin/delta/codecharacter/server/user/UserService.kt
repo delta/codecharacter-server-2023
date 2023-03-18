@@ -35,7 +35,7 @@ class UserService(
 
     @Lazy @Autowired private lateinit var passwordEncoder: BCryptPasswordEncoder
     @Value("\${environment.reCaptcha-key}") private lateinit var secretKey: String
-    @Value("\${environment.event-open}") private lateinit var eventOpen: String
+    @Value("\${environment.is-event-open}") private lateinit var isEventOpen: String
 
     override fun loadUserByUsername(email: String?): UserEntity {
         if (email == null) {
@@ -71,8 +71,8 @@ class UserService(
     }
 
     fun createUserWithOAuth(email: String, oauthProvider: LoginType): UserEntity {
-        if (!eventOpen.toBoolean()) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "User cannot be registered")
+        if (!isEventOpen.toBoolean()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val userId = UUID.randomUUID()
         val user =
@@ -160,8 +160,8 @@ class UserService(
 
         if (!verifyReCaptcha(recaptchaCode))
             throw CustomException(HttpStatus.BAD_REQUEST, "Invalid ReCaptcha")
-        if (!eventOpen.toBoolean()) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "User cannot be registered")
+        if (!isEventOpen.toBoolean()) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         val userId = UUID.randomUUID()
         try {

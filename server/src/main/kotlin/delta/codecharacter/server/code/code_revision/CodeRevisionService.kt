@@ -16,11 +16,11 @@ import java.util.UUID
 /** Service for code revision. */
 @Service
 class CodeRevisionService(@Autowired private val codeRevisionRepository: CodeRevisionRepository) {
-    @Value("\${environment.event-open}") private val eventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = false
 
     fun createCodeRevision(userId: UUID, createCodeRevisionRequestDto: CreateCodeRevisionRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Code cannot be committed")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
 
         val (code, message, language) = createCodeRevisionRequestDto

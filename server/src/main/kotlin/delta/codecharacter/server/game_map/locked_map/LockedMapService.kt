@@ -19,7 +19,7 @@ class LockedMapService(
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,
     @Autowired private val mapValidator: MapValidator,
 ) {
-    @Value("\${environment.event-open}") private val eventOpen = false
+    @Value("\${environment.is-event-open}") private val isEventOpen = false
     fun getLockedMap(userId: UUID, mapType: GameMapTypeDto? = GameMapTypeDto.NORMAL): String {
         val defaultMap = HashMap<GameMapTypeDto, GameMap>()
         defaultMap[mapType ?: GameMapTypeDto.NORMAL] = defaultCodeMapConfiguration.defaultLockedGameMap
@@ -36,8 +36,8 @@ class LockedMapService(
     }
 
     fun updateLockedMap(userId: UUID, updateLatestMapRequestDto: UpdateLatestMapRequestDto) {
-        if (!eventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Map cannot be saved")
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
         }
         mapValidator.validateMap(updateLatestMapRequestDto.map)
         val lockedMap = HashMap<GameMapTypeDto, GameMap>()
