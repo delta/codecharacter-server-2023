@@ -315,9 +315,6 @@ class MatchService(
     }
 
     fun getUserMatches(userId: UUID): List<MatchDto> {
-        if (!isEventOpen) {
-            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
-        }
         val publicUser = publicUserService.getPublicUser(userId)
         val matches = matchRepository.findTop50ByPlayer1OrderByCreatedAtDesc(publicUser)
         val autoMatchesPlayer2 =
