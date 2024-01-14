@@ -3,9 +3,12 @@ package delta.codecharacter.server.game_map.locked_map
 import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.config.DefaultCodeMapConfiguration
+import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game_map.GameMap
 import delta.codecharacter.server.logic.validation.MapValidator
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.util.UUID
 
@@ -16,7 +19,7 @@ class LockedMapService(
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,
     @Autowired private val mapValidator: MapValidator,
 ) {
-
+    @Value("\${environment.is-event-open}") private val isEventOpen = true
     fun getLockedMap(userId: UUID, mapType: GameMapTypeDto? = GameMapTypeDto.NORMAL): String {
         val defaultMap = HashMap<GameMapTypeDto, GameMap>()
         defaultMap[mapType ?: GameMapTypeDto.NORMAL] = defaultCodeMapConfiguration.defaultLockedGameMap
@@ -33,6 +36,9 @@ class LockedMapService(
     }
 
     fun updateLockedMap(userId: UUID, updateLatestMapRequestDto: UpdateLatestMapRequestDto) {
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         mapValidator.validateMap(updateLatestMapRequestDto.map)
         val lockedMap = HashMap<GameMapTypeDto, GameMap>()
         lockedMap[updateLatestMapRequestDto.mapType ?: GameMapTypeDto.NORMAL] =

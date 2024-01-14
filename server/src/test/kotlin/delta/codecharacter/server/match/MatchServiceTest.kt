@@ -214,7 +214,6 @@ internal class MatchServiceTest {
         assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)
         assertThat(exception.message).isEqualTo("Opponent ID is required")
     }
-
     @Test
     @Throws(CustomException::class)
     fun `should throw bad request if opponent id is empty in auto match`() {
@@ -232,7 +231,6 @@ internal class MatchServiceTest {
         assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)
         assertThat(exception.message).isEqualTo("Opponent ID is required")
     }
-
     @Test
     fun `should create manual match`() {
         val userId = UUID.randomUUID()
@@ -345,7 +343,7 @@ internal class MatchServiceTest {
                 completionStatus = false
             )
         val matchRequest = DailyChallengeMatchRequestDto(value = "[[0,0,0]]")
-        every { dailyChallengeService.getDailyChallengeByDateForUser(any()) } returns
+        every { dailyChallengeService.getDailyChallengeByDateForUser(any(), true) } returns
             dailyChallengeForUser
         every { dailyChallengeMatchRepository.save(any()) } returns mockk()
         every { publicUserService.getPublicUser(any()) } returns TestAttributes.publicUser
@@ -380,7 +378,7 @@ internal class MatchServiceTest {
                 description = "description",
                 completionStatus = true
             )
-        every { dailyChallengeService.getDailyChallengeByDateForUser(any()) } returns
+        every { dailyChallengeService.getDailyChallengeByDateForUser(any(), true) } returns
             dailyChallengeForUser
         val exception = assertThrows<CustomException> { matchService.createDCMatch(mockk(), mockk()) }
         assertThat(exception.status).isEqualTo(HttpStatus.BAD_REQUEST)

@@ -34,6 +34,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.amqp.rabbit.annotation.RabbitListener
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
 import org.springframework.messaging.simp.SimpMessagingTemplate
@@ -65,6 +66,7 @@ class MatchService(
     @Autowired private val autoMatchRepository: AutoMatchRepository
 ) {
     private var mapper: ObjectMapper = jackson2ObjectMapperBuilder.build()
+    @Value("\${environment.is-event-open}") private var isEventOpen = true
     private val logger: Logger = LoggerFactory.getLogger(MatchService::class.java)
 
     private fun createSelfMatch(userId: UUID, codeRevisionId: UUID?, mapRevisionId: UUID?) {
@@ -153,8 +155,11 @@ class MatchService(
     }
 
     fun createDCMatch(userId: UUID, dailyChallengeMatchRequestDto: DailyChallengeMatchRequestDto) {
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         val (_, chall, challType, _, completionStatus) =
-            dailyChallengeService.getDailyChallengeByDateForUser(userId)
+            dailyChallengeService.getDailyChallengeByDateForUser(userId, true)
         if (completionStatus != null && completionStatus) {
             throw CustomException(
                 HttpStatus.BAD_REQUEST, "You have already completed your daily challenge"
@@ -193,6 +198,9 @@ class MatchService(
         gameService.sendGameRequest(game, code, language, map)
     }
     fun createMatch(userId: UUID, createMatchRequestDto: CreateMatchRequestDto) {
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         when (createMatchRequestDto.mode) {
             MatchModeDto.SELF -> {
                 val (_, _, mapRevisionId, codeRevisionId) = createMatchRequestDto
@@ -211,17 +219,19 @@ class MatchService(
     }
 
     fun createAutoMatch() {
-        val topNUsers = publicUserService.getTopNUsers()
-        val userIds = topNUsers.map { it.userId }
-        val usernames = topNUsers.map { it.username }
-        logger.info("Auto matches started for users: $usernames")
-        autoMatchRepository.deleteAll()
-        userIds.forEachIndexed { i, userId ->
-            run {
-                for (j in i + 1 until userIds.size) {
-                    val opponentUsername = usernames[j]
-                    val matchId = createDualMatch(userId, opponentUsername, MatchModeEnum.AUTO)
-                    autoMatchRepository.save(AutoMatchEntity(matchId, 0))
+        if (isEventOpen) {
+            val topNUsers = publicUserService.getTopNUsers()
+            val userIds = topNUsers.map { it.userId }
+            val usernames = topNUsers.map { it.username }
+            logger.info("Auto matches started for users: $usernames")
+            autoMatchRepository.deleteAll()
+            userIds.forEachIndexed { i, userId ->
+                run {
+                    for (j in i + 1 until userIds.size) {
+                        val opponentUsername = usernames[j]
+                        val matchId = createDualMatch(userId, opponentUsername, MatchModeEnum.AUTO)
+                        autoMatchRepository.save(AutoMatchEntity(matchId, 0))
+                    }
                 }
             }
         }
@@ -306,13 +316,19 @@ class MatchService(
 
     fun getUserMatches(userId: UUID): List<MatchDto> {
         val publicUser = publicUserService.getPublicUser(userId)
-        val matches = matchRepository.findByPlayer1OrderByCreatedAtDesc(publicUser)
+        val matches = matchRepository.findTop50ByPlayer1OrderByCreatedAtDesc(publicUser)
+        val autoMatchesPlayer2 =
+            matchRepository.findTop10ByPlayer2AndModeOrderByCreatedAtDesc(
+                publicUser, MatchModeEnum.AUTO
+            )
         val dcMatches =
             dailyChallengeMatchRepository.findByUserOrderByCreatedAtDesc(publicUser).takeWhile {
                 Duration.between(it.createdAt, Instant.now()).toHours() < 24 &&
                     it.verdict != DailyChallengeMatchVerdictEnum.STARTED
             }
-        return mapDailyChallengeMatchEntitiesToDtos(dcMatches) + mapMatchEntitiesToDtos(matches)
+        return mapDailyChallengeMatchEntitiesToDtos(dcMatches) +
+            mapMatchEntitiesToDtos(matches) +
+            mapMatchEntitiesToDtos(autoMatchesPlayer2)
     }
 
     @RabbitListener(queues = ["gameStatusUpdateQueue"], ackMode = "AUTO")
@@ -428,8 +444,8 @@ class MatchService(
                         newRatings.forEach { (userId, newRating) ->
                             publicUserService.updateAutoMatchRating(userId = userId, newRating = newRating.rating)
                         }
-                        logger.info("LeaderBoard Tier Promotion and Demotion started")
-                        publicUserService.promoteTiers()
+                        //                        logger.info("LeaderBoard Tier Promotion and Demotion started")
+                        //                        publicUserService.promoteTiers()
                     }
                     notificationService.sendNotification(
                         match.player1.userId,

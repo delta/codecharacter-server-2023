@@ -7,6 +7,7 @@ import delta.codecharacter.dtos.MapCommitByCommitIdResponseDto
 import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.logic.validation.MapValidator
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -18,8 +19,11 @@ class MapRevisionService(
     @Autowired private val mapRevisionRepository: MapRevisionRepository,
     @Autowired private val mapValidator: MapValidator,
 ) {
-
+    @Value("\${environment.is-event-open}") private val isEventOpen = true
     fun createMapRevision(userId: UUID, createMapRevisionRequestDto: CreateMapRevisionRequestDto) {
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         val (map, _, message, mapType) = createMapRevisionRequestDto
         mapValidator.validateMap(map)
         val parentCodeRevision =

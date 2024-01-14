@@ -118,7 +118,12 @@ class PublicUserService(@Autowired private val publicUserRepository: PublicUserR
             PageRequest.of(
                 page ?: 0,
                 size ?: 10,
-                Sort.by(Sort.Order.desc("rating"), Sort.Order.desc("wins"), Sort.Order.asc("username"))
+                Sort.by(
+                    Sort.Order.asc("tier"),
+                    Sort.Order.desc("rating"),
+                    Sort.Order.desc("wins"),
+                    Sort.Order.asc("username")
+                )
             )
         val publicUsers =
             if (tier == null) {

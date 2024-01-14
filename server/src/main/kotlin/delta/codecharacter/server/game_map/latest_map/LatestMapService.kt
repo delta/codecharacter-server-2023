@@ -4,9 +4,12 @@ import delta.codecharacter.dtos.GameMapDto
 import delta.codecharacter.dtos.GameMapTypeDto
 import delta.codecharacter.dtos.UpdateLatestMapRequestDto
 import delta.codecharacter.server.config.DefaultCodeMapConfiguration
+import delta.codecharacter.server.exception.CustomException
 import delta.codecharacter.server.game_map.GameMap
 import delta.codecharacter.server.logic.validation.MapValidator
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.UUID
@@ -18,7 +21,7 @@ class LatestMapService(
     @Autowired private val defaultCodeMapConfiguration: DefaultCodeMapConfiguration,
     @Autowired private val mapValidator: MapValidator,
 ) {
-
+    @Value("\${environment.is-event-open}") private val isEventOpen = true
     fun getLatestMap(userId: UUID, mapType: GameMapTypeDto = GameMapTypeDto.NORMAL): GameMapDto {
         val defaultMap = HashMap<GameMapTypeDto, GameMap>()
         defaultMap[mapType] = defaultCodeMapConfiguration.defaultLatestGameMap
@@ -45,6 +48,9 @@ class LatestMapService(
     }
 
     fun updateLatestMap(userId: UUID, updateLatestMapDto: UpdateLatestMapRequestDto) {
+        if (!isEventOpen) {
+            throw CustomException(HttpStatus.BAD_REQUEST, "Match phase has ended")
+        }
         mapValidator.validateMap(updateLatestMapDto.map)
         val latestMap = HashMap<GameMapTypeDto, GameMap>()
         latestMap[updateLatestMapDto.mapType ?: GameMapTypeDto.NORMAL] =
